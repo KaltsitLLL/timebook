@@ -141,4 +141,54 @@ void main() {
     expect(find.textContaining('今天'), findsOneWidget);
     expect(find.textContaining(RegExp(r'今天 \d{1,2}:\d{2}')), findsOneWidget);
   });
+
+  testWidgets('分类宫格渲染全部分类（不再截断前6个）', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    await repo.createAccount(ledgerId: l, name: '卡');
+    final catIds = <int>[];
+    for (var i = 0; i < 8; i++) {
+      catIds.add(await repo.createCategory(ledgerId: l, name: '分类$i'));
+    }
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+      kvSettingsProvider.overrideWithValue(KvSettings(MemoryKeyValueStorage())),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    for (final id in catIds) {
+      expect(find.byKey(Key('cat_$id')), findsOneWidget);
+    }
+    expect(find.byKey(const Key('cat_nonexistent')), findsNothing);
+  });
+
+  testWidgets('选中分类后保存落库 categoryId', (tester) async {
+    final (c, repo) = await setup();
+    final l = await repo.ledgers();
+    final cats = await repo.categories(l.first.id);
+    final foodId = cats.single.id; // setup 创建的唯一分类「餐饮」
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('amount_field')), '10');
+    await tester.tap(find.byKey(Key('cat_$foodId')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('save_button')));
+    await tester.pumpAndSettle();
+
+    final rows = await repo.recentTransactions(ledgerId: l.first.id, limit: 10);
+    expect(rows, hasLength(1));
+    expect(rows.single.categoryId, foodId);
+  });
 }
