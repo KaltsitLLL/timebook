@@ -6,6 +6,26 @@ import 'bookkeeping_providers.dart';
 import 'budget_period_helper.dart';
 import 'budget_setting_sheet.dart';
 
+/// 分类预算行图标色块调色板（与首页环形图冷色调一致）。
+const List<Color> _catPalette = [
+  Color(0xFF5B9BD5), Color(0xFF4DB6AC), Color(0xFF5C6BC0),
+  Color(0xFF8F9AD1), Color(0xFF4A7DB0), Color(0xFF7FB3D5),
+];
+
+IconData _catIcon(String name) {
+  switch (name) {
+    case 'restaurant': return Icons.restaurant;
+    case 'shopping': return Icons.shopping_bag;
+    case 'directions_bus': return Icons.directions_bus;
+    case 'movie': return Icons.movie;
+    case 'home': return Icons.home;
+    case 'medical_services': return Icons.medical_services;
+    case 'payments': return Icons.payments;
+    case 'more_horiz': return Icons.more_horiz;
+    default: return Icons.receipt_long;
+  }
+}
+
 class BudgetScreen extends ConsumerWidget {
   const BudgetScreen({super.key});
   @override
@@ -21,6 +41,7 @@ class BudgetScreen extends ConsumerWidget {
           final data = snap.data!;
           final p = data.$1;
           final periodLabel = data.$2;
+          final catMap = data.$3;
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -41,7 +62,8 @@ class BudgetScreen extends ConsumerWidget {
                   label: const Text('编辑'),
                 ),
               ]),
-              for (final line in p.lines) _lineTile(context, line),
+              for (final line in p.lines)
+                _lineTile(context, line, catMap[line.categoryId]),
               if (p.lines.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -57,7 +79,7 @@ class BudgetScreen extends ConsumerWidget {
     );
   }
 
-  Future<(BudgetProgress, String)> _load(
+  Future<(BudgetProgress, String, Map<int?, (Color, IconData)>)> _load(
       BookkeepingRepository repo, int? ledgerId) async {
     final now = DateTime.now();
     final startDay = await repo.periodStartDay();
@@ -71,7 +93,8 @@ class BudgetScreen extends ConsumerWidget {
             totalSpentCents: 0,
             lines: [],
             remainingPerDayCents: 0),
-        label
+        label,
+        const <int?, (Color, IconData)>{}
       );
     }
     final s = await repo.budgetProgress(
@@ -79,7 +102,12 @@ class BudgetScreen extends ConsumerWidget {
         month: monthKey(now),
         periodStart: range.start,
         periodEnd: range.end);
-    return (s, label);
+    final cats = await repo.categories(ledgerId);
+    final catMap = <int?, (Color, IconData)>{
+      for (var i = 0; i < cats.length; i++)
+        cats[i].id: (_catPalette[i % _catPalette.length], _catIcon(cats[i].icon)),
+    };
+    return (s, label, catMap);
   }
 
   void _openSettings(BuildContext context, WidgetRef ref) {
@@ -166,49 +194,67 @@ class BudgetScreen extends ConsumerWidget {
     );
   }
 
-  Widget _lineTile(BuildContext context, BudgetLine line) {
+  Widget _lineTile(BuildContext context, BudgetLine line,
+      (Color, IconData)? cat) {
     final scheme = Theme.of(context).colorScheme;
     final over = line.isOverBudget;
     final warn = !over && line.pct > 80;
     final barColor = over
         ? scheme.error
         : (warn ? const Color(0xFFC8891A) : scheme.primary);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Column(children: [
-          Row(children: [
-            Expanded(
-                child: Text(line.categoryName,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w500))),
-            Text('¥ ${formatCents(line.spentCents)} / ${formatCents(line.amountCents)}',
-                style: const TextStyle(fontSize: 13)),
-          ]),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(99),
-            child: LinearProgressIndicator(
-              value: (line.pct.clamp(0, 100)) / 100,
-              minHeight: 8,
-              backgroundColor: scheme.surfaceContainerHighest,
-              color: barColor,
-            ),
+    final color = cat?.$1 ?? scheme.primary;
+    final icon = cat?.$2 ?? Icons.receipt_long;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: .13),
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(height: 6),
-          Row(children: [
-            Text('${line.pct.round()}%',
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-            const Spacer(),
-            if (over)
-              Text('超支',
+          child: Icon(icon, size: 20, color: color),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Expanded(
+                  child: Text(line.categoryName,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w500))),
+              Text('¥ ${formatCents(line.spentCents)} / ${formatCents(line.amountCents)}',
                   style: TextStyle(
-                      fontSize: 12,
-                      color: scheme.error,
-                      fontWeight: FontWeight.w700)),
+                      fontSize: 13,
+                      fontWeight: over ? FontWeight.w700 : FontWeight.w400,
+                      color: over ? scheme.error : scheme.onSurfaceVariant)),
+            ]),
+            const SizedBox(height: 5),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: (line.pct.clamp(0, 100)) / 100,
+                minHeight: 8,
+                backgroundColor: scheme.surfaceContainerHighest,
+                color: barColor,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(children: [
+              Text('${line.pct.round()}%',
+                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+              const Spacer(),
+              if (over)
+                Text('超支',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.error,
+                        fontWeight: FontWeight.w700)),
+            ]),
           ]),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 }
