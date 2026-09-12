@@ -51,7 +51,14 @@ class StatsScreen extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('近 6 个月收支', style: Theme.of(context).textTheme.titleMedium),
+          Row(children: [
+            const Text('近 6 个月收支',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            const Spacer(),
+            _chip(context, '6个月', selected: true),
+            const SizedBox(width: 8),
+            _chip(context, '按月', selected: false),
+          ]),
           const SizedBox(height: 16),
           SizedBox(
             height: 180,
@@ -124,7 +131,8 @@ class StatsScreen extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('本月分类占比', style: Theme.of(context).textTheme.titleMedium),
+          const Text('本月分类占比',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           CategoryDonut(slices: slices, centerLabel: '本月支出'),
           const SizedBox(height: 10),
@@ -155,4 +163,25 @@ class StatsScreen extends ConsumerWidget {
         const SizedBox(width: 6),
         Text(t, style: const TextStyle(fontSize: 12)),
       ]);
+
+  Widget _chip(BuildContext context, String label, {required bool selected}) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+      decoration: BoxDecoration(
+        color: selected ? scheme.secondaryContainer : scheme.surface,
+        borderRadius: BorderRadius.circular(999),
+        border: selected
+            ? null
+            : Border.all(color: scheme.outlineVariant, width: 1),
+      ),
+      child: Text(label,
+          style: TextStyle(
+            fontSize: 13,
+            color: selected
+                ? scheme.onSecondaryContainer
+                : scheme.onSurfaceVariant,
+          )),
+    );
+  }
 }

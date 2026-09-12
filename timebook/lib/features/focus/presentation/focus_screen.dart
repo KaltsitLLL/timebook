@@ -184,7 +184,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                           Text('$done/$total',
                               key: const Key('today_todo_stat'),
                               style: const TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.w800)),
+                                  fontSize: 20, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 2),
                           const Text('已完成',
                               style: TextStyle(
@@ -202,7 +202,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                           Text('$pomodoro 🍅 · $focusMin 分钟',
                               key: const Key('today_focus_stat'),
                               style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w800)),
+                                  fontSize: 20, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 2),
                           const Text('番茄数 · 分钟',
                               style: TextStyle(
