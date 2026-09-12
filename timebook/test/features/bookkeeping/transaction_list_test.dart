@@ -17,12 +17,13 @@ void main() {
     final l = await repo.createLedger(name: '生活');
     final a = await repo.createAccount(ledgerId: l, name: '卡');
     final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final now = DateTime.now();
     await repo.addTransaction(
         ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
-        amountCents: 2850, bookAt: DateTime(2026, 9, 12), counterparty: '美团外卖');
+        amountCents: 2850, bookAt: DateTime(now.year, now.month, 12), counterparty: '美团外卖');
     await repo.addTransaction(
         ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
-        amountCents: 1990, bookAt: DateTime(2026, 9, 11), counterparty: '瑞幸咖啡');
+        amountCents: 1990, bookAt: DateTime(now.year, now.month - 1, 12), counterparty: '瑞幸咖啡');
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
       bookkeepingRepositoryProvider.overrideWithValue(repo),
@@ -41,8 +42,25 @@ void main() {
 
     expect(find.text('美团外卖'), findsOneWidget);
     expect(find.text('瑞幸咖啡'), findsOneWidget);
-    // 默认筛选「支出」，两笔均显示
+    // 默认筛选「全部」，两笔均显示
     expect(find.textContaining('-¥ 28.50'), findsOneWidget);
+    expect(find.textContaining('-¥ 19.90'), findsOneWidget);
+  });
+
+  testWidgets('月份筛选：选本月只显示本月流水', (tester) async {
+    final c = await seeded();
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: TransactionListScreen()))));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('本月'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('-¥ 28.50'), findsOneWidget); // 本月笔
+    expect(find.textContaining('-¥ 19.90'), findsNothing);   // 上月笔
+
+    await tester.tap(find.text('全部'));
+    await tester.pumpAndSettle();
     expect(find.textContaining('-¥ 19.90'), findsOneWidget);
   });
 }
