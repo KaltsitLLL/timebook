@@ -62,6 +62,7 @@ class ImportService {
         await repo.addTransaction(
           ledgerId: ledgerId,
           accountId: account.id,
+          categoryId: r.categoryId,
           direction: r.direction,
           amountCents: r.amountCents,
           bookAt: r.bookAt,

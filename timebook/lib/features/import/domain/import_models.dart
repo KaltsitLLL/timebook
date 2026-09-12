@@ -7,6 +7,7 @@ class ImportedRow {
     this.remark = '',
     this.payMethod = '',
     this.orderId,
+    this.categoryId,
     this.isRefund = false,
   });
   final DateTime bookAt;
@@ -16,6 +17,7 @@ class ImportedRow {
   final String remark;
   final String payMethod;
   final String? orderId;
+  final int? categoryId;
   final bool isRefund;
 }
 
