@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时账 · Material 3 记账 UI 原型</title>
+
+<!-- React + Babel pinned -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,-50..200&family=Roboto:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Roboto', 'Noto Sans SC', -apple-system, sans-serif;
+    background: #F1E7E2;
+    color: #231916;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root { min-height: 100vh; }
+
+  /* ---- Material 3 设计令牌（seed #C04A1A 暖橙，近似 M3 tonal ramp；Flutter 用 ColorScheme.fromSeed 出精确版） ---- */
+  :root {
+    --primary: #9A4129;            --on-primary: #FFFFFF;
+    --primary-container: #FFDACE;  --on-primary-container: #3B0B00;
+    --secondary: #77574A;          --on-secondary: #FFFFFF;
+    --secondary-container: #FFDBCE;
+    --tertiary: #4E6B3A;           --on-tertiary: #FFFFFF;
+    --tertiary-container: #D2F2B6; --on-tertiary-container: #0B1F00;
+    --error: #BA1A1A;              --on-error: #FFFFFF;
+    --background: #FFF8F6;
+    --surface: #FFF8F6;            --on-surface: #231916;  --on-surface-variant: #53443E;
+    --surface-container-lowest: #FFFFFF;
+    --surface-container-low: #FEF1EC;
+    --surface-container: #F8EBE6;
+    --surface-container-high: #F2E5E0;
+    --surface-container-highest: #ECDFDA;
+    --outline: #87736C;            --outline-variant: #DBC2BA;
+    --scrim: rgba(32,18,12,.55);
+    --shape-xs: 8px; --shape-sm: 12px; --shape-lg: 16px; --shape-xl: 28px;
+  }
+
+  .ms { font-family: 'Material Symbols Outlined'; font-weight: 400; font-style: normal;
+        font-size: 22px; line-height: 1; display: inline-block; user-select: none;
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+
+  .proto-meta {
+    max-width: 1200px; margin: 0 auto; padding: 28px 24px 4px;
+  }
+  .proto-meta h1 { font-size: 26px; font-weight: 700; letter-spacing: .2px; }
+  .proto-meta p  { color: #53443E; font-size: 14px; margin-top: 6px; }
+
+  .zones { max-width: 1200px; margin: 0 auto; padding: 20px 24px 64px; }
+  .zone-label { display: flex; align-items: center; gap: 10px; margin: 28px 0 14px; }
+  .zone-label .tag { background: var(--primary); color: #fff; border-radius: 999px;
+                     padding: 4px 12px; font-size: 12px; font-weight: 500; }
+  .zone-label .desc { color: #53443E; font-size: 13px; }
+
+  /* 手机交互中枢 */
+  .phone-stage { display: flex; justify-content: center; padding: 8px 0 28px; }
+
+  /* 桌面静态示意区 */
+  .desktop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .dwin { border-radius: 20px; overflow: hidden; background: var(--surface);
+          box-shadow: 0 8px 30px rgba(59,30,18,.14);
+          border: 1px solid var(--outline-variant); }
+  .dwin-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+              background: var(--surface-container-low); border-bottom: 1px solid var(--outline-variant);
+              font-size: 12px; color: #53443E; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dwin-body { display: flex; min-height: 380px; }
+  .drail { width: 76px; border-right: 1px solid var(--outline-variant);
+           background: var(--surface-container-low); padding: 14px 8px; display: flex; flex-direction: column; gap: 4px; }
+  .drail-item { display: flex; flex-direction: column; align-items: center; gap: 3px;
+                padding: 10px 4px; border-radius: 14px; font-size: 11px; color: #53443E; cursor: default; }
+  .drail-item.on { background: var(--secondary-container); color: var(--on-secondary-container); }
+  .drail-item .ms { font-size: 20px; }
+  .dcontent { flex: 1; padding: 20px 24px; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+/* ================= 数据 ================= */
+const CATS = [
+  { id:'food',   name:'餐饮', icon:'restaurant',      color:'#E07A5F' },
+  { id:'trans',  name:'交通', icon:'directions_bus',  color:'#81B29A' },
+  { id:'shop',   name:'购物', icon:'shopping_bag',    color:'#E9AE4C' },
+  { id:'fun',    name:'娱乐', icon:'movie',           color:'#9A8CF0' },
+  { id:'house',  name:'居住', icon:'home',            color:'#6C96C9' },
+  { id:'med',    name:'医疗', icon:'medical_services',color:'#E76F51' },
+  { id:'salary', name:'工资', icon:'payments',        color:'#4E6B3A' },
+  { id:'other',  name:'其他', icon:'more_horiz',      color:'#87736C' },
+];
+const cat = id => CATS.find(c => c.id === id);
+
+const TRANS = [
+  { d:'09-12', t:'刚刚', who:'美团外卖',   memo:'午餐 · 剁椒鱼块套餐', cat:'food',  amt:-28.50 },
+  { d:'09-12', t:'1小时前', who:'地铁',      memo:'2号线',              cat:'trans', amt:-4.00 },
+  { d:'09-12', t:'2小时前', who:'瑞幸咖啡',  memo:'生椰拿铁',           cat:'food',  amt:-19.90 },
+  { d:'09-11', t:'昨天', who:'华润万家',    memo:'日用品采购',         cat:'shop',  amt:-156.80 },
+  { d:'09-11', t:'昨天', who:'滴滴出行',    memo:'出租车',              cat:'trans', amt:-23.00 },
+  { d:'09-10', t:'昨天', who:'工资入账',    memo:'9月工资',             cat:'salary',amt:+8500.00 },
+  { d:'09-10', t:'9月10日', who:'京东',     memo:'蓝牙耳机',            cat:'shop',  amt:-299.00 },
+  { d:'09-09', t:'9月9日', who:'物业水电',  memo:'8月物业费+水电',      cat:'house', amt:-412.00 },
+  { d:'09-08', t:'9月8日', who:'哔哩哔哩',  memo:'大会员',              cat:'fun',   amt:-25.00 },
+  { d:'09-07', t:'9月7日', who:'中石化',    memo:'92号汽油 300元',      cat:'trans', amt:-380.00 },
+  { d:'09-06', t:'9月6日', who:'山姆会员店',memo:'周末采购',            cat:'shop',  amt:-685.30 },
+  { d:'09-05', t:'9月5日', who:'房东',      memo:'9月房租',             cat:'house', amt:-2400.00 },
+  { d:'09-04', t:'9月4日', who:'美团团购',  memo:'电影票×2',           cat:'fun',   amt:-158.00 },
+  { d:'09-03', t:'9月3日', who:'中国移动',  memo:'话费充值',            cat:'other', amt:-100.00 },
+  { d:'09-02', t:'9月2日', who:'盒马鲜生',  memo:'生鲜',                cat:'food',  amt:-322.50 },
+  { d:'09-01', t:'9月1日', who:'同事聚餐AA',memo:'部门聚餐',            cat:'food',  amt:-486.50 },
+  { d:'09-01', t:'9月1日', who:'优衣库',    memo:'秋季外套',            cat:'shop',  amt:-520.00 },
+  { d:'09-01', t:'9月1日', who:'停车场',    memo:'月卡补缴',            cat:'trans', amt:-300.00 },
+];
+
+const BUDGET = 7500.00;
+const BUDGET_CATS = [
+  { cat:'food',  cap:2000 },
+  { cat:'trans', cap:800  },
+  { cat:'shop',  cap:1500 },
+  { cat:'house', cap:3000 },
+  { cat:'fun',   cap:300  },
+  { cat:'med',   cap:200  },
+  { cat:'other', cap:200  },
+];
+
+const MONTHS = [
+  { m:'4月', inc:8200, exp:6120 }, { m:'5月', inc:8500, exp:7350 },
+  { m:'6月', inc:8500, exp:5980 }, { m:'7月', inc:8500, exp:7780 },
+  { m:'8月', inc:8800, exp:6540 }, { m:'9月', inc:8500, exp:6321 },
+];
+
+const TASKS = [
+  { id:1, title:'整理记账功能 PRD 拆解', proj:'研究', prio:2, done:false, est:45 },
+  { id:2, title:'Drift 数据库表设计',     proj:'开发', prio:1, done:false, est:60 },
+  { id:3, title:'GLM API 接入调试',       proj:'AI',   prio:1, done:false, est:40 },
+  { id:4, title:'周报初稿',               proj:'工作', prio:2, done:true,  est:20 },
+];
+
+/* ================= 工具 ================= */
+const fmt = n => n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtSign = n => (n > 0 ? '+' : '') + fmt(n);
+const sumExp = list => list.filter(t => t.amt < 0).reduce((s, t) => s - t.amt, 0);
+const sumInc = list => list.filter(t => t.amt > 0).reduce((s, t) => s + t.amt, 0);
+
+function DotDonut({ slices, size = 148, inner = .66 }) {
+  const total = slices.reduce((s, x) => s + x.v, 0) || 1;
+  const C = Math.PI * size;
+  let acc = 0;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {slices.map((s, i) => {
+        const frac = s.v / total;
+        const a0 = acc * C; const a1 = (acc + frac) * C;
+        acc += frac;
+        if (s.v <= 0) return null;
+        // 描边环：每段用 dash 表示
+        const r = size / 2 - 10;
+        const dSeg = (a1 - a0);
+        return (
+          <circle key={i} cx={size/2} cy={size/2} fill="none" stroke={s.color} strokeWidth={16}
+            strokeLinecap="butt" strokeDasharray={`${Math.max(dSeg - 1.5, .5)} ${C - Math.max(dSeg - 1.5, .5)}`}
+            strokeDashoffset={-a0} transform={`rotate(-90 ${size/2} ${size/2})`} r={r} />
+        );
+      })}
+      <text x="50%" y="46%" textAnchor="middle" fontSize={16} fontWeight={700} fill="#231916">¥{fmt(total)}</text>
+      <text x="50%" y="60%" textAnchor="middle" fontSize={11} fill="#53443E">本月支出</text>
+    </svg>
+  );
+}
+
+function BarChart({ data, h = 150 }) {
+  const max = Math.max(...data.flatMap(d => [d.inc, d.exp])) * 1.15;
+  const n = data.length; const bw = 34; const gap = (240 - n * bw) / (n + 1);
+  return (
+    <svg width="240" height={h} viewBox={`0 0 240 ${h}`}>
+      {data.map((d, i) => {
+        const x = gap + i * (bw + gap);
+        const hi = (d.inc / max) * (h - 34);
+        const he = (d.exp / max) * (h - 34);
+        return (
+          <g key={i}>
+            <rect x={x} y={h - 14 - he} width={bw/2 - 2} height={he} rx={4} fill="#4E6B3A" />
+            <rect x={x + bw/2 + 2} y={h - 14 - hi} width={bw/2 - 2} height={hi} rx={4} fill="#9A4129" opacity={.85} />
+            <text x={x + bw/2} y={h - 2} textAnchor="middle" fontSize={10} fill="#53443E">{d.m}</text>
+          </g>
+        );
+      })}
+      <g transform={`translate(0 ${h - 34})`}>
+        <text x={150} y={30} fontSize={10} fill="#4E6B3A">■ 收入</text>
+        <text x={200} y={30} fontSize={10} fill="#9A4129">■ 支出</text>
+      </g>
+    </svg>
+  );
+}
+
+function Progress({ pct, warn = false }) {
+  return (
+    <div style={{ height: 8, borderRadius: 99, background: 'var(--surface-container-highest)', overflow: 'hidden' }}>
+      <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%',
+        background: pct >= 100 ? 'var(--error)' : (warn ? '#C8891A' : 'var(--primary)'),
+        borderRadius: 99, transition: 'width .4s' }} />
+    </div>
+  );
+}
+
+/* ================= 手机端 ================= */
+const m3 = {
+  card: { background: 'var(--surface-container-low)', borderRadius: 'var(--shape-lg)', padding: 16 },
+  chip: { display:'inline-flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:999,
+          border:'1px solid var(--outline-variant)', fontSize:13, color:'#53443E', background:'var(--surface)' },
+  chipOn:{ background:'var(--secondary-container)', borderColor:'transparent', color:'var(--on-secondary-container)' },
+  fab:  { position:'absolute', right:20, bottom:96, background:'var(--primary-container)', color:'var(--on-primary-container)',
+          borderRadius:16, height:56, padding:'0 20px', display:'flex', alignItems:'center', gap:8,
+          boxShadow:'0 3px 10px rgba(59,30,18,.3)', fontWeight:500, cursor:'pointer', border:'none', fontSize:14, zIndex:5 },
+};
+
+function Ms({ n, size = 22, style }) { return <span className="ms" style={{ fontSize: size, ...style }}>{n}</span>; }
+
+/* ---- AndroidFrame 设备边框（Pixel 8 规格） ---- */
+const androidFrameStyles = {
+  wrapper: {
+    display: 'inline-block', padding: 10, background: '#1a1a1a', borderRadius: 44,
+    boxShadow: '0 0 0 2px #2a2a2a, 0 20px 60px rgba(0,0,0,0.3)', position: 'relative',
+  },
+  screen: { position: 'relative', borderRadius: 36, overflow: 'hidden', background: '#fff' },
+  statusBar: {
+    position: 'absolute', top: 0, left: 0, right: 0, height: 32,
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px',
+    fontSize: 14, fontWeight: 500, fontFamily: 'Roboto, -apple-system, sans-serif',
+    zIndex: 20, pointerEvents: 'none',
+  },
+  punchHole: { position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+    width: 14, height: 14, background: '#000', borderRadius: '50%', zIndex: 30 },
+  statusIcons: { display: 'flex', alignItems: 'center', gap: 6 },
+  batteryText: { fontSize: 11, fontWeight: 600, marginLeft: 2 },
+  content: { position: 'absolute', top: 32, left: 0, right: 0, bottom: 24, overflow: 'auto' },
+  navBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 24,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 60, zIndex: 10 },
+  navButton: { width: 36, height: 4, background: 'rgba(0,0,0,0.3)', borderRadius: 999 },
+};
+function AndroidFrame({ children, width = 412, height = 892, time = '9:41', battery = 100, darkMode = false, navStyle = 'gesture' }) {
+  const textColor = darkMode ? '#fff' : '#1a1a1a';
+  return (
+    <div style={androidFrameStyles.wrapper}>
+      <div style={{ ...androidFrameStyles.screen, width, height, background: darkMode ? '#000' : '#fff' }}>
+        <div style={{ ...androidFrameStyles.statusBar, color: textColor }}>
+          <span>{time}</span>
+          <div style={androidFrameStyles.statusIcons}>
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+              <rect x="0" y="6" width="2" height="4" rx="0.5" />
+              <rect x="4" y="4" width="2" height="6" rx="0.5" />
+              <rect x="8" y="2" width="2" height="8" rx="0.5" />
+              <rect x="12" y="0" width="2" height="10" rx="0.5" />
+            </svg>
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+              <path d="M7 9a1 1 0 100-2 1 1 0 000 2z" fill="currentColor" />
+              <path d="M3 6a5 5 0 018 0" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M0.5 3.5a11 11 0 0113 0" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
+            </svg>
+            <div style={{ width: 22, height: 10, border: '1.5px solid currentColor', borderRadius: 2, padding: 1, position: 'relative' }}>
+              <div style={{ width: `${battery}%`, height: '100%', background: 'currentColor', borderRadius: 1 }} />
+            </div>
+            <span style={androidFrameStyles.batteryText}>{battery}%</span>
+          </div>
+        </div>
+        <div style={androidFrameStyles.punchHole} />
+        <div style={androidFrameStyles.content}>{children}</div>
+        {navStyle === 'gesture' && (
+          <div style={androidFrameStyles.navBar}>
+            <div style={{ ...androidFrameStyles.navButton, width: 100, background: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }} />
+          </div>
+        )}
+        {navStyle === 'buttons' && (
+          <div style={androidFrameStyles.navBar}>
+            <span style={{ color: textColor, fontSize: 20 }}>◁</span>
+            <span style={{ color: textColor, fontSize: 16 }}>○</span>
+            <span style={{ color: textColor, fontSize: 16 }}>□</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+if (typeof window !== 'undefined') { window.AndroidFrame = AndroidFrame; }
+
+function ScreenHome({ txs, onOpenTx, onOpenBudget, onAdd }) {
+  const exp = sumExp(txs), inc = sumInc(txs), bal = inc - exp;
+  const allSlices = CATS.filter(c => c.id !== 'salary')
+    .map(c => ({ ...c, v: txs.filter(t => t.cat === c.id && t.amt < 0).reduce((s,t)=>s-t.amt,0) }))
+    .filter(s => s.v > 0).sort((a,b) => b.v - a.v);
+  const slices = allSlices.slice(0, 4);
+  const recent = txs.slice(0, 4);
+  return (
+    <div style={{ paddingBottom: 90 }}>
+      <div style={{ padding: '6px 20px 2px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <div>
+          <div style={{ fontSize: 13, color:'#53443E' }}>2026年9月</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }}>时账</div>
+        </div>
+        <div style={{ width:40, height:40, borderRadius:'50%', background:'var(--primary-container)',
+                      display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <Ms n="settings" />
+        </div>
+      </div>
+
+      {/* 结余卡 */}
+      <div style={{ margin:'12px 20px 4px', borderRadius:24, padding:18,
+        background:'linear-gradient(135deg, #9A4129, #C76B45)', color:'#fff', boxShadow:'0 8px 24px rgba(154,65,41,.28)' }}>
+        <div style={{ fontSize: 13, opacity:.85 }}>本月结余</div>
+        <div style={{ fontSize: 34, fontWeight: 700, marginTop: 2 }}>¥ {fmt(bal)}</div>
+        <div style={{ display:'flex', gap: 26, marginTop: 12 }}>
+          <div><div style={{ fontSize:11, opacity:.75 }}>收入</div><div style={{ fontWeight:600, fontSize:15 }}>¥ {fmt(inc)}</div></div>
+          <div><div style={{ fontSize:11, opacity:.75 }}>支出</div><div style={{ fontWeight:600, fontSize:15 }}>¥ {fmt(exp)}</div></div>
+          <div onClick={onOpenBudget} style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:4,
+            background:'rgba(255,255,255,.18)', padding:'6px 12px', borderRadius:999, cursor:'pointer', fontSize:12 }}>
+            预算进度 <Ms n="chevron_right" size={16} />
+          </div>
+        </div>
+      </div>
+
+      {/* 快捷入口 */}
+      <div style={{ display:'flex', gap: 12, margin:'16px 20px 4px' }}>
+        <div onClick={onOpenTx} style={{ ...m3.card, flex:1, cursor:'pointer', display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:42, height:42, borderRadius:14, background:'var(--primary-container)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Ms n="receipt_long" />
+          </div>
+          <div><div style={{ fontWeight:600, fontSize:15 }}>流水明细</div>
+          <div style={{ fontSize:12, color:'#53443E' }}>{txs.length} 笔记录</div></div>
+        </div>
+        <div onClick={onOpenBudget} style={{ ...m3.card, flex:1, cursor:'pointer', display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:42, height:42, borderRadius:14, background:'var(--secondary-container)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Ms n="savings" />
+          </div>
+          <div><div style={{ fontWeight:600, fontSize:15 }}>本月预算</div>
+          <div style={{ fontSize:12, color:'#53443E' }}>剩 ¥ {fmt(BUDGET - exp)}</div></div>
+        </div>
+      </div>
+
+      {/* 分类分布 */}
+      <div style={{ margin:'12px 20px', ...m3.card }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:4 }}>分类支出</div>
+        <div style={{ display:'flex', alignItems:'center', gap:18 }}>
+          <DotDonut slices={allSlices.map(s => ({ v: s.v, color: s.color }))} />
+          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:9 }}>
+            {slices.map(s => (
+              <div key={s.id} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ width:9, height:9, borderRadius:3, background:s.color }} />
+                <span style={{ fontSize:13, flex:1 }}>{s.name}</span>
+                <span style={{ fontSize:13, fontWeight:500 }}>¥ {fmt(s.v)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 最近流水 */}
+      <div style={{ padding:'0 20px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+          <div style={{ fontWeight:600, fontSize:15 }}>最近流水</div>
+          <div onClick={onOpenTx} style={{ fontSize:13, color:'var(--primary)', display:'flex', alignItems:'center', cursor:'pointer' }}>
+            全部 <Ms n="chevron_right" size={16} />
+          </div>
+        </div>
+        {recent.map((t, i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'9px 0' }}>
+            <div style={{ width:38, height:38, borderRadius:12, background: cat(t.cat).color + '22',
+              display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Ms n={cat(t.cat).icon} size={20} />
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:14, fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.who}</div>
+              <div style={{ fontSize:12, color:'#53443E' }}>{t.memo} · {t.d}</div>
+            </div>
+            <div style={{ fontSize:14, fontWeight:600, color: t.amt > 0 ? 'var(--tertiary)' : 'var(--primary)' }}>
+              {fmtSign(t.amt)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ScreenTx({ txs, onBack, onAdd }) {
+  const [filter, setFilter] = useState('all');
+  const list = txs.filter(t => filter === 'all' ? true : filter === 'exp' ? t.amt < 0 : t.amt > 0);
+  const groups = useMemo(() => {
+    const map = {};
+    list.forEach(t => { (map[t.d] = map[t.d] || []).push(t); });
+    return Object.entries(map);
+  }, [list]);
+  return (
+    <div style={{ paddingBottom: 90 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 16px 2px' }}>
+        <div style={{ cursor:'pointer', padding:6 }} onClick={onBack}><Ms n="arrow_back" /></div>
+        <div style={{ flex:1, fontWeight:600, fontSize:17 }}>流水明细</div>
+        <Ms n="search" />
+      </div>
+      <div style={{ display:'flex', gap:8, padding:'10px 16px 4px', overflowX:'auto' }}>
+        {[['all','全部'],['exp','支出'],['inc','收入']].map(([k, v]) => (
+          <div key={k} onClick={() => setFilter(k)} style={{ ...m3.chip, ...(filter === k ? m3.chipOn : {}) , cursor:'pointer' }}>
+            {v}
+          </div>
+        ))}
+      </div>
+      <div style={{ padding:'8px 20px 0', fontSize:12, color:'#53443E' }}>
+        共 {list.length} 笔 · 支出 ¥{fmt(sumExp(list))} · 收入 ¥{fmt(sumInc(list))}
+      </div>
+      {groups.map(([d, items]) => (
+        <div key={d} style={{ margin:'8px 16px 0' }}>
+          <div style={{ fontSize:12, color:'#53443E', padding:'4px 4px 2px' }}>{d}</div>
+          <div style={{ ...m3.card, padding: '4px 12px', borderRadius: 'var(--shape-sm)' }}>
+            {items.map((t, i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 0',
+                borderBottom: i < items.length - 1 ? '1px solid var(--surface-container-highest)' : 'none' }}>
+                <div style={{ width:36, height:36, borderRadius:12, background: cat(t.cat).color + '22',
+                  display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <Ms n={cat(t.cat).icon} size={20} />
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14, fontWeight:500 }}>{t.who}</div>
+                  <div style={{ fontSize:12, color:'#53443E', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.memo}</div>
+                </div>
+                <div style={{ fontSize:14, fontWeight:600, textAlign:'right', color: t.amt > 0 ? 'var(--tertiary)' : 'var(--primary)' }}>
+                  {fmtSign(t.amt)}
+                  <div style={{ fontSize:11, fontWeight:400, color:'#53443E' }}>{cat(t.cat).name}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ScreenBudget({ txs, onBack }) {
+  const exp = sumExp(txs);
+  const pct = (exp / BUDGET) * 100;
+  const left = BUDGET - exp;
+  const per = left / 18;
+  return (
+    <div style={{ paddingBottom: 90 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 16px 2px' }}>
+        <div style={{ cursor:'pointer', padding:6 }} onClick={onBack}><Ms n="arrow_back" /></div>
+        <div style={{ flex:1, fontWeight:600, fontSize:17 }}>预算</div>
+      </div>
+      <div style={{ margin:'14px 20px 4px', borderRadius:24, padding:18, background:'var(--primary-container)' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+          <div style={{ fontSize:13, color:'var(--on-primary-container)', opacity:.8 }}>9月总预算</div>
+          <div style={{ fontSize:13, fontWeight:600, color:'var(--on-primary-container)' }}>{pct.toFixed(0)}%</div>
+        </div>
+        <div style={{ fontSize:30, fontWeight:700, color:'var(--on-primary-container)', marginTop:2 }}>¥ {fmt(BUDGET)}</div>
+        <div style={{ marginTop:10 }}><Progress pct={pct} warn={pct > 80} /></div>
+        <div style={{ display:'flex', gap:22, marginTop:12 }}>
+          <div style={{ fontSize:12, color:'var(--on-primary-container)', opacity:.75 }}>已用 <b style={{ fontSize:14 }}>¥ {fmt(exp)}</b></div>
+          <div style={{ fontSize:12, color:'var(--on-primary-container)', opacity:.75 }}>剩余 <b style={{ fontSize:14 }}>¥ {fmt(left)}</b></div>
+          <div style={{ marginLeft:'auto', fontSize:12, background:'rgba(59,11,0,.08)', padding:'5px 10px', borderRadius:999, color:'var(--on-primary-container)' }}>
+            剩余日均 ¥ {fmt(per)}
+          </div>
+        </div>
+      </div>
+      <div style={{ margin:'14px 20px' }}>
+        {BUDGET_CATS.map(b => {
+          const used = txs.filter(t => t.cat === b.cat && t.amt < 0).reduce((s,t)=>s-t.amt,0);
+          const p = (used / b.cap) * 100;
+          return (
+            <div key={b.cat} style={{ display:'flex', alignItems:'center', gap:12, padding:'9px 0' }}>
+              <div style={{ width:38, height:38, borderRadius:12, background: cat(b.cat).color + '22',
+                display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <Ms n={cat(b.cat).icon} size={20} />
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                  <span style={{ fontSize:14, fontWeight:500 }}>{cat(b.cat).name}</span>
+                  <span style={{ fontSize:13, color: p >= 100 ? 'var(--error)' : '#53443E' }}>
+                    <b>{fmt(used)}</b> / {fmt(b.cap)}
+                  </span>
+                </div>
+                <Progress pct={p} warn={p > 80} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ScreenStats({ txs, onTab }) {
+  const exp = sumExp(txs);
+  const slices = CATS.filter(c => c.id !== 'salary')
+    .map(c => ({ ...c, v: txs.filter(t => t.cat === c.id && t.amt < 0).reduce((s,t)=>s-t.amt,0) }))
+    .filter(s => s.v > 0).sort((a,b) => b.v - a.v);
+  return (
+    <div style={{ paddingBottom: 90 }}>
+      <div style={{ padding:'6px 20px 2px' }}>
+        <div style={{ fontSize:22, fontWeight:700 }}>统计</div>
+      </div>
+      <div style={{ margin:'12px 20px 4px', ...m3.card }}>
+        <div style={{ display:'flex', justifyContent:'space-between' }}>
+          <div style={{ fontWeight:600, fontSize:15 }}>近 6 个月收支</div>
+          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+            <div style={{ ...m3.chip, ...m3.chipOn, paddingTop:3, paddingBottom:3 }}>6个月</div>
+            <div style={{ ...m3.chip, paddingTop:3, paddingBottom:3 }}>按月</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', justifyContent:'center', marginTop:10 }}>
+          <BarChart data={MONTHS} />
+        </div>
+      </div>
+      <div style={{ margin:'12px 20px 4px', ...m3.card }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:10 }}>9月分类占比</div>
+        <div style={{ display:'flex', gap:20, alignItems:'center' }}>
+          <DotDonut slices={slices.map(s => ({ v: s.v, color: s.color }))} size={128} />
+          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
+            {slices.slice(0, 5).map(s => (
+              <div key={s.id} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ width:9, height:9, borderRadius:3, background:s.color }} />
+                <span style={{ fontSize:13, flex:1 }}>{s.name}</span>
+                <span style={{ fontSize:13 }}>{((s.v/exp)*100).toFixed(0)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginTop:12, borderTop:'1px solid var(--surface-container-highest)', paddingTop:10 }}>
+          {slices.map((s, i) => (
+            <div key={s.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'6px 0' }}>
+              <span style={{ width:20, fontSize:12, color:'#53443E', textAlign:'center' }}>{i+1}</span>
+              <div style={{ width:30, height:30, borderRadius:10, background:s.color+'22', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <Ms n={s.icon} size={18} />
+              </div>
+              <span style={{ fontSize:14, flex:1, fontWeight:500 }}>{s.name}</span>
+              <span style={{ fontSize:13, color:'#53443E' }}>{((s.v/exp)*100).toFixed(1)}%</span>
+              <span style={{ fontSize:14, fontWeight:600 }}>¥ {fmt(s.v)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScreenFocus({ onTab }) {
+  const [tasks, setTasks] = useState(TASKS);
+  const [mode, setMode] = useState('focus');   // focus / short / long
+  const MODES = { focus: { label:'专注', sec:25*60, c:'var(--primary)' },
+                  short: { label:'短休', sec:5*60,  c:'#4E6B3A' },
+                  long:  { label:'长休', sec:15*60, c:'#6C96C9' } };
+  const total = MODES[mode].sec;
+  const [left, setLeft] = useState(total);
+  const [run, setRun] = useState(false);
+  const [active, setActive] = useState(null);
+  useEffect(() => {
+    if (!run) return;
+    const iv = setInterval(() => setLeft(s => {
+      if (s <= 1) { setRun(false); return total; }
+      return s - 1;
+    }), 1000);
+    return () => clearInterval(iv);
+  }, [run, mode]);
+  const startNew = m => { setMode(m); setLeft(MODES[m].sec); setRun(false); };
+  const pct = 1 - left / total;
+  const R = 62; const C = 2 * Math.PI * R;
+  const done = tasks.filter(t => t.done).length;
+  const togg = id => setTasks(ts => ts.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  return (
+    <div style={{ paddingBottom: 90 }}>
+      <div style={{ padding:'6px 20px 2px' }}>
+        <div style={{ fontSize:22, fontWeight:700 }}>专注</div>
+      </div>
+      <div style={{ margin:'12px 20px 4px', ...m3.card }}>
+        <div style={{ display:'flex', gap:18 }}>
+          <div>
+            <div style={{ fontSize:12, color:'#53443E' }}>今日待办</div>
+            <div style={{ fontSize:20, fontWeight:700 }}>{done} / {tasks.length} <span style={{ fontSize:12, fontWeight:400, color:'#53443E' }}>已完成</span></div>
+          </div>
+          <div>
+            <div style={{ fontSize:12, color:'#53443E' }}>今日专注</div>
+            <div style={{ fontSize:20, fontWeight:700 }}>3 <span style={{ fontSize:14 }}>🍅</span> · 75<span style={{ fontSize:12, fontWeight:400, color:'#53443E' }}> 分钟</span></div>
+          </div>
+        </div>
+      </div>
+
+      {/* 番茄钟圆盘 */}
+      <div style={{ margin:'14px 20px 4px', ...m3.card, display:'flex', flexDirection:'column', alignItems:'center', paddingBottom:20 }}>
+        <div style={{ display:'flex', gap:8, marginBottom:14 }}>
+          {Object.entries(MODES).map(([k, v]) => (
+            <div key={k} onClick={() => startNew(k)} style={{
+              ...m3.chip, cursor:'pointer', padding:'5px 14px',
+              ...(mode === k ? { background: v.c, color:'#fff', borderColor:'transparent' } : {}) }}>{v.label}</div>
+          ))}
+        </div>
+        <div style={{ position:'relative', width:160, height:160 }}>
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r={R} fill="none" stroke="var(--surface-container-highest)" strokeWidth="12" />
+            <circle cx="80" cy="80" r={R} fill="none" stroke={MODES[mode].c} strokeWidth="12"
+              strokeLinecap="round" strokeDasharray={`${pct * C} ${C}`}
+              transform="rotate(-90 80 80)" style={{ transition:'stroke-dasharray 1s linear' }} />
+          </svg>
+          <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ fontSize:34, fontWeight:700, fontVariantNumeric:'tabular-nums' }}>
+              {`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`}
+            </div>
+            <div style={{ fontSize:12, color:'#53443E', marginTop:2 }}>
+              {active ? `专注中：${active.title}` : '请先选择任务'}
+            </div>
+          </div>
+        </div>
+        <button onClick={() => setRun(r => !r)} style={{
+          marginTop:14, border:'none', cursor:'pointer', borderRadius:999, height:48, padding:'0 34px',
+          background: run ? 'var(--surface-container-highest)' : MODES[mode].c,
+          color: run ? '#53443E' : '#fff', fontSize:15, fontWeight:600, boxShadow: run ? 'none' : '0 4px 12px rgba(59,30,18,.25)' }}>
+          {run ? '暂停' : (left < total ? '继续' : '开始专注')}
+        </button>
+      </div>
+
+      {/* 今日待办 */}
+      <div style={{ margin:'12px 20px 4px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', fontWeight:600, fontSize:15, marginBottom:6 }}>
+          <span>今日待办</span>
+          <span style={{ color:'var(--primary)', fontSize:13, fontWeight:500 }}>+ 添加</span>
+        </div>
+        {tasks.filter(t => !t.done).map(t => (
+          <div key={t.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'9px 0' }}>
+            <div onClick={() => togg(t.id)} style={{ width:22, height:22, borderRadius:6, border:'2px solid var(--outline)',
+              cursor:'pointer', flexShrink:0 }} />
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:500 }}>{t.title}</div>
+              <div style={{ fontSize:12, color:'#53443E' }}>{t.proj} · 预计 {t.est} 分钟</div>
+            </div>
+            <div onClick={() => { setActive(t); startNew('focus'); setRun(true); }}
+              style={{ ...m3.chip, cursor:'pointer', padding:'4px 10px' }}> 🍅 </div>
+          </div>
+        ))}
+        <div style={{ marginTop:6, borderTop:'1px solid var(--surface-container-highest)', paddingTop:6 }}>
+          {tasks.filter(t => t.done).map(t => (
+            <div key={t.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'9px 0', opacity:.55 }}>
+              <div onClick={() => togg(t.id)} style={{ width:22, height:22, borderRadius:6, background:'var(--primary)',
+                cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>✓</div>
+              <div style={{ fontSize:14, textDecoration:'line-through' }}>{t.title}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScreenSettings() {
+  return (
+    <div style={{ paddingBottom: 90, padding:'6px 20px' }}>
+      <div style={{ fontSize:22, fontWeight:700, marginBottom:8 }}>设置</div>
+      {[['账本管理','多账本 · 币种 · 顺序'],['AI 记账','GLM API Key · 隐私声明'],['导入导出','CSV · 备份'],['关于','版本 · 开源许可']].map(([t, s]) => (
+        <div key={t} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 4px',
+          borderBottom:'1px solid var(--surface-container-highest)' }}>
+          <div style={{ flex:1 }}><div style={{ fontSize:15 }}>{t}</div><div style={{ fontSize:12, color:'#53443E' }}>{s}</div></div>
+          <Ms n="chevron_right" size={20} style={{ color:'#87736C' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SheetAdd({ ok, data, onSave, onClose }) {
+  const [dir, setDir] = useState('exp');
+  const [amt, setAmt] = useState('');
+  const [c, setC] = useState('food');
+  const [memo, setMemo] = useState('');
+  const cats = CATS.filter(x => x.id !== 'salary');
+  const submit = () => {
+    const a = parseFloat(amt);
+    if (!a || a <= 0) return;
+    data.push({ d:'09-12', t:'刚刚', who: memo || cat(c).name, memo: memo || '手动记账', cat:c, amt: dir === 'exp' ? -a : a });
+    onSave(); onClose();
+  };
+  return (
+    <div style={{ position:'absolute', inset:0, zIndex:60 }}>
+      <div style={{ position:'absolute', inset:0, background:'var(--scrim)' }} onClick={onClose} />
+      <div style={{ position:'absolute', left:0, right:0, bottom:0, background:'var(--surface)',
+        borderTopLeftRadius:28, borderTopRightRadius:28, padding:'10px 20px 26px', animation:'up .25s ease' }}>
+        <style>{'@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}'}</style>
+        <div style={{ width:36, height:4, borderRadius:99, background:'var(--outline-variant)', margin:'0 auto 14px' }} />
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+          <div style={{ fontWeight:700, fontSize:18 }}>记一笔</div>
+          <Ms n="close" style={{ cursor:'pointer' }} onClick={onClose} />
+        </div>
+        <div style={{ display:'flex', gap:8, margin:'4px 0 10px' }}>
+          {[['exp','支出'],['inc','收入']].map(([k, v]) => (
+            <div key={k} onClick={() => setDir(k)} style={{ ...m3.chip, cursor:'pointer', padding:'6px 18px',
+              background: dir === k ? (k === 'exp' ? 'var(--primary)' : 'var(--tertiary)') : 'var(--surface)',
+              color: dir === k ? '#fff' : '#53443E', borderColor: dir === k ? 'transparent' : 'var(--outline-variant)' }}>{v}</div>
+          ))}
+        </div>
+        <div style={{ display:'flex', alignItems:'baseline', gap:6, margin:'6px 0 12px' }}>
+          <span style={{ fontSize:22, fontWeight:700 }}>¥</span>
+          <input value={amt} onChange={e => setAmt(e.target.value.replace(/[^\d.]/g, ''))} placeholder="0.00"
+            inputMode="decimal" autoFocus
+            style={{ flex:1, fontSize:40, fontWeight:700, border:'none', outline:'none', background:'transparent', fontVariantNumeric:'tabular-nums' }} />
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:8, marginBottom:12 }}>
+          {cats.map(x => (
+            <div key={x.id} onClick={() => setC(x.id)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5,
+              padding:'10px 0', borderRadius:14, cursor:'pointer',
+              background: c === x.id ? x.color + '26' : 'var(--surface-container-low)',
+              border: c === x.id ? `1.5px solid ${x.color}` : '1.5px solid transparent' }}>
+              <Ms n={x.icon} size={22} style={{ color: x.color }} />
+              <span style={{ fontSize:12 }}>{x.name}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display:'flex', gap:10, marginBottom:8 }}>
+          <div style={{ ...m3.chip, padding:'8px 12px' }}><Ms n="credit_card" size={18} /> 储蓄卡·尾号8026</div>
+          <div style={{ ...m3.chip, padding:'8px 12px' }}><Ms n="calendar_today" size={18} /> 今天 21:30</div>
+        </div>
+        <input value={memo} onChange={e => setMemo(e.target.value)} placeholder="备注（选填）"
+          style={{ width:'100%', border:'none', borderBottom:'1px solid var(--outline-variant)', outline:'none',
+            padding:'10px 2px', fontSize:15, background:'transparent' }} />
+        <button onClick={submit} style={{ width:'100%', marginTop:16, border:'none', cursor:'pointer', borderRadius:999,
+          background:'var(--primary)', color:'#fff', height:50, fontSize:16, fontWeight:600, boxShadow:'0 4px 12px rgba(154,65,41,.3)' }}>
+          保存
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function NavBar({ tab, set }) {
+  const items = [['ledger','home','记账'],['focus','timer','专注'],['stats','monitoring','统计'],['settings','settings','设置']];
+  return (
+    <div style={{ position:'absolute', left:0, right:0, bottom:0, display:'flex', background:'var(--surface-container)',
+      padding:'6px 12px 10px', borderTop:'1px solid var(--outline-variant)', zIndex:10 }}>
+      {items.map(([k, ic, v]) => (
+        <div key={k} onClick={() => set(k)} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2,
+          padding:'4px 0', cursor:'pointer', borderRadius:12,
+          background: tab === k ? 'var(--secondary-container)' : 'transparent' }}>
+          <Ms n={ic} size={24} style={{ color: tab === k ? 'var(--on-secondary-container)' : '#53443E', fontVariationSettings: `'FILL' ${tab===k?1:0}` }} />
+          <span style={{ fontSize:11, color: tab === k ? 'var(--on-secondary-container)' : '#53443E' }}>{v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PhoneApp() {
+  const [txs, setTxs] = useState(TRANS);
+  const [tab, setTab] = useState('ledger');
+  const [sub, setSub] = useState('home');   // ledger 子页
+  const [sheet, setSheet] = useState(false);
+  const [toast, setToast] = useState('');
+  const show = (m, dur = 2000) => { setToast(m); setTimeout(() => setToast(''), dur); };
+  const mutate = fn => setTxs(list => { const n = [...list]; fn(n); return n; });
+  return (
+    <div style={{ position:'relative', height:'100%' }}>
+      {tab === 'ledger' && sub === 'home' && <ScreenHome txs={txs} onOpenTx={() => setSub('tx')}
+        onOpenBudget={() => setSub('budget')} onAdd={() => setSheet(true)} />}
+      {tab === 'ledger' && sub === 'tx'     && <ScreenTx txs={txs} onBack={() => setSub('home')} />}
+      {tab === 'ledger' && sub === 'budget' && <ScreenBudget txs={txs} onBack={() => setSub('home')} />}
+      {tab === 'focus'   && <ScreenFocus />}
+      {tab === 'stats' && <ScreenStats txs={txs} />}
+      {tab === 'settings' && <ScreenSettings />}
+
+      <NavBar tab={tab} set={t => { setTab(t); if (t === 'ledger') setSub('home'); }} />
+      {tab === 'ledger' && sub === 'home' && (
+        <div style={m3.fab} onClick={() => setSheet(true)}>
+          <Ms n="add" size={22} /> 记一笔
+        </div>
+      )}
+      {sheet && <SheetAdd ok={false} data={txs} onSave={() => show('已记账 · 可在流水查看')}
+        onClose={() => setSheet(false)} />}
+      {toast && <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', bottom: 108,
+        background:'var(--on-surface)', color:'var(--surface)', padding:'10px 20px', borderRadius:999, fontSize:13, zIndex:80 }}>{toast}</div>}
+    </div>
+  );
+}
+
+/* ================= 桌面端（静态示意） ================= */
+function Desk({ title, children }) {
+  return (
+    <div className="dwin">
+      <div className="dwin-bar">
+        <span className="dot" style={{ background:'#E76F51' }} />
+        <span className="dot" style={{ background:'#E9AE4C' }} />
+        <span className="dot" style={{ background:'#81B29A' }} />
+        <span style={{ marginLeft:8 }}>{title}</span>
+      </div>
+      <div className="dwin-body">
+        <div className="drail">
+          {[['home','记账',1],['timer','专注',0],['monitoring','统计',0],['settings','设置',0]].map(([ic, v, on]) => (
+            <div key={v} className={`drail-item ${on ? 'on' : ''}`}>
+              <Ms n={ic} /> <span>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div className="dcontent">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function DeskWideHome() {
+  const exp = sumExp(TRANS), inc = sumInc(TRANS), bal = inc - exp;
+  const allSlices = CATS.filter(c => c.id !== 'salary')
+    .map(c => ({ ...c, v: TRANS.filter(t => t.cat === c.id && t.amt < 0).reduce((s,t)=>s-t.amt,0) }))
+    .filter(s => s.v > 0).sort((a,b)=>b.v-a.v);
+  const slices = allSlices.slice(0,4);
+  const recent = TRANS.slice(0, 6);
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'1.1fr 1fr 1fr', gap:16 }}>
+      <div style={{ gridColumn:'1 / span 2', borderRadius:24, padding:22,
+        background:'linear-gradient(135deg,#9A4129,#C76B45)', color:'#fff' }}>
+        <div style={{ fontSize:13, opacity:.85 }}>本月结余 · 2026年9月</div>
+        <div style={{ fontSize:40, fontWeight:700, marginTop:4 }}>¥ {fmt(bal)}</div>
+        <div style={{ display:'flex', gap:30, marginTop:14, fontSize:14 }}>
+          <span>收入 ¥ {fmt(inc)}</span><span>支出 ¥ {fmt(exp)}</span>
+        </div>
+      </div>
+      <div style={{ ...m3.card, cursor:'default' }}>
+        <div style={{ fontWeight:600, fontSize:15 }}>本月预算</div>
+        <div style={{ fontSize:28, fontWeight:700, marginTop:6 }}>¥ {fmt(BUDGET)}</div>
+        <div style={{ marginTop:10 }}><Progress pct={exp/BUDGET*100} warn={exp/BUDGET>.8} /></div>
+        <div style={{ fontSize:13, color:'#53443E', marginTop:8 }}>剩余 ¥ {fmt(BUDGET-exp)} · 日均 ¥{fmt((BUDGET-exp)/18)}</div>
+      </div>
+      <div style={{ ...m3.card, cursor:'default' }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:6 }}>分类支出</div>
+        <div style={{ display:'flex', gap:14, alignItems:'center' }}>
+          <DotDonut slices={allSlices.map(s=>({v:s.v,color:s.color}))} size={120} />
+          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
+            {slices.map(s => <div key={s.id} style={{ display:'flex', alignItems:'center', gap:6, fontSize:13 }}>
+              <span style={{ width:9, height:9, borderRadius:3, background:s.color }} />{s.name} <b>¥{fmt(s.v)}</b>
+            </div>)}
+          </div>
+        </div>
+      </div>
+      <div style={{ gridColumn:'1 / span 3', ...m3.card, padding:'8px 16px' }}>
+        <div style={{ fontWeight:600, fontSize:15, margin:'6px 0' }}>最近流水</div>
+        {recent.map((t,i)=>({...t, k:i})).map(t => (
+          <div key={t.k} style={{ display:'flex', gap:12, padding:'8px 0', borderTop:'1px solid var(--surface-container-highest)' }}>
+            <div style={{ width:34,height:34,borderRadius:10,background:cat(t.cat).color+'22',display:'flex',alignItems:'center',justifyContent:'center' }}>
+              <Ms n={cat(t.cat).icon} size={18} />
+            </div>
+            <div style={{ flex:1 }}><div style={{ fontSize:14,fontWeight:500 }}>{t.who}</div><div style={{ fontSize:12,color:'#53443E' }}>{t.memo}</div></div>
+            <div style={{ fontSize:14,fontWeight:600,color:t.amt>0?'var(--tertiary)':'var(--primary)' }}>{fmtSign(t.amt)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DeskWideStats() {
+  const exp = sumExp(TRANS);
+  const slices = CATS.filter(c => c.id !== 'salary')
+    .map(c => ({ ...c, v: TRANS.filter(t => t.cat === c.id && t.amt < 0).reduce((s,t)=>s-t.amt,0) }))
+    .filter(s => s.v > 0).sort((a,b)=>b.v-a.v);
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+      <div style={{ ...m3.card }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:16 }}>近 6 个月收支趋势</div>
+        <div style={{ display:'flex', justifyContent:'center' }}><BarChart data={MONTHS} h={170} /></div>
+      </div>
+      <div style={{ ...m3.card }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:14 }}>9月分类占比</div>
+        <div style={{ display:'flex', gap:20, justifyContent:'center', alignItems:'center', marginBottom:14 }}>
+          <DotDonut slices={slices.map(s=>({v:s.v,color:s.color}))} size={132} />
+          <div style={{ display:'flex', flexDirection:'column', gap:8, fontSize:13 }}>
+            {slices.map(s => <div key={s.id} style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ width:9,height:9,borderRadius:3,background:s.color }} />{s.name} <b>{((s.v/exp)*100).toFixed(1)}%</b>
+            </div>)}
+          </div>
+        </div>
+      </div>
+      <div style={{ gridColumn:'1 / span 2', ...m3.card }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:8 }}>分类排行</div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
+          {slices.map((s,i)=>(
+            <div key={s.id} style={{ display:'flex', gap:10, alignItems:'center', padding:'10px', borderRadius:14, background:'var(--surface-container-lowest)' }}>
+              <span style={{ fontSize:13, color:'#53443E', width:18 }}>{i+1}</span>
+              <Ms n={s.icon} size={20} style={{ color:s.color }} />
+              <div style={{ flex:1 }}><div style={{ fontSize:13,fontWeight:500 }}>{s.name}</div>
+              <div style={{ fontSize:12,color:'#53443E' }}>¥ {fmt(s.v)}</div></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeskWideFocus() {
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+      <div style={{ ...m3.card, display:'flex', flexDirection:'column', alignItems:'center', padding:28 }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:8 }}>番茄钟</div>
+        <div style={{ position:'relative', width:150, height:150, margin:'6px 0' }}>
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="56" fill="none" stroke="var(--surface-container-highest)" strokeWidth="11" />
+            <circle cx="75" cy="75" r="56" fill="none" stroke="var(--primary)" strokeWidth="11" strokeLinecap="round"
+              strokeDasharray="0 352" transform="rotate(-90 75 75)" />
+          </svg>
+          <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ fontSize:32, fontWeight:700 }}>25:00</div>
+            <div style={{ fontSize:12, color:'#53443E' }}>Drift 数据库表设计</div>
+          </div>
+        </div>
+        <div style={{ marginTop:8, fontSize:13, color:'#53443E' }}>今日 3 🍅 · 75 分钟 · 4 项待办完成 1</div>
+        <div style={{ marginTop:14, display:'flex', gap:10 }}>
+          {[['focus','专注'],['short','短休'],['long','长休']].map(([k,v])=>(
+            <div key={k} style={{ ...m3.chip, ...(k==='focus'?m3.chipOn:{}), padding:'6px 16px' }}>{v}</div>
+          ))}
+        </div>
+      </div>
+      <div style={{ ...m3.card }}>
+        <div style={{ fontWeight:600, fontSize:15, marginBottom:6 }}>今日待办</div>
+        {TASKS.map(t => (
+          <div key={t.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'10px 0', borderBottom:'1px solid var(--surface-container-highest)' }}>
+            <div style={{ width:20, height:20, borderRadius:6, border: t.done ? 'none' : '2px solid var(--outline)',
+              background: t.done ? 'var(--primary)' : 'transparent', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>
+              {t.done ? '✓' : ''}
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:500, textDecoration: t.done ? 'line-through' : 'none', opacity: t.done ? .6 : 1 }}>{t.title}</div>
+              <div style={{ fontSize:12, color:'#53443E' }}>{t.proj} · 预计 {t.est} 分钟</div>
+            </div>
+            <div style={{ ...m3.chip, padding:'3px 10px' }}> 🍅 </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ================= 页面 ================= */
+function App() {
+  return (
+    <div>
+      <div className="proto-meta">
+        <h1>时账 · Material 3 记账 UI 原型</h1>
+        <p>主色 seed #C04A1A 暖橙 · Navigation Bar（移动）/ Navigation Rail（桌面）· 上半部分手机端<b>可交互</b>（点 FAB 记一笔、切 Tab、进流水/预算），下半部分为桌面端静态示意。</p>
+      </div>
+
+      <div className="phone-stage">
+        <div className="androidfb" >
+        <AndroidFrame time="21:30" battery={82} width={412} height={852}>
+          <PhoneApp />
+        </AndroidFrame>
+        </div>
+      </div>
+
+      <div className="zones">
+        <div className="zone-label"><span className="tag">桌面端</span><span className="desc">宽屏栅格 + Navigation Rail 静态示意</span></div>
+        <div className="desktop-grid">
+          <DeskWideHome />
+          <DeskWideStats />
+          <div style={{ gridColumn:'1 / span 2' }}><DeskWideFocus /></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+if (typeof window !== 'undefined') {
+  window.AndroidFrame = AndroidFrame;
+}
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
