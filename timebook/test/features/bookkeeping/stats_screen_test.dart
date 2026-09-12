@@ -44,4 +44,15 @@ void main() {
     expect(find.text('本月分类占比'), findsOneWidget);
     expect(find.text('餐饮'), findsWidgets);
   });
+
+  testWidgets('分类占比显示百分比与排行金额', (tester) async {
+    final c = await seeded();
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: StatsScreen()))));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('%'), findsWidgets);
+    expect(find.textContaining('28.50'), findsWidgets); // 餐饮支出 2850 分
+  });
 }

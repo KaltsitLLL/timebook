@@ -146,6 +146,11 @@ class StatsScreen extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(child: Text(names[s.categoryId] ?? '分类#${s.categoryId ?? 0}',
                     style: const TextStyle(fontSize: 13))),
+                Text(total == 0
+                    ? ''
+                    : '${(s.amountCents * 100 / total).round()}%',
+                    style: const TextStyle(fontSize: 12)),
+                const SizedBox(width: 10),
                 Text('¥ ${formatCents(s.amountCents)}',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
               ]),
