@@ -6,7 +6,9 @@ import '../../ai/presentation/ai_settings_screen.dart';
 import '../../focus/presentation/focus_providers.dart';
 import '../../import/presentation/import_screen.dart';
 import '../../import/presentation/recurring_rules_screen.dart';
+import 'about_screen.dart';
 import 'bookkeeping_providers.dart';
+import 'ledger_manage_screen.dart';
 import 'rules_screen.dart';
 
 class PlaceholderScreen extends StatelessWidget {
@@ -132,6 +134,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) =>
                   ImportScreen(database: ref.read(databaseProvider)))),
+        ),
+        ListTile(
+          key: const Key('ledger_entry'),
+          leading: const Icon(Icons.account_balance_wallet_outlined),
+          title: const Text('账本管理'),
+          subtitle: const Text('多账本 · 切换 · 新建'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const LedgerManageScreen())),
+        ),
+        ListTile(
+          key: const Key('about_entry'),
+          leading: const Icon(Icons.info_outline),
+          title: const Text('关于'),
+          subtitle: const Text('版本 · 开源许可'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const AboutScreen())),
         ),
         ListTile(
           key: const Key('recurring_entry'),
