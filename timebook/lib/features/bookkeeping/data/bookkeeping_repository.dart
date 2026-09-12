@@ -177,6 +177,19 @@ class BookkeepingRepository {
     ];
   }
 
+  // ---- 批量操作 ----
+  /// 批量修改多笔流水的分类（categoryId 为 null 表示清除分类）。
+  Future<void> bulkUpdateCategory(
+      {required List<int> ids, required int? categoryId}) async {
+    await (db.update(db.transactions)..where((t) => t.id.isIn(ids)))
+        .write(TransactionsCompanion(categoryId: Value(categoryId)));
+  }
+
+  /// 批量删除多笔流水。
+  Future<void> bulkDelete(List<int> ids) async {
+    await (db.delete(db.transactions)..where((t) => t.id.isIn(ids))).go();
+  }
+
   Future<List<Transaction>> recentTransactions(
       {required int ledgerId, int limit = 20}) {
     return (db.select(db.transactions)

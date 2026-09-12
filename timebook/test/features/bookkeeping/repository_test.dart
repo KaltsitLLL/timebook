@@ -360,6 +360,47 @@ void main() {
     expect(await repo.getDefaultAccountId(l), a1);
   });
 
+  test('bulkUpdateCategory：批量修改/清除分类后读回正确', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final trans = await repo.createCategory(ledgerId: l, name: '交通');
+    final ids = <int>[];
+    for (var i = 0; i < 2; i++) {
+      ids.add(await repo.addTransaction(
+          ledgerId: l, accountId: a, direction: 'expense', amountCents: 1000,
+          bookAt: DateTime(2026, 9, i + 1), counterparty: '行$i'));
+    }
+
+    await repo.bulkUpdateCategory(ids: ids, categoryId: trans);
+    for (final t in await repo.recentTransactions(ledgerId: l)) {
+      expect(t.categoryId, trans);
+    }
+
+    await repo.bulkUpdateCategory(ids: ids, categoryId: null);
+    for (final t in await repo.recentTransactions(ledgerId: l)) {
+      expect(t.categoryId, equals(null));
+    }
+  });
+
+  test('bulkDelete：批量删除后计数正确', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final ids = <int>[];
+    for (var i = 0; i < 3; i++) {
+      ids.add(await repo.addTransaction(
+          ledgerId: l, accountId: a, direction: 'expense', amountCents: 1000,
+          bookAt: DateTime(2026, 9, i + 1)));
+    }
+    expect(await repo.recentTransactions(ledgerId: l), hasLength(3));
+
+    await repo.bulkDelete(ids.sublist(0, 2));
+    final left = await repo.recentTransactions(ledgerId: l);
+    expect(left, hasLength(1));
+    expect(left.single.id, ids[2]);
+  });
+
   test('ensureNoneAccount 幂等：连调两次返回同一『不记账户』 id', () async {
     final repo = BookkeepingRepository(db);
     final l = await repo.createLedger(name: '生活');

@@ -91,4 +91,89 @@ void main() {
     final badge = tester.widget<Text>(find.text('待确认'));
     expect(badge.style?.fontSize, 10);
   });
+
+  testWidgets('批量选择改分类：勾选两行 → 改分类 → 数据库断言 → 退出', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    await repo.createCategory(ledgerId: l, name: '餐饮');
+    final trans = await repo.createCategory(ledgerId: l, name: '交通');
+    final now = DateTime.now();
+    final id1 = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 2850,
+        bookAt: DateTime(now.year, now.month, 12), counterparty: '美团外卖');
+    final id2 = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 1990,
+        bookAt: DateTime(now.year, now.month, 11), counterparty: '瑞幸咖啡');
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: TransactionListScreen()))));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('select_mode')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('row_check_$id1')));
+    await tester.pump();
+    await tester.tap(find.byKey(Key('row_check_$id2')));
+    await tester.pump();
+    expect(find.text('已选 2'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('bulk_category')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('bulk_category_$trans')));
+    await tester.pumpAndSettle();
+
+    final rows = await db.select(db.transactions).get();
+    expect(rows.every((t) => t.categoryId == trans), isTrue);
+
+    // 退出选择模式后不再显示操作条、checkboxes 消失
+    expect(find.byKey(const Key('bulk_category')), findsNothing);
+    expect(find.byKey(const Key('select_mode')), findsOneWidget);
+  });
+
+  testWidgets('批量删除：勾选两行 → 确认删除 → 数据库 0 行', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final now = DateTime.now();
+    final id1 = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 2850,
+        bookAt: DateTime(now.year, now.month, 12), counterparty: '美团外卖');
+    final id2 = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 1990,
+        bookAt: DateTime(now.year, now.month, 11), counterparty: '瑞幸咖啡');
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: TransactionListScreen()))));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('select_mode')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('row_check_$id1')));
+    await tester.pump();
+    await tester.tap(find.byKey(Key('row_check_$id2')));
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('bulk_delete')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('bulk_delete_confirm')));
+    await tester.pumpAndSettle();
+
+    expect(await db.select(db.transactions).get(), isEmpty);
+    expect(find.text('已删除 2 笔'), findsOneWidget);
+  });
 }
