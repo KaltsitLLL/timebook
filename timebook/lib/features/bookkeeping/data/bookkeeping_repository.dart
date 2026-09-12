@@ -132,6 +132,18 @@ class BookkeepingRepository {
     }
     return result;
   }
+
+  Future<List<Transaction>> transactionsInMonth(
+      {required int ledgerId, required String month}) async {
+    final start = DateTime.parse('$month-01');
+    final end = DateTime(start.year, start.month + 1, 1);
+    return (db.select(db.transactions)
+          ..where((t) =>
+              t.ledgerId.equals(ledgerId) &
+              t.bookAt.isBetweenValues(start, end))
+          ..orderBy([(t) => OrderingTerm.desc(t.bookAt), (t) => OrderingTerm.desc(t.id)]))
+        .get();
+  }
 }
 
 class MonthlySummary {

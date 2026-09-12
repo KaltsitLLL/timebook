@@ -148,4 +148,22 @@ void main() {
     expect(trend.first.expenseCents, 0);
     expect(trend.first.incomeCents, 0);
   });
+
+  test('transactionsInMonth 按 yyyy-MM 过滤', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final now = DateTime.now();
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 100,
+        bookAt: now, counterparty: '本月');
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 200,
+        bookAt: DateTime(now.year, now.month - 1, 10), counterparty: '上月');
+
+    final thisMonth = await repo.transactionsInMonth(
+        ledgerId: l, month: monthKey(now));
+    expect(thisMonth, hasLength(1));
+    expect(thisMonth.single.counterparty, '本月');
+  });
 }
