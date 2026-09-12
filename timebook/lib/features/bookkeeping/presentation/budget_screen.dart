@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/util/formats.dart';
 import '../data/bookkeeping_repository.dart';
 import 'bookkeeping_providers.dart';
+import 'budget_period_helper.dart';
 import 'budget_setting_sheet.dart';
 
 class BudgetScreen extends ConsumerWidget {
@@ -16,10 +17,18 @@ class BudgetScreen extends ConsumerWidget {
         future: _load(repo),
         builder: (context, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-          final p = snap.data!;
+          final data = snap.data!;
+          final p = data.$1;
+          final periodLabel = data.$2;
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              Text(periodLabel,
+                  key: const Key('period_label'),
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              const SizedBox(height: 12),
               _totalCard(context, p),
               const SizedBox(height: 12),
               Row(children: [
@@ -47,17 +56,29 @@ class BudgetScreen extends ConsumerWidget {
     );
   }
 
-  Future<BudgetProgress> _load(BookkeepingRepository repo) async {
+  Future<(BudgetProgress, String)> _load(BookkeepingRepository repo) async {
+    final now = DateTime.now();
+    final startDay = await repo.periodStartDay();
+    final range = periodRangeFor(now, startDay);
+    final label =
+        '本期（${range.start.month}/${range.start.day}–${range.end.month}/${range.end.day}）';
     final ledgers = await repo.ledgers();
     if (ledgers.isEmpty) {
-      return const BudgetProgress(
-          totalBudgetCents: 0,
-          totalSpentCents: 0,
-          lines: [],
-          remainingPerDayCents: 0);
+      return (
+        const BudgetProgress(
+            totalBudgetCents: 0,
+            totalSpentCents: 0,
+            lines: [],
+            remainingPerDayCents: 0),
+        label
+      );
     }
-    return repo.budgetProgress(
-        ledgerId: ledgers.first.id, month: monthKey(DateTime.now()));
+    final s = await repo.budgetProgress(
+        ledgerId: ledgers.first.id,
+        month: monthKey(now),
+        periodStart: range.start,
+        periodEnd: range.end);
+    return (s, label);
   }
 
   void _openSettings(BuildContext context, WidgetRef ref) {
@@ -91,6 +112,15 @@ class BudgetScreen extends ConsumerWidget {
                   color: scheme.onPrimaryContainer,
                   fontWeight: FontWeight.w700)),
         ]),
+        if (p.usingDefault)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text('已使用默认预算',
+                key: const Key('default_tag'),
+                style: TextStyle(
+                    color: scheme.onPrimaryContainer.withValues(alpha: .75),
+                    fontSize: 11)),
+          ),
         const SizedBox(height: 4),
         Text('¥ ${formatCents(p.totalBudgetCents)}',
             style: TextStyle(

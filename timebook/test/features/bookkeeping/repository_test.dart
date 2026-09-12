@@ -280,7 +280,7 @@ void main() {
   });
 
   test('budgetProgress：总分类净额进度与剩余日均、超支标记', () async {
-    final repo = BookkeepingRepository(db);
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
     final a = await repo.createAccount(ledgerId: l, name: '卡');
     final food = await repo.createCategory(ledgerId: l, name: '餐饮');

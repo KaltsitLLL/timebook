@@ -19,4 +19,9 @@ class KvSettings {
 
   Future<void> setBool(String key, bool value) =>
       storage.write(key, value ? '1' : '0');
+
+  Future<String?> getString(String key) async => storage.read(key);
+
+  Future<void> setString(String key, String value) =>
+      storage.write(key, value);
 }

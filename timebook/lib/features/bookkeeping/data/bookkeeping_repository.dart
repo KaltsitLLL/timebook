@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/util/formats.dart';
@@ -139,9 +141,12 @@ class BookkeepingRepository {
   }
 
   Future<MonthlySummary> monthlySummary(
-      {required int ledgerId, required String month}) async {
-    final start = DateTime.parse('$month-01');
-    final end = DateTime(start.year, start.month + 1, 1);
+      {required int ledgerId,
+      required String month,
+      DateTime? periodStart,
+      DateTime? periodEnd}) async {
+    final start = periodStart ?? DateTime.parse('$month-01');
+    final end = periodEnd ?? DateTime(start.year, start.month + 1, 1);
     final rows = await (db.select(db.transactions)
           ..where((t) =>
               t.ledgerId.equals(ledgerId) &
@@ -157,10 +162,10 @@ class BookkeepingRepository {
     return MonthlySummary(incomeCents: inc, expenseCents: exp);
   }
 
-  Future<List<CategorySpend>> categorySpending(
-      int ledgerId, String month) async {
-    final start = DateTime.parse('$month-01');
-    final end = DateTime(start.year, start.month + 1, 1);
+  Future<List<CategorySpend>> categorySpending(int ledgerId, String month,
+      {DateTime? periodStart, DateTime? periodEnd}) async {
+    final start = periodStart ?? DateTime.parse('$month-01');
+    final end = periodEnd ?? DateTime(start.year, start.month + 1, 1);
     final rows = await (db.select(db.transactions)
           ..where((t) =>
               t.ledgerId.equals(ledgerId) &
@@ -262,6 +267,52 @@ class BookkeepingRepository {
       '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}:'
       '${d.second.toString().padLeft(2, '0')}';
 
+  // ---- 默认预算（kv 存储；某月无记录时回退用，仅展示/计算不写库） ----
+  static const _defaultBudgetKey = 'defaultBudget';
+  static const _periodStartKey = 'budgetPeriodStartDay';
+
+  /// 保存默认预算（catCents 键为 categoryId，json 存 kv）。
+  Future<void> saveDefaultBudget(
+      {required int totalCents, required Map<int, int> catCents}) async {
+    final map = {
+      'totalCents': totalCents,
+      'catCents': {
+        for (final e in catCents.entries) '${e.key}': e.value,
+      },
+    };
+    await settings.setString(_defaultBudgetKey, jsonEncode(map));
+  }
+
+  /// 读取默认预算；未设置或解析失败返回 null。
+  Future<({int totalCents, Map<int, int> catCents})?> loadDefaultBudget() async {
+    final raw = await settings.getString(_defaultBudgetKey);
+    if (raw == null) return null;
+    try {
+      final map = jsonDecode(raw);
+      if (map is! Map) return null;
+      final total = map['totalCents'];
+      final cats = map['catCents'];
+      if (total is! int || cats is! Map) return null;
+      return (
+        totalCents: total,
+        catCents: {
+          for (final e in cats.entries)
+            if (e.key is String)
+              int.parse(e.key as String): (e.value as num).toInt(),
+        },
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 预算期起始日（1-28，默认 1 = 自然月）。
+  Future<int> periodStartDay() async =>
+      await settings.getInt(_periodStartKey) ?? 1;
+
+  Future<void> setPeriodStartDay(int day) =>
+      settings.setInt(_periodStartKey, day);
+
   // ---- 预算 ----
   Future<void> upsertBudget(
       {required int ledgerId,
@@ -310,25 +361,37 @@ class BookkeepingRepository {
   }
 
   Future<BudgetProgress> budgetProgress(
-      {required int ledgerId, required String month}) async {
+      {required int ledgerId,
+      required String month,
+      DateTime? periodStart,
+      DateTime? periodEnd}) async {
     final budgets = await budgetsForMonth(ledgerId: ledgerId, month: month);
     final catNames = <int, String>{
       for (final c in await categories(ledgerId)) c.id: c.name
     };
-    final spends = await categorySpending(ledgerId, month);
+    final spends = await categorySpending(ledgerId, month,
+        periodStart: periodStart, periodEnd: periodEnd);
     final spendByCat = <int?, int>{
       for (final s in spends) s.categoryId: s.amountCents
     };
-    final summary = await monthlySummary(ledgerId: ledgerId, month: month);
+    final summary = await monthlySummary(ledgerId: ledgerId, month: month,
+        periodStart: periodStart, periodEnd: periodEnd);
 
-    final totalBudget = budgets
-        .where((b) => b.categoryId == null)
-        .fold<int>(0, (s, b) => s + b.amountCents);
+    // 某月无预算记录时回退到默认预算（仅展示/计算，不写库）；有记录以库为准（单月覆盖）。
+    final defaultBud = await loadDefaultBudget();
+    final usingDefault = budgets.isEmpty && defaultBud != null;
+
+    final totalBudget = usingDefault
+        ? defaultBud.totalCents
+        : budgets
+            .where((b) => b.categoryId == null)
+            .fold<int>(0, (s, b) => s + b.amountCents);
     final totalSpent = summary.expenseCents;
 
     final budgetedCatIds = <int>{
       for (final b in budgets)
         if (b.categoryId != null) b.categoryId!,
+      if (usingDefault) ...defaultBud.catCents.keys,
     };
     final lines = <BudgetLine>[
       for (final b in budgets.where((b) => b.categoryId != null))
@@ -338,6 +401,15 @@ class BookkeepingRepository {
           amountCents: b.amountCents,
           spentCents: spendByCat[b.categoryId] ?? 0,
         ),
+      // 默认预算的分类行（未写库时按默认额展示）
+      if (usingDefault)
+        for (final e in defaultBud.catCents.entries)
+          BudgetLine(
+            categoryId: e.key,
+            categoryName: catNames[e.key] ?? '分类#${e.key}',
+            amountCents: e.value,
+            spentCents: spendByCat[e.key] ?? 0,
+          ),
       // 无预算但有支出的分类也展示（amountCents=0 → 不参与超支判定）
       for (final e in spendByCat.entries)
         if (e.key != null && !budgetedCatIds.contains(e.key!))
@@ -352,13 +424,15 @@ class BookkeepingRepository {
     final remaining =
         totalBudget > totalSpent ? totalBudget - totalSpent : 0;
     final today = DateTime.now();
-    final daysLeft =
-        DateTime(today.year, today.month + 1, 0).day - today.day + 1;
+    final daysLeft = periodEnd != null
+        ? periodEnd.difference(today).inDays + 1
+        : DateTime(today.year, today.month + 1, 0).day - today.day + 1;
     return BudgetProgress(
       totalBudgetCents: totalBudget,
       totalSpentCents: totalSpent,
       lines: lines,
       remainingPerDayCents: daysLeft <= 0 ? 0 : remaining ~/ daysLeft,
+      usingDefault: usingDefault,
     );
   }
 }
@@ -382,11 +456,13 @@ class BudgetProgress {
       {required this.totalBudgetCents,
       required this.totalSpentCents,
       required this.lines,
-      required this.remainingPerDayCents});
+      required this.remainingPerDayCents,
+      this.usingDefault = false});
   final int totalBudgetCents;
   final int totalSpentCents;
   final List<BudgetLine> lines;
   final int remainingPerDayCents;
+  final bool usingDefault; // 是否回退用了默认预算（本月无预算记录）
   double get totalPct =>
       totalBudgetCents == 0 ? 0 : totalSpentCents * 100 / totalBudgetCents;
 }

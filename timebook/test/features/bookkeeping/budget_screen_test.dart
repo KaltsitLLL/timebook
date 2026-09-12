@@ -14,7 +14,7 @@ void main() {
 
   Future<ProviderContainer> seeded({required bool over}) async {
     final db = AppDatabase.forTesting(inMemoryExecutor());
-    final repo = BookkeepingRepository(db);
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
     final a = await repo.createAccount(ledgerId: l, name: '卡');
     final food = await repo.createCategory(ledgerId: l, name: '餐饮');
@@ -60,5 +60,47 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('超支'), findsWidgets);
+  });
+
+  testWidgets('无库预算但存默认 → 显示已使用默认预算', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final now = DateTime.now();
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 2850, bookAt: DateTime(now.year, now.month, 12));
+    await repo.saveDefaultBudget(
+        totalCents: 1000000, catCents: {food: 200000});
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: BudgetScreen()))));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('default_tag')), findsOneWidget);
+    expect(find.text('已使用默认预算'), findsOneWidget);
+    expect(find.textContaining('10,000.00'), findsWidgets);
+  });
+
+  testWidgets('预算页显示本期标签（默认起始日 1 = 整月）', (tester) async {
+    final c = await seeded(over: false);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: BudgetScreen()))));
+    await tester.pumpAndSettle();
+
+    final now = DateTime.now();
+    final lastDay = DateTime(now.year, now.month + 1, 0).day;
+    expect(find.text('本期（${now.month}/1–${now.month}/$lastDay）'),
+        findsOneWidget);
   });
 }
