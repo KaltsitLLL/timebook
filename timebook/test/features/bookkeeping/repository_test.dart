@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timebook/core/db/app_database.dart';
+import 'package:timebook/core/util/formats.dart';
 import 'package:timebook/features/bookkeeping/data/bookkeeping_repository.dart';
 
 import '../../helpers/db.dart';
@@ -112,5 +113,39 @@ void main() {
     final all = await repo.recentTransactions(ledgerId: l, limit: 10);
     expect(all, hasLength(1)); // 原行保留、无新增行
     expect(all.single.refundedCents, 5000);
+  });
+
+  test('monthlyTrend 返回 6 个月净额（含空月补零、退款冲抵）', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+
+    final now = DateTime.now();
+    final cur = DateTime(now.year, now.month, 12);
+    final last = DateTime(now.year, now.month - 1, 10);
+
+    final tid = await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 500000, bookAt: cur, counterparty: '房租');
+    await repo.updateRefundedCents(transactionId: tid, refundedCents: 200000);
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'income', amountCents: 850000,
+        bookAt: cur, counterparty: '工资');
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 120000, bookAt: last, counterparty: '上月购物');
+
+    final trend = await repo.monthlyTrend(ledgerId: l);
+    expect(trend, hasLength(6));
+    final curMonth = trend.last;
+    expect(curMonth.month, monthKey(now));
+    expect(curMonth.expenseCents, 300000); // 500000-200000
+    expect(curMonth.incomeCents, 850000);
+    final lastMonth = trend[trend.length - 2];
+    expect(lastMonth.expenseCents, 120000);
+    // 更早月份为空 → 0
+    expect(trend.first.expenseCents, 0);
+    expect(trend.first.incomeCents, 0);
   });
 }

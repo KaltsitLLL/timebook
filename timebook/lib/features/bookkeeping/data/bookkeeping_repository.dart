@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
+import '../../../core/util/formats.dart';
 
 class BookkeepingRepository {
   BookkeepingRepository(this.db);
@@ -117,6 +118,20 @@ class BookkeepingRepository {
           ..limit(limit))
         .get();
   }
+
+  Future<List<MonthTotal>> monthlyTrend(
+      {required int ledgerId, int months = 6}) async {
+    final now = DateTime.now();
+    final result = <MonthTotal>[];
+    for (var i = months - 1; i >= 0; i--) {
+      final m = DateTime(now.year, now.month - i, 1);
+      final key = monthKey(m);
+      final s = await monthlySummary(ledgerId: ledgerId, month: key);
+      result.add(
+          MonthTotal(month: key, incomeCents: s.incomeCents, expenseCents: s.expenseCents));
+    }
+    return result;
+  }
 }
 
 class MonthlySummary {
@@ -129,4 +144,12 @@ class CategorySpend {
   const CategorySpend({this.categoryId, required this.amountCents});
   final int? categoryId;
   final int amountCents;
+}
+
+class MonthTotal {
+  const MonthTotal(
+      {required this.month, required this.incomeCents, required this.expenseCents});
+  final String month; // 'yyyy-MM'
+  final int incomeCents;
+  final int expenseCents;
 }
