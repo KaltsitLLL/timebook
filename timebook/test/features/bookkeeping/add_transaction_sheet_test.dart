@@ -126,4 +126,19 @@ void main() {
     expect(rows.single.accountId, noneId);
     expect(rows.single.amountCents, 2000);
   });
+
+  testWidgets('记账 Sheet 显示日期行 chip（今天 HH:mm）', (tester) async {
+    final (c, _) = await setup();
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    final chipFinder = find.byKey(const Key('book_at_chip'));
+    expect(chipFinder, findsOneWidget);
+    expect(tester.widget<FilterChip>(chipFinder), isA<FilterChip>());
+    expect(find.textContaining('今天'), findsOneWidget);
+    expect(find.textContaining(RegExp(r'今天 \d{1,2}:\d{2}')), findsOneWidget);
+  });
 }

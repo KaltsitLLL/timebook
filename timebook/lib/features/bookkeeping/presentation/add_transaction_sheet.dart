@@ -71,6 +71,10 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         ref.watch(ledgerAccountsProvider).value ?? const <Account>[];
     final defaultId = ref.watch(defaultAccountProvider).value;
 
+    final nowChip = DateTime.now();
+    final hh = nowChip.hour.toString().padLeft(2, '0');
+    final mm = nowChip.minute.toString().padLeft(2, '0');
+
     final int? effectiveAccountId;
     if (_useNoneAccount) {
       effectiveAccountId = null;
@@ -158,6 +162,15 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 }),
               ),
           ],
+        ),
+        const SizedBox(height: 16),
+        Text('时间', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        FilterChip(
+          key: const Key('book_at_chip'),
+          avatar: const Icon(Icons.calendar_today, size: 16),
+          label: Text('今天 $hh:$mm'),
+          onSelected: (_) {}, // 只读展示，保存仍用 DateTime.now()
         ),
         const SizedBox(height: 16),
         Wrap(
