@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/db/app_database.dart';
 import '../data/bookkeeping_repository.dart';
+import 'add_transaction_sheet.dart';
 import 'bookkeeping_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -9,15 +10,28 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repo = ref.watch(bookkeepingRepositoryProvider);
-    return FutureBuilder(
-      future: _load(repo),
-      builder: (context, snap) {
-        if (!snap.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final d = snap.data!;
-        return _HomeView(balanceCents: d.$1, delta: d.$2, recent: d.$3);
-      },
+    return Scaffold(
+      body: FutureBuilder(
+        future: _load(repo),
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final d = snap.data!;
+          return _HomeView(balanceCents: d.$1, delta: d.$2, recent: d.$3);
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => const AddTransactionSheet(),
+          );
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('记一笔'),
+      ),
     );
   }
 
