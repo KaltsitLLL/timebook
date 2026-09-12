@@ -40,7 +40,8 @@ class ImportService {
 
       for (final r in rows) {
         if (r.isRefund) {
-          final matched = await _applyRefund(ledgerId, r);
+          final matched =
+              await _applyRefund(ledgerId, r, repo, account.id);
           if (matched) {
             outcome.refunded++;
           } else {
@@ -98,21 +99,76 @@ class ImportService {
     return outcome;
   }
 
-  Future<bool> _applyRefund(int ledgerId, ImportedRow r) async {
-    if (r.orderId == null) return false;
-    final base = _stripRefundSuffix(r.orderId!);
-    final rows = await (db.select(db.transactions)
-          ..where((t) =>
-              t.ledgerId.equals(ledgerId) & t.orderId.equals(base)))
-        .get();
-    if (rows.isEmpty) return false;
-    final target = rows.first;
-    final newRefund =
-        (target.refundedCents + r.amountCents).clamp(0, target.amountCents);
-    await (db.update(db.transactions)..where((t) => t.id.equals(target.id)))
-        .write(TransactionsCompanion(refundedCents: Value(newRefund)));
+  Future<bool> _applyRefund(
+      int ledgerId, ImportedRow r, BookkeepingRepository repo, int accountId) async {
+    final target = await _matchRefundTarget(ledgerId, r);
+    if (target == null) return false;
+
+    // 幂等：同账本同导入单号已建过条目则跳过（同批次/跨批次重导入不重复建条目）。
+    if (r.orderId != null) {
+      final dup = await (db.select(db.refundEntries)
+            ..where((e) =>
+                e.ledgerId.equals(ledgerId) & e.importKey.equals(r.orderId!)))
+          .get();
+      if (dup.isNotEmpty) return true;
+    }
+
+    await repo.upsertRefund(
+      ledgerId: ledgerId,
+      transactionId: target.id,
+      amountCents: r.amountCents,
+      accountId: accountId,
+      importKey: r.orderId,
+      bookAt: r.bookAt,
+      settledAt: _settledAtFor(r.bookAt),
+    );
     return true;
   }
+
+  /// 退款目标解析：优先按单号（`-REFUND` 后缀指向原单号）；失败后按
+  /// 「同账本 + 金额相等 + 方向相反 + 日期差 ≤7 天 + 唯一候选」启发匹配。
+  Future<Transaction?> _matchRefundTarget(int ledgerId, ImportedRow r) async {
+    if (r.orderId != null) {
+      final base = _stripRefundSuffix(r.orderId!);
+      final rows = await (db.select(db.transactions)
+            ..where((t) => t.ledgerId.equals(ledgerId) & t.orderId.equals(base)))
+          .get();
+      if (rows.isNotEmpty) return rows.first;
+    }
+    final candidates = await _heuristicCandidates(ledgerId, r);
+    return candidates.length == 1 ? candidates.first : null;
+  }
+
+  Future<List<Transaction>> _heuristicCandidates(
+      int ledgerId, ImportedRow r) async {
+    final opposite = _oppositeDirection(r.direction);
+    if (opposite == null) return const [];
+    final rows = await (db.select(db.transactions)
+          ..where((t) => t.ledgerId.equals(ledgerId)))
+        .get();
+    return [
+      for (final t in rows)
+        if (t.amountCents == r.amountCents &&
+            t.direction == opposite &&
+            (r.bookAt.difference(t.bookAt).inDays).abs() <= 7)
+          t,
+    ];
+  }
+
+  String? _oppositeDirection(String d) {
+    switch (d) {
+      case 'income':
+        return 'expense';
+      case 'expense':
+        return 'income';
+      default:
+        return null;
+    }
+  }
+
+  /// 导入退款记录无独立到账时间字段，视为「当日已到账」，取当日 23:59:59.999。
+  DateTime _settledAtFor(DateTime bookAt) =>
+      DateTime(bookAt.year, bookAt.month, bookAt.day, 23, 59, 59, 999);
 
   String _stripRefundSuffix(String id) =>
       id.endsWith('-REFUND')

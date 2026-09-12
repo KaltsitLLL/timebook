@@ -43,7 +43,7 @@ void main() {
     expect(result.duplicated, 1);
   });
 
-  test('退款行匹配 order_id 原支出 → 更新 refunded_cents 不新增行', () async {
+  test('退款行匹配 order_id 原支出 → 建独立条目并同步 refunded_cents', () async {
     await svc.importRows(source: 'wechat', fileName: 'a.csv', rows: [row(orderId: 'WX-P')]);
     final refund = ImportedRow(
         bookAt: DateTime(2026, 9, 13), direction: 'income',
@@ -52,7 +52,41 @@ void main() {
     expect(result.saved, 0);
     expect(result.refunded, 1);
     final t = await (db.select(db.transactions)..where((x) => x.orderId.equals('WX-P'))).getSingle();
+    expect(t.refundedCents, 2850); // 缓存由 syncRefundData 同步
+    final entries = await db.select(db.refundEntries).get();
+    expect(entries, hasLength(1)); // 退款走独立条目，不再改原行
+    expect(entries.single.transactionId, t.id);
+  });
+
+  test('同批次退款重导入不重复建条目', () async {
+    await svc.importRows(source: 'wechat', fileName: 'a.csv', rows: [row(orderId: 'WX-P')]);
+    final refund = ImportedRow(
+        bookAt: DateTime(2026, 9, 13), direction: 'income',
+        amountCents: 2850, counterparty: '美团', orderId: 'WX-P-REFUND', isRefund: true);
+    await svc.importRows(source: 'wechat', fileName: 'r.csv', rows: [refund]);
+    final again = await svc.importRows(source: 'wechat', fileName: 'r2.csv', rows: [refund]);
+
+    expect(again.refundUnmatched, 0);
+    expect(await db.select(db.refundEntries).get(), hasLength(1)); // 幂等不重复
+    final t = await (db.select(db.transactions)..where((x) => x.orderId.equals('WX-P'))).getSingle();
     expect(t.refundedCents, 2850);
+  });
+
+  test('独立单号退款：金额相等/方向相反/≤7天且唯一候选启发命中', () async {
+    await svc.importRows(source: 'wechat', fileName: 'a.csv', rows: [
+      ImportedRow(bookAt: DateTime(2026, 9, 1, 12), direction: 'expense',
+          amountCents: 2850, counterparty: '美团', orderId: 'WX-A'),
+    ]);
+    // 退款单号独立（无法按 -REFUND 后缀回指），但金额/方向/日期符合 → 启发命中
+    final refund = ImportedRow(
+        bookAt: DateTime(2026, 9, 3), direction: 'income',
+        amountCents: 2850, counterparty: '美团', orderId: 'WX-REF-99', isRefund: true);
+    final result = await svc.importRows(source: 'wechat', fileName: 'r.csv', rows: [refund]);
+
+    expect(result.refunded, 1);
+    final t = await (db.select(db.transactions)..where((x) => x.orderId.equals('WX-A'))).getSingle();
+    expect(t.refundedCents, 2850);
+    expect(await db.select(db.refundEntries).get(), hasLength(1));
   });
 
   test('未匹配退款进入 refundUnmatched 供人工处理', () async {
