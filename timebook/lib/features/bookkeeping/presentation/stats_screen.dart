@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/util/formats.dart';
 import '../data/bookkeeping_repository.dart';
 import 'bookkeeping_providers.dart';
+import 'widgets/category_donut.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -112,31 +113,21 @@ class StatsScreen extends ConsumerWidget {
       Color(0xFF5B9BD5), Color(0xFF4DB6AC), Color(0xFF5C6BC0),
       Color(0xFF8F9AD1), Color(0xFF4A7DB0), Color(0xFF7FB3D5),
     ];
+    final slices = <DonutSlice>[
+      for (var i = 0; i < spends.length; i++)
+        DonutSlice(
+          color: colors[i % colors.length],
+          value: spends[i].amountCents,
+          label: names[spends[i].categoryId] ?? '分类#${spends[i].categoryId ?? 0}',
+        ),
+    ];
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('本月分类占比', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 180,
-            child: PieChart(PieChartData(
-              sectionsSpace: 2,
-              centerSpaceRadius: 40,
-              sections: [
-                for (var i = 0; i < sorted.length; i++)
-                  PieChartSectionData(
-                    value: sorted[i].amountCents.toDouble(),
-                    color: colors[i % colors.length],
-                    title: total == 0
-                        ? ''
-                        : '${(sorted[i].amountCents * 100 / total).round()}%',
-                    titleStyle: const TextStyle(fontSize: 11, color: Colors.white),
-                    radius: 64,
-                  ),
-              ],
-            )),
-          ),
+          CategoryDonut(slices: slices, centerLabel: '本月支出'),
           const SizedBox(height: 10),
           for (final s in sorted)
             Padding(
