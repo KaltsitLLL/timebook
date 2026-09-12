@@ -68,4 +68,16 @@ void main() {
 
     expect(find.textContaining('记一笔'), findsWidgets);
   });
+
+  testWidgets('总览提供预算入口并可跳转', (tester) async {
+    final c = await containerWith(0, 0);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: HomeScreen())));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('预算进度'));
+    await tester.pumpAndSettle();
+    expect(find.text('本月预算'), findsOneWidget);
+  });
 }

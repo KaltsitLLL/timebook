@@ -5,6 +5,7 @@ import '../../../core/db/app_database.dart';
 import '../data/bookkeeping_repository.dart';
 import 'add_transaction_sheet.dart';
 import 'bookkeeping_providers.dart';
+import 'budget_screen.dart';
 import 'transaction_list_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -86,6 +87,19 @@ class _HomeView extends StatelessWidget {
             Text('支出 ¥ ${formatCents(delta.$2)}',
                 style: const TextStyle(color: Colors.white, fontSize: 14)),
           ]),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => const BudgetScreen())),
+              style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: .18)),
+              icon: const Icon(Icons.savings_outlined, size: 16),
+              label: const Text('预算进度', style: TextStyle(fontSize: 12)),
+            ),
+          ),
         ]),
       ),
       const SizedBox(height: 18),
