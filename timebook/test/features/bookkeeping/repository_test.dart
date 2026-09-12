@@ -41,8 +41,7 @@ void main() {
   test('创建账本/账户/分类后可读回', () async {
     final repo = BookkeepingRepository(db);
     final ledgerId = await repo.createLedger(name: '生活');
-    final accountId =
-        await repo.createAccount(ledgerId: ledgerId, name: '招行储蓄卡');
+    await repo.createAccount(ledgerId: ledgerId, name: '招行储蓄卡');
     final foodId = await repo.createCategory(ledgerId: ledgerId, name: '餐饮');
 
     final ledgers = await repo.ledgers();
@@ -53,5 +52,65 @@ void main() {
     expect(accounts.single.name, '招行储蓄卡');
     expect(cats.single.name, '餐饮');
     expect(foodId, greaterThan(0));
+  });
+
+  test('记账以分存储，月度摘要/分类聚合/最近流水正确', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final trans = await repo.createCategory(ledgerId: l, name: '交通');
+
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 2850, bookAt: DateTime(2026, 9, 12), counterparty: '美团');
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: trans, direction: 'expense',
+        amountCents: 400, bookAt: DateTime(2026, 9, 12));
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: null, direction: 'income',
+        amountCents: 850000, bookAt: DateTime(2026, 9, 10), counterparty: '工资');
+
+    final summary = await repo.monthlySummary(ledgerId: l, month: '2026-09');
+    expect(summary.incomeCents, 850000);
+    expect(summary.expenseCents, 3250);
+
+    final byCat = await repo.categorySpending(l, '2026-09');
+    expect(byCat.singleWhere((e) => e.categoryId == food).amountCents, 2850);
+
+    final recent = await repo.recentTransactions(ledgerId: l, limit: 10);
+    expect(recent, hasLength(3));
+    expect(recent.first.amountCents, 400); // bookAt 倒序
+  });
+
+  test('重复 importKey 触发唯一约束（去重指纹）', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    Future<int> ins(String key) => repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 100,
+        bookAt: DateTime(2026, 9, 1), importKey: key);
+
+    await ins('WX-20260901-1'); // 首次 OK
+    expect(() => ins('WX-20260901-1'), throwsA(anything));
+  });
+
+  test('退款冲抵：按净额统计且原行保留，不新增收入行', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final tid = await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 5000, bookAt: DateTime(2026, 9, 12), counterparty: '某店');
+
+    await repo.updateRefundedCents(transactionId: tid, refundedCents: 5000);
+
+    final s = await repo.monthlySummary(ledgerId: l, month: '2026-09');
+    expect(s.expenseCents, 0); // 全额退款 → 净支出 0
+
+    final all = await repo.recentTransactions(ledgerId: l, limit: 10);
+    expect(all, hasLength(1)); // 原行保留、无新增行
+    expect(all.single.refundedCents, 5000);
   });
 }

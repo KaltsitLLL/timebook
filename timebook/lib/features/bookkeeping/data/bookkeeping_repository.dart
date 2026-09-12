@@ -33,4 +33,100 @@ class BookkeepingRepository {
   Future<List<Category>> categories(int ledgerId) =>
       (db.select(db.categories)..where((t) => t.ledgerId.equals(ledgerId)))
           .get();
+
+  Future<int> addTransaction({
+    required int ledgerId,
+    required int accountId,
+    int? categoryId,
+    required String direction, // income / expense / transfer
+    required int amountCents,
+    required DateTime bookAt,
+    String counterparty = '',
+    String remark = '',
+    String payMethod = '',
+    String? orderId,
+    String? importKey,
+    bool isPending = false,
+  }) {
+    return db.into(db.transactions).insert(TransactionsCompanion.insert(
+      ledgerId: ledgerId,
+      accountId: accountId,
+      categoryId: Value(categoryId),
+      direction: direction,
+      amountCents: amountCents,
+      bookAt: bookAt,
+      counterparty: Value(counterparty),
+      remark: Value(remark),
+      payMethod: Value(payMethod),
+      orderId: Value(orderId),
+      importKey: Value(importKey),
+      isPending: Value(isPending),
+    ));
+  }
+
+  Future<void> updateRefundedCents(
+      {required int transactionId, required int refundedCents}) async {
+    await (db.update(db.transactions)..where((t) => t.id.equals(transactionId)))
+        .write(TransactionsCompanion(refundedCents: Value(refundedCents)));
+  }
+
+  Future<MonthlySummary> monthlySummary(
+      {required int ledgerId, required String month}) async {
+    final start = DateTime.parse('$month-01');
+    final end = DateTime(start.year, start.month + 1, 1);
+    final rows = await (db.select(db.transactions)
+          ..where((t) =>
+              t.ledgerId.equals(ledgerId) &
+              t.bookAt.isBetweenValues(start, end)))
+        .get();
+    int inc = 0, exp = 0;
+    for (final r in rows) {
+      if (r.direction == 'income') inc += r.amountCents;
+      if (r.direction == 'expense') {
+        exp += r.amountCents - r.refundedCents; // 净额：退款冲抵
+      }
+    }
+    return MonthlySummary(incomeCents: inc, expenseCents: exp);
+  }
+
+  Future<List<CategorySpend>> categorySpending(
+      int ledgerId, String month) async {
+    final start = DateTime.parse('$month-01');
+    final end = DateTime(start.year, start.month + 1, 1);
+    final rows = await (db.select(db.transactions)
+          ..where((t) =>
+              t.ledgerId.equals(ledgerId) &
+              t.direction.equals('expense') &
+              t.bookAt.isBetweenValues(start, end)))
+        .get();
+    final map = <int?, int>{};
+    for (final r in rows) {
+      map[r.categoryId] =
+          (map[r.categoryId] ?? 0) + (r.amountCents - r.refundedCents);
+    }
+    return [
+      for (final e in map.entries) CategorySpend(categoryId: e.key, amountCents: e.value)
+    ];
+  }
+
+  Future<List<Transaction>> recentTransactions(
+      {required int ledgerId, int limit = 20}) {
+    return (db.select(db.transactions)
+          ..where((t) => t.ledgerId.equals(ledgerId))
+          ..orderBy([(t) => OrderingTerm.desc(t.bookAt), (t) => OrderingTerm.desc(t.id)])
+          ..limit(limit))
+        .get();
+  }
+}
+
+class MonthlySummary {
+  const MonthlySummary({required this.incomeCents, required this.expenseCents});
+  final int incomeCents;
+  final int expenseCents;
+}
+
+class CategorySpend {
+  const CategorySpend({this.categoryId, required this.amountCents});
+  final int? categoryId;
+  final int amountCents;
 }
