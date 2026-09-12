@@ -145,6 +145,43 @@ class BookkeepingRepository {
         .get();
   }
 
+  // ---- 导出 ----
+  /// 全量流水按 bookAt 升序导出为 CSV（含表头）。字段含逗号/引号/换行时会以双引号包裹并转义。
+  Future<String> exportCsv({required int ledgerId}) async {
+    final rows = await (db.select(db.transactions)
+          ..where((t) => t.ledgerId.equals(ledgerId))
+          ..orderBy([(t) => OrderingTerm.asc(t.bookAt), (t) => OrderingTerm.asc(t.id)]))
+        .get();
+    final catNames = <int?, String>{
+      for (final c in await categories(ledgerId)) c.id: c.name
+    };
+    String field(String s) => (s.contains(',') || s.contains('"') || s.contains('\n'))
+        ? '"${s.replaceAll('"', '""')}"'
+        : s;
+    final lines = <String>[
+      'book_at,direction,amount_cents,refunded_cents,counterparty,remark,category,pay_method,order_id',
+      for (final r in rows)
+        [
+          _formatCsvDateTime(r.bookAt),
+          r.direction,
+          r.amountCents.toString(),
+          r.refundedCents.toString(),
+          r.counterparty,
+          r.remark,
+          catNames[r.categoryId] ?? '',
+          r.payMethod,
+          r.orderId ?? '',
+        ].map((e) => field(e)).join(','),
+    ];
+    return lines.join('\n');
+  }
+
+  String _formatCsvDateTime(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')} '
+      '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}:'
+      '${d.second.toString().padLeft(2, '0')}';
+
   // ---- 预算 ----
   Future<void> upsertBudget(
       {required int ledgerId,

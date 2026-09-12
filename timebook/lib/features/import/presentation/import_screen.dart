@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+
 import '../../../core/db/app_database.dart';
+import '../../bookkeeping/data/bookkeeping_repository.dart';
 import '../data/import_service.dart';
 import '../domain/template_engine.dart';
 
@@ -43,6 +47,26 @@ class _ImportScreenState extends State<ImportScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  Future<void> _export() async {
+    try {
+      final ledgers = await BookkeepingRepository(widget.database).ledgers();
+      if (ledgers.isEmpty) {
+        _showMessage('尚无账本可导出');
+        return;
+      }
+      final csv = await BookkeepingRepository(widget.database)
+          .exportCsv(ledgerId: ledgers.first.id);
+      final now = DateTime.now();
+      final file = File('${Directory.systemTemp.path}/timebook_export_'
+          '${now.year}${now.month.toString().padLeft(2, '0')}'
+          '${now.day.toString().padLeft(2, '0')}.csv');
+      await file.writeAsString(csv);
+      _showMessage('已导出到 ${file.path}');
+    } catch (e) {
+      _showMessage('导出失败：$e');
+    }
+  }
+
   void _preview() {
     final engine = TemplateEngine(templateYaml: _wechatTemplate);
     final result = engine.parse(_csv.text);
@@ -69,7 +93,16 @@ class _ImportScreenState extends State<ImportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('账单导入')),
+      appBar: AppBar(
+        title: const Text('账单导入'),
+        actions: [
+          IconButton(
+            key: const Key('export_button'),
+            icon: const Icon(Icons.file_download_outlined),
+            onPressed: _export,
+          ),
+        ],
+      ),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         const Text('粘贴微信/支付宝导出的 CSV（当前支持微信格式）',
             style: TextStyle(fontSize: 13)),

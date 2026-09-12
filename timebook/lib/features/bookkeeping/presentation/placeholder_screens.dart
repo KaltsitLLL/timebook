@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/presentation/ai_settings_screen.dart';
+import '../../import/presentation/import_screen.dart';
+import 'bookkeeping_providers.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   const PlaceholderScreen({super.key, required this.title});
@@ -12,10 +15,10 @@ class PlaceholderScreen extends StatelessWidget {
 }
 
 /// 设置页：静态设置列表入口。
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('设置')),
       body: ListView(children: [
@@ -26,6 +29,16 @@ class SettingsScreen extends StatelessWidget {
           trailing: const Icon(Icons.chevron_right),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => const AiSettingsScreen())),
+        ),
+        ListTile(
+          key: const Key('import_export_entry'),
+          leading: const Icon(Icons.file_upload_outlined),
+          title: const Text('导入导出'),
+          subtitle: const Text('微信/支付宝 CSV 导入 · 全量导出'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) =>
+                  ImportScreen(database: ref.read(databaseProvider)))),
         ),
       ]),
     );

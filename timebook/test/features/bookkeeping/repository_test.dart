@@ -198,6 +198,35 @@ void main() {
     expect(all, isEmpty);
   });
 
+  test('exportCsv 导出表头与纯文本流水行', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 2850, bookAt: DateTime(2026, 9, 12), counterparty: '美团',
+        remark: '点餐', payMethod: '零钱', orderId: 'WX-1');
+
+    final csv = await repo.exportCsv(ledgerId: l);
+    expect(csv.split('\n').first,
+        'book_at,direction,amount_cents,refunded_cents,counterparty,remark,category,pay_method,order_id');
+    expect(csv, contains('expense,2850'));
+    expect(csv, contains('美团'));
+  });
+
+  test('exportCsv 含逗号字段以双引号包裹', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 1000,
+        bookAt: DateTime(2026, 9, 12), counterparty: '店,一家');
+
+    final csv = await repo.exportCsv(ledgerId: l);
+    expect(csv, contains('"店,一家"'));
+  });
+
   test('budgetProgress：总分类净额进度与剩余日均、超支标记', () async {
     final repo = BookkeepingRepository(db);
     final l = await repo.createLedger(name: '生活');
