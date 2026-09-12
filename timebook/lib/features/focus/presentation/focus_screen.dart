@@ -154,6 +154,21 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('本周专注', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 12),
+                FutureBuilder<List<(DateTime, int)>>(
+                  future: repo.focusMinutesByDay(),
+                  builder: (context, snap) =>
+                      _Heatmap(days: snap.data ?? const <(DateTime, int)>[]),
+                ),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('今日专注时间线', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 FutureBuilder<List<PomodoroSession>>(
@@ -228,5 +243,49 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
         ]);
       },
     );
+  }
+}
+
+/// 本周专注热力图：近 7 日色块（0 分灰、有分主色透明度按强度），次日为「今」。
+class _Heatmap extends StatelessWidget {
+  const _Heatmap({required this.days});
+  final List<(DateTime, int)> days;
+
+  static const _weekdayNames = ['一', '二', '三', '四', '五', '六', '日'];
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final now = DateTime.now();
+    return Row(
+      key: const Key('focus_heatmap'),
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (final (day, minutes) in days) _cell(scheme, day, minutes, now),
+      ],
+    );
+  }
+
+  Widget _cell(ColorScheme scheme, DateTime day, int minutes, DateTime now) {
+    final today = day.year == now.year && day.month == now.month && day.day == now.day;
+    final color = minutes <= 0
+        ? const Color(0xFFD8E1EB)
+        : scheme.primary.withValues(alpha: (minutes / 60).clamp(0.15, 0.9));
+    return Column(children: [
+      Container(
+        width: 24,
+        height: 24,
+        alignment: Alignment.center,
+        decoration:
+            BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+        child: minutes <= 0
+            ? null
+            : Text('${minutes}m',
+                style: const TextStyle(fontSize: 9, color: Colors.black87)),
+      ),
+      const SizedBox(height: 3),
+      Text(today ? '今' : _weekdayNames[day.weekday - 1],
+          style: const TextStyle(fontSize: 10)),
+    ]);
   }
 }

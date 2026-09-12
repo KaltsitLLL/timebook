@@ -59,7 +59,9 @@ void main() {
                 body: FocusScreen(notification: fake)))));
     await tester.pumpAndSettle();
 
-    // 开始 25min 专注，推进超过时长触发完成
+    // 开始 25min 专注，推进超过时长触发完成（本周专注卡加高后先滚动到按钮）
+    await tester.ensureVisible(find.byKey(const Key('focus_start')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('focus_start')));
     await tester.pump();
     fakeNow = fakeNow.add(const Duration(seconds: 1501));
@@ -93,8 +95,12 @@ void main() {
             home: Scaffold(body: FocusScreen(notification: fake)))));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.byKey(const Key('mode_short')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('mode_short')));
     await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('focus_start')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('focus_start')));
     await tester.pump();
 

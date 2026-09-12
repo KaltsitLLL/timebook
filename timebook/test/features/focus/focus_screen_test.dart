@@ -37,6 +37,9 @@ void main() {
     expect(find.text('今日专注'), findsOneWidget);
     expect(find.text('25:00'), findsOneWidget);
 
+    // 本周专注卡加高后计时器移出首屏，滚动到主按钮再操作
+    await tester.ensureVisible(find.byKey(const Key('focus_start')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('focus_start')));
     await tester.pump();
     fakeNow = fakeNow.add(const Duration(seconds: 2));
@@ -94,9 +97,13 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: FocusScreen()))));
     await tester.pumpAndSettle();
 
-    // 切到短休并开始
+    // 切到短休并开始（本周专注卡加高后计时器移出首屏，先滚动）
+    await tester.ensureVisible(find.byKey(const Key('mode_short')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('mode_short')));
     await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('focus_start')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('focus_start')));
     await tester.pump();
 
@@ -155,5 +162,31 @@ void main() {
         find.byType(ListView), const Offset(0, -100));
     expect(find.byKey(const Key('focus_guide')), findsOneWidget);
     expect(find.text('添加任务后在任务行点 🍅 绑定开始专注'), findsOneWidget);
+  });
+
+  testWidgets('本周专注热力图显示 7 色块与当日「今」标签', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = FocusRepository(db);
+    // seed 今日 50 分钟专注
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    await repo.addSession(kind: 'focus', startAt: today, durationMinutes: 50);
+
+    final container = ProviderContainer(overrides: [
+      focusDatabaseProvider.overrideWithValue(db),
+      focusRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: FocusScreen()))));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('focus_heatmap')), findsOneWidget);
+    expect(find.text('今'), findsOneWidget);
+    // 今日 50 分 → 显示 '50m'
+    expect(find.text('50m'), findsOneWidget);
   });
 }

@@ -95,6 +95,30 @@ class FocusRepository {
         .get();
   }
 
+  /// 近 [days] 天（默认 7）每天 kind=='focus' 且未中断的专注分钟聚合，
+  /// 自老到新返回，day 归一为当日零点；空日补 0。
+  Future<List<(DateTime, int)>> focusMinutesByDay({int days = 7}) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dayStart = today.subtract(Duration(days: days - 1));
+    final rows = await (db.select(db.pomodoroSessions)
+          ..where((s) =>
+              s.kind.equals('focus') &
+              s.interrupted.equals(false) &
+              s.startAt.isBiggerOrEqualValue(dayStart)))
+        .get();
+    final byDay = <int, int>{};
+    for (final r in rows) {
+      final day =
+          DateTime(r.startAt.year, r.startAt.month, r.startAt.day).millisecondsSinceEpoch;
+      byDay[day] = (byDay[day] ?? 0) + r.durationMinutes;
+    }
+    return List.generate(days, (i) {
+      final day = today.subtract(Duration(days: days - 1 - i));
+      return (day, byDay[day.millisecondsSinceEpoch] ?? 0);
+    });
+  }
+
   Future<int> todayFocusMinutes() async {
     final now = DateTime.now();
     final dayStart = DateTime(now.year, now.month, now.day);

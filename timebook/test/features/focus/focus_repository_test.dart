@@ -41,4 +41,24 @@ void main() {
     final after = await repo.settings();
     expect(after.focusMinutes, 30);
   });
+
+  test('focusMinutesByDay 近7天聚合：昨日25 + 今日50 + 空日0', () async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    await repo.addSession(kind: 'focus', startAt: yesterday, durationMinutes: 25);
+    await repo.addSession(kind: 'focus', startAt: today, durationMinutes: 50);
+    // 非 focus 或 interrupted 均不计入
+    await repo.addSession(kind: 'short', startAt: today, durationMinutes: 5);
+    await repo.addSession(kind: 'focus', startAt: today, durationMinutes: 99, interrupted: true);
+
+    final rows = await repo.focusMinutesByDay();
+
+    expect(rows, hasLength(7));
+    expect(rows.first.$1, today.subtract(const Duration(days: 6)));
+    expect(rows.last.$1, today);
+    expect(rows[5].$2, 25); // 昨日
+    expect(rows[6].$2, 50); // 今日
+    expect(rows[0].$2, 0); // 远端空日补 0
+  });
 }
