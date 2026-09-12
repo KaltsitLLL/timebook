@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timebook/core/db/app_database.dart';
+import 'package:timebook/features/bookkeeping/data/bookkeeping_repository.dart';
 
 import '../../helpers/db.dart';
 
@@ -35,5 +36,22 @@ void main() {
     });
     final cnt = await db.transactions.count().getSingle();
     expect(cnt, 1);
+  });
+
+  test('创建账本/账户/分类后可读回', () async {
+    final repo = BookkeepingRepository(db);
+    final ledgerId = await repo.createLedger(name: '生活');
+    final accountId =
+        await repo.createAccount(ledgerId: ledgerId, name: '招行储蓄卡');
+    final foodId = await repo.createCategory(ledgerId: ledgerId, name: '餐饮');
+
+    final ledgers = await repo.ledgers();
+    final accounts = await repo.accounts(ledgerId);
+    final cats = await repo.categories(ledgerId);
+
+    expect(ledgers.single.name, '生活');
+    expect(accounts.single.name, '招行储蓄卡');
+    expect(cats.single.name, '餐饮');
+    expect(foodId, greaterThan(0));
   });
 }
