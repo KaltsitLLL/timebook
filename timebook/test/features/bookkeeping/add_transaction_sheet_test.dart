@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timebook/core/db/app_database.dart';
+import 'package:timebook/core/util/kv_settings.dart';
 import 'package:timebook/features/bookkeeping/data/bookkeeping_repository.dart';
 import 'package:timebook/features/bookkeeping/presentation/add_transaction_sheet.dart';
 import 'package:timebook/features/bookkeeping/presentation/bookkeeping_providers.dart';
@@ -13,13 +14,14 @@ void main() {
 
   Future<(ProviderContainer, BookkeepingRepository)> setup() async {
     final db = AppDatabase.forTesting(inMemoryExecutor());
-    final repo = BookkeepingRepository(db);
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
     await repo.createAccount(ledgerId: l, name: '卡');
     await repo.createCategory(ledgerId: l, name: '餐饮');
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
       bookkeepingRepositoryProvider.overrideWithValue(repo),
+      kvSettingsProvider.overrideWithValue(KvSettings(MemoryKeyValueStorage())),
     ]);
     addTearDown(db.close);
     addTearDown(container.dispose);
@@ -59,5 +61,47 @@ void main() {
 
     final rows = await repo.recentTransactions(ledgerId: l.first.id, limit: 10);
     expect(rows, isEmpty);
+  });
+
+  testWidgets('金额输入算式时显示 = ¥ 预览，非法时隐藏', (tester) async {
+    final (c, _) = await setup();
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('amount_preview')), findsNothing);
+    await tester.enterText(find.byKey(const Key('amount_field')), '28.5*2');
+    await tester.pump();
+    expect(find.text('= ¥ 57.00'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('amount_field')), 'abc');
+    await tester.pump();
+    expect(find.byKey(const Key('amount_preview')), findsNothing);
+  });
+
+  testWidgets('记账 Sheet 预选默认付款账户', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    await repo.createAccount(ledgerId: l, name: '卡');
+    final a2 = await repo.createAccount(ledgerId: l, name: '钱包');
+    final kv = KvSettings(MemoryKeyValueStorage());
+    await kv.setInt('defaultAccountId:$l', a2);
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+      kvSettingsProvider.overrideWithValue(kv),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    final chip = tester.widget<ChoiceChip>(find.byKey(Key('account_$a2')));
+    expect(chip.selected, isTrue);
   });
 }

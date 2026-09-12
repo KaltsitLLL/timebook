@@ -1,11 +1,16 @@
 import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/util/formats.dart';
+import '../../../core/util/kv_settings.dart';
+import '../../ai/data/ai_settings_service.dart';
+import '../../ai/presentation/ai_settings_screen.dart';
 import 'rule_classifier.dart';
 
 class BookkeepingRepository {
-  BookkeepingRepository(this.db);
+  BookkeepingRepository(this.db, {KeyValueStorage? storage})
+      : settings = KvSettings(storage ?? const SecureStorage());
   final AppDatabase db;
+  final KvSettings settings;
 
   // ---- 账本 ----
   Future<int> createLedger({required String name, String currency = 'CNY'}) {
@@ -25,6 +30,30 @@ class BookkeepingRepository {
   Future<List<Account>> accounts(int ledgerId) => (db.select(db.accounts)
         ..where((t) => t.ledgerId.equals(ledgerId)))
       .get();
+
+  // ---- 默认账户（kv 存储 + 校验存在） ----
+  static const _defaultAccountKey = 'defaultAccountId:';
+
+  Future<int?> getDefaultAccountId(int ledgerId) async {
+    final id = await settings.getInt('$_defaultAccountKey$ledgerId');
+    if (id == null) return null;
+    final exists = await (db.select(db.accounts)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    return exists == null ? null : id;
+  }
+
+  Future<void> saveDefaultAccountId(int ledgerId, int accountId) =>
+      settings.setInt('$_defaultAccountKey$ledgerId', accountId);
+
+  /// 确保存在名为「不记账户」的系统账户（type 'none'）并返回其 id（幂等）。
+  Future<int> ensureNoneAccount(int ledgerId) async {
+    final existing = await (db.select(db.accounts)
+          ..where((t) => t.ledgerId.equals(ledgerId) & t.name.equals('不记账户')))
+        .getSingleOrNull();
+    if (existing != null) return existing.id;
+    return db.into(db.accounts).insert(AccountsCompanion.insert(
+        ledgerId: ledgerId, name: '不记账户', type: const Value('none')));
+  }
 
   // ---- 分类 ----
   Future<int> createCategory({required int ledgerId, required String name}) {

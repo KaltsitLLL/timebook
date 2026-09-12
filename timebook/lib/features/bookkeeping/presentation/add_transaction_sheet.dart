@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/db/app_database.dart';
+import '../../../core/util/formats.dart';
 import '../../ai/data/ai_settings_service.dart';
 import '../../ai/data/glm_chat_client.dart';
 import '../../ai/domain/ai_bookkeeping_service.dart';
@@ -19,6 +20,8 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
 class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   final _amount = TextEditingController();
   String _direction = 'expense';
+  int? _pickedAccountId; // 用户显式选择的真实账户
+  bool _useNoneAccount = false; // 无账户模式（Task2）
 
   @override
   void dispose() {
@@ -38,11 +41,20 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     final repo = ref.read(bookkeepingRepositoryProvider);
     final ledgers = await repo.ledgers();
     if (ledgers.isEmpty) return;
-    final accounts = await repo.accounts(ledgers.first.id);
-    if (accounts.isEmpty) return;
+    final ledgerId = ledgers.first.id;
+    final accounts = await repo.accounts(ledgerId);
+    int? accountId;
+    if (_useNoneAccount) {
+      accountId = await repo.ensureNoneAccount(ledgerId);
+    } else {
+      accountId =
+          _pickedAccountId ?? await repo.getDefaultAccountId(ledgerId);
+      if (accountId == null && accounts.isNotEmpty) accountId = accounts.first.id;
+    }
+    if (accountId == null) return;
     await repo.addTransaction(
-      ledgerId: ledgers.first.id,
-      accountId: accounts.first.id,
+      ledgerId: ledgerId,
+      accountId: accountId,
       direction: _direction,
       amountCents: cents,
       bookAt: DateTime.now(),
@@ -78,6 +90,22 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final cats = ref.watch(categoriesProvider).value ?? const <Category>[];
+    final accounts =
+        ref.watch(ledgerAccountsProvider).value ?? const <Account>[];
+    final defaultId = ref.watch(defaultAccountProvider).value;
+
+    final int? effectiveAccountId;
+    if (_useNoneAccount) {
+      effectiveAccountId = null;
+    } else {
+      effectiveAccountId = _pickedAccountId ??
+          defaultId ??
+          (accounts.isEmpty ? null : accounts.first.id);
+    }
+
+    final raw = _amount.text.trim();
+    final arithCents = parseArithmeticToCents(raw);
+
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -108,11 +136,42 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           controller: _amount,
           keyboardType:
               const TextInputType.numberWithOptions(decimal: true),
+          onChanged: (_) => setState(() {}),
           decoration: const InputDecoration(
             labelText: '金额（元）',
             border: OutlineInputBorder(),
             prefixText: '¥ ',
           ),
+        ),
+        if (raw.isNotEmpty && arithCents != null && arithCents > 0)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text('= ¥ ${formatCents(arithCents)}',
+                  key: const Key('amount_preview'),
+                  style: const TextStyle(
+                      color: Colors.green, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        const SizedBox(height: 16),
+        Text('账户', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final a in accounts)
+              ChoiceChip(
+                key: Key('account_${a.id}'),
+                label: Text(a.name),
+                selected: effectiveAccountId == a.id,
+                onSelected: (_) => setState(() {
+                  _pickedAccountId = a.id;
+                  _useNoneAccount = false;
+                }),
+              ),
+          ],
         ),
         const SizedBox(height: 16),
         Wrap(

@@ -17,4 +17,11 @@ void main() {
     expect(prevMonthKey('2026-09'), '2026-08');
     expect(prevMonthKey('2026-01'), '2025-12');
   });
+
+  test('parseArithmeticToCents 从左到右解析算式为分', () {
+    expect(parseArithmeticToCents('500+800'), 130000);
+    expect(parseArithmeticToCents('28.5*2'), 5700);
+    expect(parseArithmeticToCents('100/4'), 2500);
+    expect(parseArithmeticToCents('abc'), isNull);
+  });
 }

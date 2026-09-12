@@ -343,4 +343,20 @@ void main() {
     await repo.deleteRule(id);
     expect(await repo.rules(), hasLength(1));
   });
+
+  test('默认付款账户保存后读取一致（内存 KV）', () async {
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    final a1 = await repo.createAccount(ledgerId: l, name: '卡');
+    final a2 = await repo.createAccount(ledgerId: l, name: '钱包');
+
+    expect((await repo.getDefaultAccountId(l)) == null, isTrue);
+    await repo.saveDefaultAccountId(l, a2);
+    expect(await repo.getDefaultAccountId(l), a2);
+    // 校验存在：账户不存在时回落 null
+    await repo.saveDefaultAccountId(l, 9999);
+    expect((await repo.getDefaultAccountId(l)) == null, isTrue);
+    await repo.saveDefaultAccountId(l, a1);
+    expect(await repo.getDefaultAccountId(l), a1);
+  });
 }
