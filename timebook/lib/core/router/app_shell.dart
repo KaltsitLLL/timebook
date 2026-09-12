@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/bookkeeping/presentation/home_screen.dart';
 import '../../features/bookkeeping/presentation/placeholder_screens.dart';
 import '../../features/bookkeeping/presentation/stats_screen.dart';
+import '../../features/focus/presentation/focus_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -17,7 +18,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final pages = <Widget>[
       const HomeScreen(),
-      const PlaceholderScreen(title: '专注'),
+      const FocusScreen(),
       const StatsScreen(),
       const PlaceholderScreen(title: '设置'),
     ];
