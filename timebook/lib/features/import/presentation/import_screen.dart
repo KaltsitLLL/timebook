@@ -71,7 +71,11 @@ class _ImportScreenState extends State<ImportScreen> {
         _showMessage('尚无账本可导出');
         return;
       }
-      final csv = await repo.exportCsv(ledgerId: ledgers.first.id);
+      // 导出当前账本；未设置或 kv 指向不存在时回退首账本。
+      var ledgerId = ledgers.first.id;
+      final kvId = await repo.settings.getInt('currentLedgerId');
+      if (kvId != null && ledgers.any((x) => x.id == kvId)) ledgerId = kvId;
+      final csv = await repo.exportCsv(ledgerId: ledgerId);
       final now = DateTime.now();
       final fileName = 'timebook_export_'
           '${now.year}${now.month.toString().padLeft(2, '0')}'

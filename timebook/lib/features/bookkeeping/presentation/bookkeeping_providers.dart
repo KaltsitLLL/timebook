@@ -32,7 +32,7 @@ final ledgerAccountsProvider = FutureProvider<List<Account>>((ref) async {
   return repo.accounts(ledgers.first.id);
 });
 
-/// 首个账本的默认付款账户 id（读取 kv + 校验存在；无则 null）。
+/// 首账本的默认付款账户 id（读取 kv + 校验存在；无则 null）。
 final defaultAccountProvider = FutureProvider<int?>((ref) async {
   final repo = ref.watch(bookkeepingRepositoryProvider);
   final kv = ref.watch(kvSettingsProvider);
@@ -42,4 +42,23 @@ final defaultAccountProvider = FutureProvider<int?>((ref) async {
   if (id == null) return null;
   final accts = await repo.accounts(ledgers.first.id);
   return accts.any((a) => a.id == id) ? id : null;
+});
+
+/// 当前账本 id：优先 kv `currentLedgerId`，否则回退首个账本；无账本 → null。
+/// kv 读取失败/超时（如测试环境无安全存储导致挂起）时静默回退首账本，
+/// 保证基本功能可用；测试可通过 override 本 provider 直接指定当前账本。
+final currentLedgerProvider = FutureProvider<int?>((ref) async {
+  final repo = ref.watch(bookkeepingRepositoryProvider);
+  final kv = ref.watch(kvSettingsProvider);
+  int? current;
+  try {
+    current =
+        await kv.getInt('currentLedgerId').timeout(const Duration(seconds: 2));
+  } catch (_) {
+    current = null;
+  }
+  if (current != null) return current;
+  final ledgers = await repo.ledgers();
+  if (ledgers.isEmpty) return null;
+  return ledgers.first.id;
 });

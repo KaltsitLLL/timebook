@@ -12,8 +12,9 @@ class StatsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repo = ref.watch(bookkeepingRepositoryProvider);
+    final currentFuture = ref.watch(currentLedgerProvider.future);
     return FutureBuilder(
-      future: _load(repo),
+      future: currentFuture.then((id) => _load(repo, id)),
       builder: (context, snap) {
         if (!snap.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -28,12 +29,10 @@ class StatsScreen extends ConsumerWidget {
   }
 
   Future<(List<MonthTotal>, List<CategorySpend>, Map<int?, String>)> _load(
-      BookkeepingRepository repo) async {
-    final ledgers = await repo.ledgers();
-    if (ledgers.isEmpty) {
+      BookkeepingRepository repo, int? ledgerId) async {
+    if (ledgerId == null) {
       return (const <MonthTotal>[], const <CategorySpend>[], const <int?, String>{});
     }
-    final ledgerId = ledgers.first.id;
     final trend = await repo.monthlyTrend(ledgerId: ledgerId);
     final spends =
         await repo.categorySpending(ledgerId, monthKey(DateTime.now()));

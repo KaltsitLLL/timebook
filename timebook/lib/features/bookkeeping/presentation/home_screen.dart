@@ -42,9 +42,10 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repo = ref.watch(bookkeepingRepositoryProvider);
+    final currentFuture = ref.watch(currentLedgerProvider.future);
     return Scaffold(
       body: FutureBuilder(
-        future: _load(repo),
+        future: currentFuture.then((id) => _load(repo, id)),
         builder: (context, snap) {
           if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -87,13 +88,12 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Future<(int, (int, int), List<Transaction>, List<DonutSlice>,
-      Map<int?, (Color, String)>, String)> _load(BookkeepingRepository repo) async {
-    final ledgers = await repo.ledgers();
-    if (ledgers.isEmpty) {
+      Map<int?, (Color, String)>, String)> _load(
+      BookkeepingRepository repo, int? l) async {
+    if (l == null) {
       return (0, (0, 0), const <Transaction>[], const <DonutSlice>[],
           const <int?, (Color, String)>{}, '去设置');
     }
-    final l = ledgers.first.id;
     final month = _monthKey(DateTime.now());
     final range = periodRangeFor(DateTime.now(), await repo.periodStartDay());
     final s = await repo.monthlySummary(ledgerId: l, month: month,

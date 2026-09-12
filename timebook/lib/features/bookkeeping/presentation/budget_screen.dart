@@ -11,10 +11,11 @@ class BudgetScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repo = ref.watch(bookkeepingRepositoryProvider);
+    final currentFuture = ref.watch(currentLedgerProvider.future);
     return Scaffold(
       appBar: AppBar(title: const Text('预算')),
       body: FutureBuilder(
-        future: _load(repo),
+        future: currentFuture.then((id) => _load(repo, id)),
         builder: (context, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final data = snap.data!;
@@ -56,14 +57,14 @@ class BudgetScreen extends ConsumerWidget {
     );
   }
 
-  Future<(BudgetProgress, String)> _load(BookkeepingRepository repo) async {
+  Future<(BudgetProgress, String)> _load(
+      BookkeepingRepository repo, int? ledgerId) async {
     final now = DateTime.now();
     final startDay = await repo.periodStartDay();
     final range = periodRangeFor(now, startDay);
     final label =
         '本期（${range.start.month}/${range.start.day}–${range.end.month}/${range.end.day}）';
-    final ledgers = await repo.ledgers();
-    if (ledgers.isEmpty) {
+    if (ledgerId == null) {
       return (
         const BudgetProgress(
             totalBudgetCents: 0,
@@ -74,7 +75,7 @@ class BudgetScreen extends ConsumerWidget {
       );
     }
     final s = await repo.budgetProgress(
-        ledgerId: ledgers.first.id,
+        ledgerId: ledgerId,
         month: monthKey(now),
         periodStart: range.start,
         periodEnd: range.end);
