@@ -166,4 +166,35 @@ void main() {
     expect(thisMonth, hasLength(1));
     expect(thisMonth.single.counterparty, '本月');
   });
+
+  test('预算 upsert：总预算与分类预算并存、再写覆盖', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final month = monthKey(DateTime.now());
+
+    await repo.upsertBudget(ledgerId: l, month: month, amountCents: 750000);
+    await repo.upsertBudget(
+        ledgerId: l, categoryId: food, month: month, amountCents: 200000);
+
+    final all = await repo.budgetsForMonth(ledgerId: l, month: month);
+    expect(all, hasLength(2));
+
+    await repo.upsertBudget(ledgerId: l, month: month, amountCents: 800000);
+    final after = await repo.budgetsForMonth(ledgerId: l, month: month);
+    final total = after.singleWhere((b) => b.categoryId == null);
+    expect(total.amountCents, 800000);
+  });
+
+  test('删除分类预算', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final month = monthKey(DateTime.now());
+    await repo.upsertBudget(
+        ledgerId: l, categoryId: food, month: month, amountCents: 100000);
+    await repo.removeBudget(ledgerId: l, categoryId: food, month: month);
+    final all = await repo.budgetsForMonth(ledgerId: l, month: month);
+    expect(all, isEmpty);
+  });
 }

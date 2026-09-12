@@ -144,6 +144,53 @@ class BookkeepingRepository {
           ..orderBy([(t) => OrderingTerm.desc(t.bookAt), (t) => OrderingTerm.desc(t.id)]))
         .get();
   }
+
+  // ---- 预算 ----
+  Future<void> upsertBudget(
+      {required int ledgerId,
+      int? categoryId,
+      required String month,
+      required int amountCents}) async {
+    await db.transaction(() async {
+      final query = db.select(db.budgets)
+        ..where((t) =>
+            t.ledgerId.equals(ledgerId) &
+            t.month.equals(month) &
+            (categoryId == null
+                ? t.categoryId.isNull()
+                : t.categoryId.equals(categoryId)));
+      final existing = await query.get();
+      if (existing.isEmpty) {
+        await db.into(db.budgets).insert(BudgetsCompanion.insert(
+            ledgerId: ledgerId,
+            categoryId: Value(categoryId),
+            month: month,
+            amountCents: amountCents));
+      } else {
+        await (db.update(db.budgets)..where((t) => t.id.equals(existing.first.id)))
+            .write(BudgetsCompanion(amountCents: Value(amountCents)));
+      }
+    });
+  }
+
+  Future<List<Budget>> budgetsForMonth(
+          {required int ledgerId, required String month}) =>
+      (db.select(db.budgets)
+            ..where((t) =>
+                t.ledgerId.equals(ledgerId) & t.month.equals(month)))
+          .get();
+
+  Future<void> removeBudget(
+      {required int ledgerId, int? categoryId, required String month}) async {
+    await (db.delete(db.budgets)
+          ..where((t) =>
+              t.ledgerId.equals(ledgerId) &
+              t.month.equals(month) &
+              (categoryId == null
+                  ? t.categoryId.isNull()
+                  : t.categoryId.equals(categoryId))))
+        .go();
+  }
 }
 
 class MonthlySummary {
