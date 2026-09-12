@@ -2478,6 +2478,1817 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   }
 }
 
+class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProjectsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0xFF3F77B6),
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _archivedMeta = const VerificationMeta(
+    'archived',
+  );
+  @override
+  late final GeneratedColumn<bool> archived = GeneratedColumn<bool>(
+    'archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, color, sortOrder, archived];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'projects';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Project> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('archived')) {
+      context.handle(
+        _archivedMeta,
+        archived.isAcceptableOrUnknown(data['archived']!, _archivedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Project map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Project(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      archived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}archived'],
+      )!,
+    );
+  }
+
+  @override
+  $ProjectsTable createAlias(String alias) {
+    return $ProjectsTable(attachedDatabase, alias);
+  }
+}
+
+class Project extends DataClass implements Insertable<Project> {
+  final int id;
+  final String name;
+  final int color;
+  final int sortOrder;
+  final bool archived;
+  const Project({
+    required this.id,
+    required this.name,
+    required this.color,
+    required this.sortOrder,
+    required this.archived,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['color'] = Variable<int>(color);
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['archived'] = Variable<bool>(archived);
+    return map;
+  }
+
+  ProjectsCompanion toCompanion(bool nullToAbsent) {
+    return ProjectsCompanion(
+      id: Value(id),
+      name: Value(name),
+      color: Value(color),
+      sortOrder: Value(sortOrder),
+      archived: Value(archived),
+    );
+  }
+
+  factory Project.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Project(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      color: serializer.fromJson<int>(json['color']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      archived: serializer.fromJson<bool>(json['archived']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'color': serializer.toJson<int>(color),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'archived': serializer.toJson<bool>(archived),
+    };
+  }
+
+  Project copyWith({
+    int? id,
+    String? name,
+    int? color,
+    int? sortOrder,
+    bool? archived,
+  }) => Project(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    color: color ?? this.color,
+    sortOrder: sortOrder ?? this.sortOrder,
+    archived: archived ?? this.archived,
+  );
+  Project copyWithCompanion(ProjectsCompanion data) {
+    return Project(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      color: data.color.present ? data.color.value : this.color,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      archived: data.archived.present ? data.archived.value : this.archived,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Project(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('color: $color, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('archived: $archived')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, color, sortOrder, archived);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Project &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.color == this.color &&
+          other.sortOrder == this.sortOrder &&
+          other.archived == this.archived);
+}
+
+class ProjectsCompanion extends UpdateCompanion<Project> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<int> color;
+  final Value<int> sortOrder;
+  final Value<bool> archived;
+  const ProjectsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.color = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.archived = const Value.absent(),
+  });
+  ProjectsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.color = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.archived = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<Project> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<int>? color,
+    Expression<int>? sortOrder,
+    Expression<bool>? archived,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (color != null) 'color': color,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (archived != null) 'archived': archived,
+    });
+  }
+
+  ProjectsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<int>? color,
+    Value<int>? sortOrder,
+    Value<bool>? archived,
+  }) {
+    return ProjectsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      color: color ?? this.color,
+      sortOrder: sortOrder ?? this.sortOrder,
+      archived: archived ?? this.archived,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (archived.present) {
+      map['archived'] = Variable<bool>(archived.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('color: $color, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('archived: $archived')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TasksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
+    'project_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _dueDateMeta = const VerificationMeta(
+    'dueDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
+    'due_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
+  @override
+  late final GeneratedColumn<String> tags = GeneratedColumn<String>(
+    'tags',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _estimateMinutesMeta = const VerificationMeta(
+    'estimateMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> estimateMinutes = GeneratedColumn<int>(
+    'estimate_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  static const VerificationMeta _actualMinutesMeta = const VerificationMeta(
+    'actualMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> actualMinutes = GeneratedColumn<int>(
+    'actual_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    projectId,
+    title,
+    notes,
+    priority,
+    dueDate,
+    tags,
+    estimateMinutes,
+    actualMinutes,
+    completedAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tasks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Task> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(
+        _dueDateMeta,
+        dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
+    }
+    if (data.containsKey('tags')) {
+      context.handle(
+        _tagsMeta,
+        tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta),
+      );
+    }
+    if (data.containsKey('estimate_minutes')) {
+      context.handle(
+        _estimateMinutesMeta,
+        estimateMinutes.isAcceptableOrUnknown(
+          data['estimate_minutes']!,
+          _estimateMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('actual_minutes')) {
+      context.handle(
+        _actualMinutesMeta,
+        actualMinutes.isAcceptableOrUnknown(
+          data['actual_minutes']!,
+          _actualMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Task map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Task(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}project_id'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}due_date'],
+      ),
+      tags: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tags'],
+      )!,
+      estimateMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}estimate_minutes'],
+      )!,
+      actualMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}actual_minutes'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TasksTable createAlias(String alias) {
+    return $TasksTable(attachedDatabase, alias);
+  }
+}
+
+class Task extends DataClass implements Insertable<Task> {
+  final int id;
+  final int? projectId;
+  final String title;
+  final String notes;
+  final int priority;
+  final DateTime? dueDate;
+  final String tags;
+  final int estimateMinutes;
+  final int actualMinutes;
+  final DateTime? completedAt;
+  final DateTime createdAt;
+  const Task({
+    required this.id,
+    this.projectId,
+    required this.title,
+    required this.notes,
+    required this.priority,
+    this.dueDate,
+    required this.tags,
+    required this.estimateMinutes,
+    required this.actualMinutes,
+    this.completedAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || projectId != null) {
+      map['project_id'] = Variable<int>(projectId);
+    }
+    map['title'] = Variable<String>(title);
+    map['notes'] = Variable<String>(notes);
+    map['priority'] = Variable<int>(priority);
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = Variable<DateTime>(dueDate);
+    }
+    map['tags'] = Variable<String>(tags);
+    map['estimate_minutes'] = Variable<int>(estimateMinutes);
+    map['actual_minutes'] = Variable<int>(actualMinutes);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  TasksCompanion toCompanion(bool nullToAbsent) {
+    return TasksCompanion(
+      id: Value(id),
+      projectId: projectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(projectId),
+      title: Value(title),
+      notes: Value(notes),
+      priority: Value(priority),
+      dueDate: dueDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDate),
+      tags: Value(tags),
+      estimateMinutes: Value(estimateMinutes),
+      actualMinutes: Value(actualMinutes),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Task.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Task(
+      id: serializer.fromJson<int>(json['id']),
+      projectId: serializer.fromJson<int?>(json['projectId']),
+      title: serializer.fromJson<String>(json['title']),
+      notes: serializer.fromJson<String>(json['notes']),
+      priority: serializer.fromJson<int>(json['priority']),
+      dueDate: serializer.fromJson<DateTime?>(json['dueDate']),
+      tags: serializer.fromJson<String>(json['tags']),
+      estimateMinutes: serializer.fromJson<int>(json['estimateMinutes']),
+      actualMinutes: serializer.fromJson<int>(json['actualMinutes']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'projectId': serializer.toJson<int?>(projectId),
+      'title': serializer.toJson<String>(title),
+      'notes': serializer.toJson<String>(notes),
+      'priority': serializer.toJson<int>(priority),
+      'dueDate': serializer.toJson<DateTime?>(dueDate),
+      'tags': serializer.toJson<String>(tags),
+      'estimateMinutes': serializer.toJson<int>(estimateMinutes),
+      'actualMinutes': serializer.toJson<int>(actualMinutes),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Task copyWith({
+    int? id,
+    Value<int?> projectId = const Value.absent(),
+    String? title,
+    String? notes,
+    int? priority,
+    Value<DateTime?> dueDate = const Value.absent(),
+    String? tags,
+    int? estimateMinutes,
+    int? actualMinutes,
+    Value<DateTime?> completedAt = const Value.absent(),
+    DateTime? createdAt,
+  }) => Task(
+    id: id ?? this.id,
+    projectId: projectId.present ? projectId.value : this.projectId,
+    title: title ?? this.title,
+    notes: notes ?? this.notes,
+    priority: priority ?? this.priority,
+    dueDate: dueDate.present ? dueDate.value : this.dueDate,
+    tags: tags ?? this.tags,
+    estimateMinutes: estimateMinutes ?? this.estimateMinutes,
+    actualMinutes: actualMinutes ?? this.actualMinutes,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Task copyWithCompanion(TasksCompanion data) {
+    return Task(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      title: data.title.present ? data.title.value : this.title,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      tags: data.tags.present ? data.tags.value : this.tags,
+      estimateMinutes: data.estimateMinutes.present
+          ? data.estimateMinutes.value
+          : this.estimateMinutes,
+      actualMinutes: data.actualMinutes.present
+          ? data.actualMinutes.value
+          : this.actualMinutes,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Task(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('title: $title, ')
+          ..write('notes: $notes, ')
+          ..write('priority: $priority, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('tags: $tags, ')
+          ..write('estimateMinutes: $estimateMinutes, ')
+          ..write('actualMinutes: $actualMinutes, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    projectId,
+    title,
+    notes,
+    priority,
+    dueDate,
+    tags,
+    estimateMinutes,
+    actualMinutes,
+    completedAt,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Task &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.title == this.title &&
+          other.notes == this.notes &&
+          other.priority == this.priority &&
+          other.dueDate == this.dueDate &&
+          other.tags == this.tags &&
+          other.estimateMinutes == this.estimateMinutes &&
+          other.actualMinutes == this.actualMinutes &&
+          other.completedAt == this.completedAt &&
+          other.createdAt == this.createdAt);
+}
+
+class TasksCompanion extends UpdateCompanion<Task> {
+  final Value<int> id;
+  final Value<int?> projectId;
+  final Value<String> title;
+  final Value<String> notes;
+  final Value<int> priority;
+  final Value<DateTime?> dueDate;
+  final Value<String> tags;
+  final Value<int> estimateMinutes;
+  final Value<int> actualMinutes;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime> createdAt;
+  const TasksCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.tags = const Value.absent(),
+    this.estimateMinutes = const Value.absent(),
+    this.actualMinutes = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  TasksCompanion.insert({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    required String title,
+    this.notes = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.tags = const Value.absent(),
+    this.estimateMinutes = const Value.absent(),
+    this.actualMinutes = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : title = Value(title);
+  static Insertable<Task> custom({
+    Expression<int>? id,
+    Expression<int>? projectId,
+    Expression<String>? title,
+    Expression<String>? notes,
+    Expression<int>? priority,
+    Expression<DateTime>? dueDate,
+    Expression<String>? tags,
+    Expression<int>? estimateMinutes,
+    Expression<int>? actualMinutes,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (title != null) 'title': title,
+      if (notes != null) 'notes': notes,
+      if (priority != null) 'priority': priority,
+      if (dueDate != null) 'due_date': dueDate,
+      if (tags != null) 'tags': tags,
+      if (estimateMinutes != null) 'estimate_minutes': estimateMinutes,
+      if (actualMinutes != null) 'actual_minutes': actualMinutes,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  TasksCompanion copyWith({
+    Value<int>? id,
+    Value<int?>? projectId,
+    Value<String>? title,
+    Value<String>? notes,
+    Value<int>? priority,
+    Value<DateTime?>? dueDate,
+    Value<String>? tags,
+    Value<int>? estimateMinutes,
+    Value<int>? actualMinutes,
+    Value<DateTime?>? completedAt,
+    Value<DateTime>? createdAt,
+  }) {
+    return TasksCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      title: title ?? this.title,
+      notes: notes ?? this.notes,
+      priority: priority ?? this.priority,
+      dueDate: dueDate ?? this.dueDate,
+      tags: tags ?? this.tags,
+      estimateMinutes: estimateMinutes ?? this.estimateMinutes,
+      actualMinutes: actualMinutes ?? this.actualMinutes,
+      completedAt: completedAt ?? this.completedAt,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<DateTime>(dueDate.value);
+    }
+    if (tags.present) {
+      map['tags'] = Variable<String>(tags.value);
+    }
+    if (estimateMinutes.present) {
+      map['estimate_minutes'] = Variable<int>(estimateMinutes.value);
+    }
+    if (actualMinutes.present) {
+      map['actual_minutes'] = Variable<int>(actualMinutes.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TasksCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('title: $title, ')
+          ..write('notes: $notes, ')
+          ..write('priority: $priority, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('tags: $tags, ')
+          ..write('estimateMinutes: $estimateMinutes, ')
+          ..write('actualMinutes: $actualMinutes, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PomodoroSessionsTable extends PomodoroSessions
+    with TableInfo<$PomodoroSessionsTable, PomodoroSession> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PomodoroSessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
+  @override
+  late final GeneratedColumn<int> taskId = GeneratedColumn<int>(
+    'task_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('focus'),
+  );
+  static const VerificationMeta _startAtMeta = const VerificationMeta(
+    'startAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startAt = GeneratedColumn<DateTime>(
+    'start_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endAtMeta = const VerificationMeta('endAt');
+  @override
+  late final GeneratedColumn<DateTime> endAt = GeneratedColumn<DateTime>(
+    'end_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _durationMinutesMeta = const VerificationMeta(
+    'durationMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> durationMinutes = GeneratedColumn<int>(
+    'duration_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  static const VerificationMeta _interruptedMeta = const VerificationMeta(
+    'interrupted',
+  );
+  @override
+  late final GeneratedColumn<bool> interrupted = GeneratedColumn<bool>(
+    'interrupted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("interrupted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    taskId,
+    kind,
+    startAt,
+    endAt,
+    durationMinutes,
+    interrupted,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pomodoro_sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PomodoroSession> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('task_id')) {
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('start_at')) {
+      context.handle(
+        _startAtMeta,
+        startAt.isAcceptableOrUnknown(data['start_at']!, _startAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startAtMeta);
+    }
+    if (data.containsKey('end_at')) {
+      context.handle(
+        _endAtMeta,
+        endAt.isAcceptableOrUnknown(data['end_at']!, _endAtMeta),
+      );
+    }
+    if (data.containsKey('duration_minutes')) {
+      context.handle(
+        _durationMinutesMeta,
+        durationMinutes.isAcceptableOrUnknown(
+          data['duration_minutes']!,
+          _durationMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('interrupted')) {
+      context.handle(
+        _interruptedMeta,
+        interrupted.isAcceptableOrUnknown(
+          data['interrupted']!,
+          _interruptedMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PomodoroSession map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PomodoroSession(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}task_id'],
+      ),
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      startAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_at'],
+      )!,
+      endAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_at'],
+      ),
+      durationMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_minutes'],
+      )!,
+      interrupted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}interrupted'],
+      )!,
+    );
+  }
+
+  @override
+  $PomodoroSessionsTable createAlias(String alias) {
+    return $PomodoroSessionsTable(attachedDatabase, alias);
+  }
+}
+
+class PomodoroSession extends DataClass implements Insertable<PomodoroSession> {
+  final int id;
+  final int? taskId;
+  final String kind;
+  final DateTime startAt;
+  final DateTime? endAt;
+  final int durationMinutes;
+  final bool interrupted;
+  const PomodoroSession({
+    required this.id,
+    this.taskId,
+    required this.kind,
+    required this.startAt,
+    this.endAt,
+    required this.durationMinutes,
+    required this.interrupted,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || taskId != null) {
+      map['task_id'] = Variable<int>(taskId);
+    }
+    map['kind'] = Variable<String>(kind);
+    map['start_at'] = Variable<DateTime>(startAt);
+    if (!nullToAbsent || endAt != null) {
+      map['end_at'] = Variable<DateTime>(endAt);
+    }
+    map['duration_minutes'] = Variable<int>(durationMinutes);
+    map['interrupted'] = Variable<bool>(interrupted);
+    return map;
+  }
+
+  PomodoroSessionsCompanion toCompanion(bool nullToAbsent) {
+    return PomodoroSessionsCompanion(
+      id: Value(id),
+      taskId: taskId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(taskId),
+      kind: Value(kind),
+      startAt: Value(startAt),
+      endAt: endAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endAt),
+      durationMinutes: Value(durationMinutes),
+      interrupted: Value(interrupted),
+    );
+  }
+
+  factory PomodoroSession.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PomodoroSession(
+      id: serializer.fromJson<int>(json['id']),
+      taskId: serializer.fromJson<int?>(json['taskId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      startAt: serializer.fromJson<DateTime>(json['startAt']),
+      endAt: serializer.fromJson<DateTime?>(json['endAt']),
+      durationMinutes: serializer.fromJson<int>(json['durationMinutes']),
+      interrupted: serializer.fromJson<bool>(json['interrupted']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'taskId': serializer.toJson<int?>(taskId),
+      'kind': serializer.toJson<String>(kind),
+      'startAt': serializer.toJson<DateTime>(startAt),
+      'endAt': serializer.toJson<DateTime?>(endAt),
+      'durationMinutes': serializer.toJson<int>(durationMinutes),
+      'interrupted': serializer.toJson<bool>(interrupted),
+    };
+  }
+
+  PomodoroSession copyWith({
+    int? id,
+    Value<int?> taskId = const Value.absent(),
+    String? kind,
+    DateTime? startAt,
+    Value<DateTime?> endAt = const Value.absent(),
+    int? durationMinutes,
+    bool? interrupted,
+  }) => PomodoroSession(
+    id: id ?? this.id,
+    taskId: taskId.present ? taskId.value : this.taskId,
+    kind: kind ?? this.kind,
+    startAt: startAt ?? this.startAt,
+    endAt: endAt.present ? endAt.value : this.endAt,
+    durationMinutes: durationMinutes ?? this.durationMinutes,
+    interrupted: interrupted ?? this.interrupted,
+  );
+  PomodoroSession copyWithCompanion(PomodoroSessionsCompanion data) {
+    return PomodoroSession(
+      id: data.id.present ? data.id.value : this.id,
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      startAt: data.startAt.present ? data.startAt.value : this.startAt,
+      endAt: data.endAt.present ? data.endAt.value : this.endAt,
+      durationMinutes: data.durationMinutes.present
+          ? data.durationMinutes.value
+          : this.durationMinutes,
+      interrupted: data.interrupted.present
+          ? data.interrupted.value
+          : this.interrupted,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PomodoroSession(')
+          ..write('id: $id, ')
+          ..write('taskId: $taskId, ')
+          ..write('kind: $kind, ')
+          ..write('startAt: $startAt, ')
+          ..write('endAt: $endAt, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('interrupted: $interrupted')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    taskId,
+    kind,
+    startAt,
+    endAt,
+    durationMinutes,
+    interrupted,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PomodoroSession &&
+          other.id == this.id &&
+          other.taskId == this.taskId &&
+          other.kind == this.kind &&
+          other.startAt == this.startAt &&
+          other.endAt == this.endAt &&
+          other.durationMinutes == this.durationMinutes &&
+          other.interrupted == this.interrupted);
+}
+
+class PomodoroSessionsCompanion extends UpdateCompanion<PomodoroSession> {
+  final Value<int> id;
+  final Value<int?> taskId;
+  final Value<String> kind;
+  final Value<DateTime> startAt;
+  final Value<DateTime?> endAt;
+  final Value<int> durationMinutes;
+  final Value<bool> interrupted;
+  const PomodoroSessionsCompanion({
+    this.id = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.startAt = const Value.absent(),
+    this.endAt = const Value.absent(),
+    this.durationMinutes = const Value.absent(),
+    this.interrupted = const Value.absent(),
+  });
+  PomodoroSessionsCompanion.insert({
+    this.id = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.kind = const Value.absent(),
+    required DateTime startAt,
+    this.endAt = const Value.absent(),
+    this.durationMinutes = const Value.absent(),
+    this.interrupted = const Value.absent(),
+  }) : startAt = Value(startAt);
+  static Insertable<PomodoroSession> custom({
+    Expression<int>? id,
+    Expression<int>? taskId,
+    Expression<String>? kind,
+    Expression<DateTime>? startAt,
+    Expression<DateTime>? endAt,
+    Expression<int>? durationMinutes,
+    Expression<bool>? interrupted,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (taskId != null) 'task_id': taskId,
+      if (kind != null) 'kind': kind,
+      if (startAt != null) 'start_at': startAt,
+      if (endAt != null) 'end_at': endAt,
+      if (durationMinutes != null) 'duration_minutes': durationMinutes,
+      if (interrupted != null) 'interrupted': interrupted,
+    });
+  }
+
+  PomodoroSessionsCompanion copyWith({
+    Value<int>? id,
+    Value<int?>? taskId,
+    Value<String>? kind,
+    Value<DateTime>? startAt,
+    Value<DateTime?>? endAt,
+    Value<int>? durationMinutes,
+    Value<bool>? interrupted,
+  }) {
+    return PomodoroSessionsCompanion(
+      id: id ?? this.id,
+      taskId: taskId ?? this.taskId,
+      kind: kind ?? this.kind,
+      startAt: startAt ?? this.startAt,
+      endAt: endAt ?? this.endAt,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      interrupted: interrupted ?? this.interrupted,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (taskId.present) {
+      map['task_id'] = Variable<int>(taskId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (startAt.present) {
+      map['start_at'] = Variable<DateTime>(startAt.value);
+    }
+    if (endAt.present) {
+      map['end_at'] = Variable<DateTime>(endAt.value);
+    }
+    if (durationMinutes.present) {
+      map['duration_minutes'] = Variable<int>(durationMinutes.value);
+    }
+    if (interrupted.present) {
+      map['interrupted'] = Variable<bool>(interrupted.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PomodoroSessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('taskId: $taskId, ')
+          ..write('kind: $kind, ')
+          ..write('startAt: $startAt, ')
+          ..write('endAt: $endAt, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('interrupted: $interrupted')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PomodoroSettingsTable extends PomodoroSettings
+    with TableInfo<$PomodoroSettingsTable, PomodoroSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PomodoroSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _focusMinutesMeta = const VerificationMeta(
+    'focusMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> focusMinutes = GeneratedColumn<int>(
+    'focus_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  static const VerificationMeta _shortBreakMinutesMeta = const VerificationMeta(
+    'shortBreakMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> shortBreakMinutes = GeneratedColumn<int>(
+    'short_break_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(5),
+  );
+  static const VerificationMeta _longBreakMinutesMeta = const VerificationMeta(
+    'longBreakMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> longBreakMinutes = GeneratedColumn<int>(
+    'long_break_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(15),
+  );
+  static const VerificationMeta _longBreakIntervalMeta = const VerificationMeta(
+    'longBreakInterval',
+  );
+  @override
+  late final GeneratedColumn<int> longBreakInterval = GeneratedColumn<int>(
+    'long_break_interval',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(4),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    focusMinutes,
+    shortBreakMinutes,
+    longBreakMinutes,
+    longBreakInterval,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pomodoro_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PomodoroSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('focus_minutes')) {
+      context.handle(
+        _focusMinutesMeta,
+        focusMinutes.isAcceptableOrUnknown(
+          data['focus_minutes']!,
+          _focusMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('short_break_minutes')) {
+      context.handle(
+        _shortBreakMinutesMeta,
+        shortBreakMinutes.isAcceptableOrUnknown(
+          data['short_break_minutes']!,
+          _shortBreakMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('long_break_minutes')) {
+      context.handle(
+        _longBreakMinutesMeta,
+        longBreakMinutes.isAcceptableOrUnknown(
+          data['long_break_minutes']!,
+          _longBreakMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('long_break_interval')) {
+      context.handle(
+        _longBreakIntervalMeta,
+        longBreakInterval.isAcceptableOrUnknown(
+          data['long_break_interval']!,
+          _longBreakIntervalMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PomodoroSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PomodoroSetting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      focusMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focus_minutes'],
+      )!,
+      shortBreakMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}short_break_minutes'],
+      )!,
+      longBreakMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}long_break_minutes'],
+      )!,
+      longBreakInterval: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}long_break_interval'],
+      )!,
+    );
+  }
+
+  @override
+  $PomodoroSettingsTable createAlias(String alias) {
+    return $PomodoroSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class PomodoroSetting extends DataClass implements Insertable<PomodoroSetting> {
+  final int id;
+  final int focusMinutes;
+  final int shortBreakMinutes;
+  final int longBreakMinutes;
+  final int longBreakInterval;
+  const PomodoroSetting({
+    required this.id,
+    required this.focusMinutes,
+    required this.shortBreakMinutes,
+    required this.longBreakMinutes,
+    required this.longBreakInterval,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['focus_minutes'] = Variable<int>(focusMinutes);
+    map['short_break_minutes'] = Variable<int>(shortBreakMinutes);
+    map['long_break_minutes'] = Variable<int>(longBreakMinutes);
+    map['long_break_interval'] = Variable<int>(longBreakInterval);
+    return map;
+  }
+
+  PomodoroSettingsCompanion toCompanion(bool nullToAbsent) {
+    return PomodoroSettingsCompanion(
+      id: Value(id),
+      focusMinutes: Value(focusMinutes),
+      shortBreakMinutes: Value(shortBreakMinutes),
+      longBreakMinutes: Value(longBreakMinutes),
+      longBreakInterval: Value(longBreakInterval),
+    );
+  }
+
+  factory PomodoroSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PomodoroSetting(
+      id: serializer.fromJson<int>(json['id']),
+      focusMinutes: serializer.fromJson<int>(json['focusMinutes']),
+      shortBreakMinutes: serializer.fromJson<int>(json['shortBreakMinutes']),
+      longBreakMinutes: serializer.fromJson<int>(json['longBreakMinutes']),
+      longBreakInterval: serializer.fromJson<int>(json['longBreakInterval']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'focusMinutes': serializer.toJson<int>(focusMinutes),
+      'shortBreakMinutes': serializer.toJson<int>(shortBreakMinutes),
+      'longBreakMinutes': serializer.toJson<int>(longBreakMinutes),
+      'longBreakInterval': serializer.toJson<int>(longBreakInterval),
+    };
+  }
+
+  PomodoroSetting copyWith({
+    int? id,
+    int? focusMinutes,
+    int? shortBreakMinutes,
+    int? longBreakMinutes,
+    int? longBreakInterval,
+  }) => PomodoroSetting(
+    id: id ?? this.id,
+    focusMinutes: focusMinutes ?? this.focusMinutes,
+    shortBreakMinutes: shortBreakMinutes ?? this.shortBreakMinutes,
+    longBreakMinutes: longBreakMinutes ?? this.longBreakMinutes,
+    longBreakInterval: longBreakInterval ?? this.longBreakInterval,
+  );
+  PomodoroSetting copyWithCompanion(PomodoroSettingsCompanion data) {
+    return PomodoroSetting(
+      id: data.id.present ? data.id.value : this.id,
+      focusMinutes: data.focusMinutes.present
+          ? data.focusMinutes.value
+          : this.focusMinutes,
+      shortBreakMinutes: data.shortBreakMinutes.present
+          ? data.shortBreakMinutes.value
+          : this.shortBreakMinutes,
+      longBreakMinutes: data.longBreakMinutes.present
+          ? data.longBreakMinutes.value
+          : this.longBreakMinutes,
+      longBreakInterval: data.longBreakInterval.present
+          ? data.longBreakInterval.value
+          : this.longBreakInterval,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PomodoroSetting(')
+          ..write('id: $id, ')
+          ..write('focusMinutes: $focusMinutes, ')
+          ..write('shortBreakMinutes: $shortBreakMinutes, ')
+          ..write('longBreakMinutes: $longBreakMinutes, ')
+          ..write('longBreakInterval: $longBreakInterval')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    focusMinutes,
+    shortBreakMinutes,
+    longBreakMinutes,
+    longBreakInterval,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PomodoroSetting &&
+          other.id == this.id &&
+          other.focusMinutes == this.focusMinutes &&
+          other.shortBreakMinutes == this.shortBreakMinutes &&
+          other.longBreakMinutes == this.longBreakMinutes &&
+          other.longBreakInterval == this.longBreakInterval);
+}
+
+class PomodoroSettingsCompanion extends UpdateCompanion<PomodoroSetting> {
+  final Value<int> id;
+  final Value<int> focusMinutes;
+  final Value<int> shortBreakMinutes;
+  final Value<int> longBreakMinutes;
+  final Value<int> longBreakInterval;
+  const PomodoroSettingsCompanion({
+    this.id = const Value.absent(),
+    this.focusMinutes = const Value.absent(),
+    this.shortBreakMinutes = const Value.absent(),
+    this.longBreakMinutes = const Value.absent(),
+    this.longBreakInterval = const Value.absent(),
+  });
+  PomodoroSettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.focusMinutes = const Value.absent(),
+    this.shortBreakMinutes = const Value.absent(),
+    this.longBreakMinutes = const Value.absent(),
+    this.longBreakInterval = const Value.absent(),
+  });
+  static Insertable<PomodoroSetting> custom({
+    Expression<int>? id,
+    Expression<int>? focusMinutes,
+    Expression<int>? shortBreakMinutes,
+    Expression<int>? longBreakMinutes,
+    Expression<int>? longBreakInterval,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (focusMinutes != null) 'focus_minutes': focusMinutes,
+      if (shortBreakMinutes != null) 'short_break_minutes': shortBreakMinutes,
+      if (longBreakMinutes != null) 'long_break_minutes': longBreakMinutes,
+      if (longBreakInterval != null) 'long_break_interval': longBreakInterval,
+    });
+  }
+
+  PomodoroSettingsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? focusMinutes,
+    Value<int>? shortBreakMinutes,
+    Value<int>? longBreakMinutes,
+    Value<int>? longBreakInterval,
+  }) {
+    return PomodoroSettingsCompanion(
+      id: id ?? this.id,
+      focusMinutes: focusMinutes ?? this.focusMinutes,
+      shortBreakMinutes: shortBreakMinutes ?? this.shortBreakMinutes,
+      longBreakMinutes: longBreakMinutes ?? this.longBreakMinutes,
+      longBreakInterval: longBreakInterval ?? this.longBreakInterval,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (focusMinutes.present) {
+      map['focus_minutes'] = Variable<int>(focusMinutes.value);
+    }
+    if (shortBreakMinutes.present) {
+      map['short_break_minutes'] = Variable<int>(shortBreakMinutes.value);
+    }
+    if (longBreakMinutes.present) {
+      map['long_break_minutes'] = Variable<int>(longBreakMinutes.value);
+    }
+    if (longBreakInterval.present) {
+      map['long_break_interval'] = Variable<int>(longBreakInterval.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PomodoroSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('focusMinutes: $focusMinutes, ')
+          ..write('shortBreakMinutes: $shortBreakMinutes, ')
+          ..write('longBreakMinutes: $longBreakMinutes, ')
+          ..write('longBreakInterval: $longBreakInterval')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2486,6 +4297,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $BudgetsTable budgets = $BudgetsTable(this);
+  late final $ProjectsTable projects = $ProjectsTable(this);
+  late final $TasksTable tasks = $TasksTable(this);
+  late final $PomodoroSessionsTable pomodoroSessions = $PomodoroSessionsTable(
+    this,
+  );
+  late final $PomodoroSettingsTable pomodoroSettings = $PomodoroSettingsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2496,6 +4315,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     categories,
     transactions,
     budgets,
+    projects,
+    tasks,
+    pomodoroSessions,
+    pomodoroSettings,
   ];
 }
 
@@ -3744,6 +5567,951 @@ typedef $$BudgetsTableProcessedTableManager =
       Budget,
       PrefetchHooks Function()
     >;
+typedef $$ProjectsTableCreateCompanionBuilder =
+    ProjectsCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<int> color,
+      Value<int> sortOrder,
+      Value<bool> archived,
+    });
+typedef $$ProjectsTableUpdateCompanionBuilder =
+    ProjectsCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<int> color,
+      Value<int> sortOrder,
+      Value<bool> archived,
+    });
+
+class $$ProjectsTableFilterComposer
+    extends Composer<_$AppDatabase, $ProjectsTable> {
+  $$ProjectsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get archived => $composableBuilder(
+    column: $table.archived,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ProjectsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProjectsTable> {
+  $$ProjectsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get archived => $composableBuilder(
+    column: $table.archived,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ProjectsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProjectsTable> {
+  $$ProjectsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<bool> get archived =>
+      $composableBuilder(column: $table.archived, builder: (column) => column);
+}
+
+class $$ProjectsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ProjectsTable,
+          Project,
+          $$ProjectsTableFilterComposer,
+          $$ProjectsTableOrderingComposer,
+          $$ProjectsTableAnnotationComposer,
+          $$ProjectsTableCreateCompanionBuilder,
+          $$ProjectsTableUpdateCompanionBuilder,
+          (Project, BaseReferences<_$AppDatabase, $ProjectsTable, Project>),
+          Project,
+          PrefetchHooks Function()
+        > {
+  $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProjectsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProjectsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProjectsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<bool> archived = const Value.absent(),
+              }) => ProjectsCompanion(
+                id: id,
+                name: name,
+                color: color,
+                sortOrder: sortOrder,
+                archived: archived,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<int> color = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<bool> archived = const Value.absent(),
+              }) => ProjectsCompanion.insert(
+                id: id,
+                name: name,
+                color: color,
+                sortOrder: sortOrder,
+                archived: archived,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ProjectsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ProjectsTable,
+      Project,
+      $$ProjectsTableFilterComposer,
+      $$ProjectsTableOrderingComposer,
+      $$ProjectsTableAnnotationComposer,
+      $$ProjectsTableCreateCompanionBuilder,
+      $$ProjectsTableUpdateCompanionBuilder,
+      (Project, BaseReferences<_$AppDatabase, $ProjectsTable, Project>),
+      Project,
+      PrefetchHooks Function()
+    >;
+typedef $$TasksTableCreateCompanionBuilder =
+    TasksCompanion Function({
+      Value<int> id,
+      Value<int?> projectId,
+      required String title,
+      Value<String> notes,
+      Value<int> priority,
+      Value<DateTime?> dueDate,
+      Value<String> tags,
+      Value<int> estimateMinutes,
+      Value<int> actualMinutes,
+      Value<DateTime?> completedAt,
+      Value<DateTime> createdAt,
+    });
+typedef $$TasksTableUpdateCompanionBuilder =
+    TasksCompanion Function({
+      Value<int> id,
+      Value<int?> projectId,
+      Value<String> title,
+      Value<String> notes,
+      Value<int> priority,
+      Value<DateTime?> dueDate,
+      Value<String> tags,
+      Value<int> estimateMinutes,
+      Value<int> actualMinutes,
+      Value<DateTime?> completedAt,
+      Value<DateTime> createdAt,
+    });
+
+class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
+  $$TasksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get projectId => $composableBuilder(
+    column: $table.projectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tags => $composableBuilder(
+    column: $table.tags,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get estimateMinutes => $composableBuilder(
+    column: $table.estimateMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get actualMinutes => $composableBuilder(
+    column: $table.actualMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TasksTableOrderingComposer
+    extends Composer<_$AppDatabase, $TasksTable> {
+  $$TasksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get projectId => $composableBuilder(
+    column: $table.projectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tags => $composableBuilder(
+    column: $table.tags,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get estimateMinutes => $composableBuilder(
+    column: $table.estimateMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get actualMinutes => $composableBuilder(
+    column: $table.actualMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TasksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TasksTable> {
+  $$TasksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get projectId =>
+      $composableBuilder(column: $table.projectId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  GeneratedColumn<String> get tags =>
+      $composableBuilder(column: $table.tags, builder: (column) => column);
+
+  GeneratedColumn<int> get estimateMinutes => $composableBuilder(
+    column: $table.estimateMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get actualMinutes => $composableBuilder(
+    column: $table.actualMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$TasksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TasksTable,
+          Task,
+          $$TasksTableFilterComposer,
+          $$TasksTableOrderingComposer,
+          $$TasksTableAnnotationComposer,
+          $$TasksTableCreateCompanionBuilder,
+          $$TasksTableUpdateCompanionBuilder,
+          (Task, BaseReferences<_$AppDatabase, $TasksTable, Task>),
+          Task,
+          PrefetchHooks Function()
+        > {
+  $$TasksTableTableManager(_$AppDatabase db, $TasksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TasksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TasksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TasksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> projectId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<DateTime?> dueDate = const Value.absent(),
+                Value<String> tags = const Value.absent(),
+                Value<int> estimateMinutes = const Value.absent(),
+                Value<int> actualMinutes = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => TasksCompanion(
+                id: id,
+                projectId: projectId,
+                title: title,
+                notes: notes,
+                priority: priority,
+                dueDate: dueDate,
+                tags: tags,
+                estimateMinutes: estimateMinutes,
+                actualMinutes: actualMinutes,
+                completedAt: completedAt,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> projectId = const Value.absent(),
+                required String title,
+                Value<String> notes = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<DateTime?> dueDate = const Value.absent(),
+                Value<String> tags = const Value.absent(),
+                Value<int> estimateMinutes = const Value.absent(),
+                Value<int> actualMinutes = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => TasksCompanion.insert(
+                id: id,
+                projectId: projectId,
+                title: title,
+                notes: notes,
+                priority: priority,
+                dueDate: dueDate,
+                tags: tags,
+                estimateMinutes: estimateMinutes,
+                actualMinutes: actualMinutes,
+                completedAt: completedAt,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TasksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TasksTable,
+      Task,
+      $$TasksTableFilterComposer,
+      $$TasksTableOrderingComposer,
+      $$TasksTableAnnotationComposer,
+      $$TasksTableCreateCompanionBuilder,
+      $$TasksTableUpdateCompanionBuilder,
+      (Task, BaseReferences<_$AppDatabase, $TasksTable, Task>),
+      Task,
+      PrefetchHooks Function()
+    >;
+typedef $$PomodoroSessionsTableCreateCompanionBuilder =
+    PomodoroSessionsCompanion Function({
+      Value<int> id,
+      Value<int?> taskId,
+      Value<String> kind,
+      required DateTime startAt,
+      Value<DateTime?> endAt,
+      Value<int> durationMinutes,
+      Value<bool> interrupted,
+    });
+typedef $$PomodoroSessionsTableUpdateCompanionBuilder =
+    PomodoroSessionsCompanion Function({
+      Value<int> id,
+      Value<int?> taskId,
+      Value<String> kind,
+      Value<DateTime> startAt,
+      Value<DateTime?> endAt,
+      Value<int> durationMinutes,
+      Value<bool> interrupted,
+    });
+
+class $$PomodoroSessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $PomodoroSessionsTable> {
+  $$PomodoroSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startAt => $composableBuilder(
+    column: $table.startAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endAt => $composableBuilder(
+    column: $table.endAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get interrupted => $composableBuilder(
+    column: $table.interrupted,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PomodoroSessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PomodoroSessionsTable> {
+  $$PomodoroSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startAt => $composableBuilder(
+    column: $table.startAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endAt => $composableBuilder(
+    column: $table.endAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get interrupted => $composableBuilder(
+    column: $table.interrupted,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PomodoroSessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PomodoroSessionsTable> {
+  $$PomodoroSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get taskId =>
+      $composableBuilder(column: $table.taskId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startAt =>
+      $composableBuilder(column: $table.startAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endAt =>
+      $composableBuilder(column: $table.endAt, builder: (column) => column);
+
+  GeneratedColumn<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get interrupted => $composableBuilder(
+    column: $table.interrupted,
+    builder: (column) => column,
+  );
+}
+
+class $$PomodoroSessionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PomodoroSessionsTable,
+          PomodoroSession,
+          $$PomodoroSessionsTableFilterComposer,
+          $$PomodoroSessionsTableOrderingComposer,
+          $$PomodoroSessionsTableAnnotationComposer,
+          $$PomodoroSessionsTableCreateCompanionBuilder,
+          $$PomodoroSessionsTableUpdateCompanionBuilder,
+          (
+            PomodoroSession,
+            BaseReferences<
+              _$AppDatabase,
+              $PomodoroSessionsTable,
+              PomodoroSession
+            >,
+          ),
+          PomodoroSession,
+          PrefetchHooks Function()
+        > {
+  $$PomodoroSessionsTableTableManager(
+    _$AppDatabase db,
+    $PomodoroSessionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PomodoroSessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PomodoroSessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PomodoroSessionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> taskId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<DateTime> startAt = const Value.absent(),
+                Value<DateTime?> endAt = const Value.absent(),
+                Value<int> durationMinutes = const Value.absent(),
+                Value<bool> interrupted = const Value.absent(),
+              }) => PomodoroSessionsCompanion(
+                id: id,
+                taskId: taskId,
+                kind: kind,
+                startAt: startAt,
+                endAt: endAt,
+                durationMinutes: durationMinutes,
+                interrupted: interrupted,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> taskId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                required DateTime startAt,
+                Value<DateTime?> endAt = const Value.absent(),
+                Value<int> durationMinutes = const Value.absent(),
+                Value<bool> interrupted = const Value.absent(),
+              }) => PomodoroSessionsCompanion.insert(
+                id: id,
+                taskId: taskId,
+                kind: kind,
+                startAt: startAt,
+                endAt: endAt,
+                durationMinutes: durationMinutes,
+                interrupted: interrupted,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PomodoroSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PomodoroSessionsTable,
+      PomodoroSession,
+      $$PomodoroSessionsTableFilterComposer,
+      $$PomodoroSessionsTableOrderingComposer,
+      $$PomodoroSessionsTableAnnotationComposer,
+      $$PomodoroSessionsTableCreateCompanionBuilder,
+      $$PomodoroSessionsTableUpdateCompanionBuilder,
+      (
+        PomodoroSession,
+        BaseReferences<_$AppDatabase, $PomodoroSessionsTable, PomodoroSession>,
+      ),
+      PomodoroSession,
+      PrefetchHooks Function()
+    >;
+typedef $$PomodoroSettingsTableCreateCompanionBuilder =
+    PomodoroSettingsCompanion Function({
+      Value<int> id,
+      Value<int> focusMinutes,
+      Value<int> shortBreakMinutes,
+      Value<int> longBreakMinutes,
+      Value<int> longBreakInterval,
+    });
+typedef $$PomodoroSettingsTableUpdateCompanionBuilder =
+    PomodoroSettingsCompanion Function({
+      Value<int> id,
+      Value<int> focusMinutes,
+      Value<int> shortBreakMinutes,
+      Value<int> longBreakMinutes,
+      Value<int> longBreakInterval,
+    });
+
+class $$PomodoroSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $PomodoroSettingsTable> {
+  $$PomodoroSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get focusMinutes => $composableBuilder(
+    column: $table.focusMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get shortBreakMinutes => $composableBuilder(
+    column: $table.shortBreakMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get longBreakMinutes => $composableBuilder(
+    column: $table.longBreakMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get longBreakInterval => $composableBuilder(
+    column: $table.longBreakInterval,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PomodoroSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PomodoroSettingsTable> {
+  $$PomodoroSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get focusMinutes => $composableBuilder(
+    column: $table.focusMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get shortBreakMinutes => $composableBuilder(
+    column: $table.shortBreakMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get longBreakMinutes => $composableBuilder(
+    column: $table.longBreakMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get longBreakInterval => $composableBuilder(
+    column: $table.longBreakInterval,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PomodoroSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PomodoroSettingsTable> {
+  $$PomodoroSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get focusMinutes => $composableBuilder(
+    column: $table.focusMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get shortBreakMinutes => $composableBuilder(
+    column: $table.shortBreakMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get longBreakMinutes => $composableBuilder(
+    column: $table.longBreakMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get longBreakInterval => $composableBuilder(
+    column: $table.longBreakInterval,
+    builder: (column) => column,
+  );
+}
+
+class $$PomodoroSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PomodoroSettingsTable,
+          PomodoroSetting,
+          $$PomodoroSettingsTableFilterComposer,
+          $$PomodoroSettingsTableOrderingComposer,
+          $$PomodoroSettingsTableAnnotationComposer,
+          $$PomodoroSettingsTableCreateCompanionBuilder,
+          $$PomodoroSettingsTableUpdateCompanionBuilder,
+          (
+            PomodoroSetting,
+            BaseReferences<
+              _$AppDatabase,
+              $PomodoroSettingsTable,
+              PomodoroSetting
+            >,
+          ),
+          PomodoroSetting,
+          PrefetchHooks Function()
+        > {
+  $$PomodoroSettingsTableTableManager(
+    _$AppDatabase db,
+    $PomodoroSettingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PomodoroSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PomodoroSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PomodoroSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> focusMinutes = const Value.absent(),
+                Value<int> shortBreakMinutes = const Value.absent(),
+                Value<int> longBreakMinutes = const Value.absent(),
+                Value<int> longBreakInterval = const Value.absent(),
+              }) => PomodoroSettingsCompanion(
+                id: id,
+                focusMinutes: focusMinutes,
+                shortBreakMinutes: shortBreakMinutes,
+                longBreakMinutes: longBreakMinutes,
+                longBreakInterval: longBreakInterval,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> focusMinutes = const Value.absent(),
+                Value<int> shortBreakMinutes = const Value.absent(),
+                Value<int> longBreakMinutes = const Value.absent(),
+                Value<int> longBreakInterval = const Value.absent(),
+              }) => PomodoroSettingsCompanion.insert(
+                id: id,
+                focusMinutes: focusMinutes,
+                shortBreakMinutes: shortBreakMinutes,
+                longBreakMinutes: longBreakMinutes,
+                longBreakInterval: longBreakInterval,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PomodoroSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PomodoroSettingsTable,
+      PomodoroSetting,
+      $$PomodoroSettingsTableFilterComposer,
+      $$PomodoroSettingsTableOrderingComposer,
+      $$PomodoroSettingsTableAnnotationComposer,
+      $$PomodoroSettingsTableCreateCompanionBuilder,
+      $$PomodoroSettingsTableUpdateCompanionBuilder,
+      (
+        PomodoroSetting,
+        BaseReferences<_$AppDatabase, $PomodoroSettingsTable, PomodoroSetting>,
+      ),
+      PomodoroSetting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3758,4 +6526,12 @@ class $AppDatabaseManager {
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$BudgetsTableTableManager get budgets =>
       $$BudgetsTableTableManager(_db, _db.budgets);
+  $$ProjectsTableTableManager get projects =>
+      $$ProjectsTableTableManager(_db, _db.projects);
+  $$TasksTableTableManager get tasks =>
+      $$TasksTableTableManager(_db, _db.tasks);
+  $$PomodoroSessionsTableTableManager get pomodoroSessions =>
+      $$PomodoroSessionsTableTableManager(_db, _db.pomodoroSessions);
+  $$PomodoroSettingsTableTableManager get pomodoroSettings =>
+      $$PomodoroSettingsTableTableManager(_db, _db.pomodoroSettings);
 }
