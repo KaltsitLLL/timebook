@@ -163,7 +163,8 @@ void main() {
 
     final chipFinder = find.byKey(const Key('book_at_chip'));
     expect(chipFinder, findsOneWidget);
-    expect(tester.widget<FilterChip>(chipFinder), isA<FilterChip>());
+    // 日期行为纯展示 chip（Container），非可选中 FilterChip
+    expect(tester.widget<Container>(chipFinder), isA<Container>());
     expect(find.textContaining('今天'), findsOneWidget);
     expect(find.textContaining(RegExp(r'今天 \d{1,2}:\d{2}')), findsOneWidget);
   });

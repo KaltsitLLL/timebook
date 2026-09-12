@@ -40,6 +40,7 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
 
 class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   final _amount = TextEditingController();
+  final _memo = TextEditingController();
   String _direction = 'expense';
   int? _pickedAccountId; // 用户显式选择的真实账户
   bool _useNoneAccount = false; // 无账户模式（Task2）
@@ -48,6 +49,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   @override
   void dispose() {
     _amount.dispose();
+    _memo.dispose();
     super.dispose();
   }
 
@@ -81,6 +83,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       direction: _direction,
       amountCents: cents,
       bookAt: DateTime.now(),
+      remark: _memo.text.trim(),
     );
     if (mounted) {
       ScaffoldMessenger.of(context)
@@ -166,21 +169,21 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     );
   }
 
-  /// 分类宫格单元格：selected 高亮（边框=分类色 + 浅色底，圆角 12）。
+  /// 分类宫格单元格：selected 高亮（边框=分类色 + 浅色底，圆角 14）。
   Widget _builtCategoryCell(Category c, int index) {
     final color = _catPalette[index % _catPalette.length];
     final selected = _pickCategoryId == c.id;
     return InkWell(
       key: Key('cat_${c.id}'),
       onTap: () => setState(() => _pickCategoryId = c.id),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
         decoration: BoxDecoration(
           color: selected
               ? color.withValues(alpha: .14)
               : Theme.of(context).colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
               color: selected ? color : Colors.transparent, width: 1.5),
         ),
@@ -234,9 +237,32 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: ListView(padding: const EdgeInsets.all(20), children: [
-        Text('记一笔', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
+      child: ListView(padding: const EdgeInsets.fromLTRB(20, 10, 20, 26), children: [
+        Center(
+          child: Container(
+            key: const Key('sheet_handle'),
+            width: 36,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(99),
+            ),
+          ),
+        ),
+        Row(
+          children: [
+            const Text('记一笔',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const Spacer(),
+            IconButton(
+              key: const Key('sheet_close'),
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
         Row(
           children: [
             _directionPill(
@@ -397,11 +423,52 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 _builtCategoryCell(cats[i], i),
             ],
           ),
-        const SizedBox(height: 24),
-        FilledButton(
-          key: const Key('save_button'),
-          onPressed: _save,
-          child: const Text('保存'),
+        const SizedBox(height: 16),
+        // 备注输入（原型：无边框 + 底部 1px outlineVariant、padding 10/2、字号 15、hint 灰显）
+        TextField(
+          key: const Key('memo_field'),
+          controller: _memo,
+          style: const TextStyle(fontSize: 15),
+          decoration: InputDecoration(
+            hintText: '备注（选填）',
+            hintStyle: TextStyle(
+                fontSize: 15,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            border: InputBorder.none,
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                  width: 1),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                  width: 1),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+            isDense: true,
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: FilledButton(
+            key: const Key('save_button'),
+            onPressed: _save,
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              elevation: 3,
+              shadowColor: const Color(0x4D3F77B6),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999)),
+              textStyle:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            child: const Text('保存'),
+          ),
         ),
       ]),
     );
