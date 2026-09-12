@@ -87,6 +87,9 @@ void main() {
   });
 
   testWidgets('记账 Sheet 预选默认付款账户', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final db = AppDatabase.forTesting(inMemoryExecutor());
     final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
@@ -154,6 +157,9 @@ void main() {
   });
 
   testWidgets('记账 Sheet 显示日期行 chip（今天 HH:mm）', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final (c, _) = await setup();
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -242,6 +248,9 @@ void main() {
 
   testWidgets('账户区为单 chip 显示当前账户名（不记账户/选择账户可切换且非平铺）',
       (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final db = AppDatabase.forTesting(inMemoryExecutor());
     final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
