@@ -115,3 +115,20 @@
 | 记一笔日期行「今天 HH:mm」（只读） | ✅ | `ca93a0f` |
 
 **本轮验收**：`flutter analyze` 0 issue · `flutter test` **140 全绿**（131 基线 + 9）
+
+---
+
+## 八、对标源码吸收轮 B1（2026-09-12，精读 Veri Fin/SP/BeeCount 源码）
+
+- 精读报告：[`docs/superpowers/benchmarks/benchmark-study-2026-09-12.md`](../../../docs/superpowers/benchmarks/benchmark-study-2026-09-12.md)（三仓库已克隆至 `benchmarks/`）
+
+| 吸收项 | 来源 | commit |
+|---|---|---|
+| 预算键月周期口径（键月=起始日所在月，改起始日零迁移）+ 剩余日均 + 85% 预警 | Veri Fin budget_cycle/budget_snapshots | `91f11d5` |
+| 番茄延长（+5 分）/跳过休息/到时 3s「继续专注」overtime | SP focus-mode.reducer | `67fb8ba` |
+| 导入分类兜底「未分类」（绝不落空 categoryId） | Veri Fin plan_builder | `a0ee3a3` |
+| 记账 Sheet 测试视口修正（顺序调整后折叠区用例） | — | `41d179c` |
+
+**本轮验收**：`flutter analyze` 0 issue · `flutter test` **163 全绿**（146 基线 + 17）
+
+**延后项**（报告已记，改动面大/依赖重）：退款独立条目模型重做、提醒 zonedSchedule 精确时点、批量/搜索筛选器、分类唯一索引迁移、同步基建。
