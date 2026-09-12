@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/util/formats.dart';
 import '../../../core/db/app_database.dart';
 import '../data/bookkeeping_repository.dart';
 import 'bookkeeping_providers.dart';
@@ -29,7 +30,7 @@ class TransactionListScreen extends ConsumerWidget {
                 title: Text(t.counterparty.isEmpty ? '收支' : t.counterparty),
                 subtitle: Text(t.remark.isEmpty ? t.bookAt.toIso8601String().substring(0, 10) : t.remark),
                 trailing: Text(
-                  '${t.direction == 'income' ? '+' : '-'}¥ ${(t.amountCents / 100).toStringAsFixed(2)}',
+                  '${t.direction == 'income' ? '+' : '-'}¥ ${formatCents(t.amountCents)}',
                   style: TextStyle(fontWeight: FontWeight.w600,
                       color: t.direction == 'income'
                           ? const Color(0xFF4CB3C4)

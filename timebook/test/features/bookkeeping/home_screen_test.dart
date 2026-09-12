@@ -45,7 +45,7 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: HomeScreen()))));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('¥ 8467.50'), findsOneWidget); // 850000 - 3250 = 846750 分
+    expect(find.textContaining('¥ 8,467.50'), findsOneWidget); // 850000 - 3250 = 846750 分
     expect(find.textContaining('收入'), findsOneWidget);
     expect(find.textContaining('支出'), findsOneWidget);
     expect(find.text('美团外卖'), findsOneWidget);

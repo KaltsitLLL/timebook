@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/util/formats.dart';
 import '../../../core/db/app_database.dart';
 import '../data/bookkeeping_repository.dart';
 import 'add_transaction_sheet.dart';
@@ -57,7 +58,7 @@ class _HomeView extends StatelessWidget {
   final (int, int) delta;
   final List<Transaction> recent;
 
-  String get _fmt => '¥ ${(balanceCents / 100).toStringAsFixed(2)}';
+  String get _fmt => '¥ ${formatCents(balanceCents)}';
 
   @override
   Widget build(BuildContext context) {
@@ -79,10 +80,10 @@ class _HomeView extends StatelessWidget {
           Text(_fmt, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: Colors.white)),
           const SizedBox(height: 12),
           Row(children: [
-            Text('收入 ¥ ${(delta.$1 / 100).toStringAsFixed(2)}',
+            Text('收入 ¥ ${formatCents(delta.$1)}',
                 style: const TextStyle(color: Colors.white, fontSize: 14)),
             const SizedBox(width: 22),
-            Text('支出 ¥ ${(delta.$2 / 100).toStringAsFixed(2)}',
+            Text('支出 ¥ ${formatCents(delta.$2)}',
                 style: const TextStyle(color: Colors.white, fontSize: 14)),
           ]),
         ]),
@@ -119,7 +120,7 @@ class _HomeView extends StatelessWidget {
                 ? (t.direction == 'income' ? '收入' : '支出')
                 : t.counterparty),
             trailing: Text(
-              '${t.direction == 'income' ? '+' : '-'}¥ ${(t.amountCents / 100).toStringAsFixed(2)}',
+              '${t.direction == 'income' ? '+' : '-'}¥ ${formatCents(t.amountCents)}',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: t.direction == 'income'
