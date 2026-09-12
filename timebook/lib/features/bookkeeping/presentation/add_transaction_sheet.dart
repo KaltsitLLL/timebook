@@ -339,7 +339,23 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                       color: Colors.green, fontWeight: FontWeight.w600)),
             ),
           ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+        if (cats.isEmpty)
+          const Text('默认分类未生成，请新建账本或稍后重试')
+        else
+          GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 1.1,
+            children: [
+              for (var i = 0; i < cats.length; i++)
+                _builtCategoryCell(cats[i], i),
+            ],
+          ),
+        const SizedBox(height: 12),
         Row(
           children: [
             Material(
@@ -407,23 +423,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        if (cats.isEmpty)
-          const Text('默认分类未生成，请新建账本或稍后重试')
-        else
-          GridView.count(
-            crossAxisCount: 4,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 1.1,
-            children: [
-              for (var i = 0; i < cats.length; i++)
-                _builtCategoryCell(cats[i], i),
-            ],
-          ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         // 备注输入（原型：无边框 + 底部 1px outlineVariant、padding 10/2、字号 15、hint 灰显）
         TextField(
           key: const Key('memo_field'),
