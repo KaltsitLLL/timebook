@@ -12,8 +12,10 @@ class TimeBookApp extends StatelessWidget {
   const TimeBookApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: '时账',
-        theme: buildTheme(),
-        home: const AppShell(),
-      );
+            title: '时账',
+            theme: buildTheme(),
+            darkTheme: buildDarkTheme(),
+            themeMode: ThemeMode.system,
+            home: const AppShell(),
+          );
 }
