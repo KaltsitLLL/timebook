@@ -244,6 +244,8 @@ idle ──开始──▶ focusing ──完成──▶ 确认弹窗(完成/�
 | 周期记账 | Firefly III / BeeCount | M5（新表 recurring_transactions，汇入待确认） |
 | 每日小结 | Super Productivity | M7（新表 day_summaries，收工一键归档） |
 
+> **M5 设计约束（源自用户对 Veri Fin 的痛点）**：支付宝/微信导入"几行错误"不可静默丢弃——每行要么成功解析，要么进错误行清单（含原因 + 原始行快照）可见可重处理；每来源 ≥10 个脱敏真实 fixtures 锁行为防版本漂移。
+
 ### 未来扩展池（候选，按优先级排队，不阻塞 v1）
 
-云同步（WebDAV/iCloud/Supabase，复用 BeeCount 思路）· 多币种（Firefly III）· AI 财务问答（Maybe：自然语言查账，接 GLM 复用 AI 模块）· 储蓄目标/储蓄罐（Firefly III）· Flowtime 无限时专注（Super Productivity）· 专注热力图与深度统计 · 规则引擎自动分类 · 多皮肤主题（BeeCount）· 语音记账与桌面 OCR（v1 已明确后置）· 插件系统（Super Productivity，重）· GitHub/Jira 集成（个人场景低优）
+云同步（WebDAV/iCloud/Supabase，复用 BeeCount/Veri Fin 思路）· 多币种（Firefly III / Veri Fin：本位币+账户币种，缺率明确阻止猜测）· AI 财务问答（Maybe / Veri Fin：只读工具查账，接 GLM 复用 AI 模块）· 储蓄目标/储蓄罐（Firefly III）· **预算周期按发薪日**（Veri Fin：如 22 日→次月 21 日为一期，高意向）· 报销/退款冲抵（Veri Fin）· 按日预算上限与今日进度（Veri Fin）· 应用锁（PIN/图案/生物，Veri Fin）· 桌面快速记账小组件（Veri Fin / BeeCount）· Flowtime 无限时专注（Super Productivity）· 专注热力图与深度统计 · 规则引擎自动分类 · 多皮肤主题（BeeCount）· 语音记账与桌面 OCR（v1 已明确后置）· 插件系统（Super Productivity，重）· GitHub/Jira 集成（个人场景低优）
