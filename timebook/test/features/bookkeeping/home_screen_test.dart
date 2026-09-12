@@ -81,7 +81,7 @@ void main() {
 
     await tester.tap(find.text('预算进度'));
     await tester.pumpAndSettle();
-    expect(find.text('本月预算'), findsOneWidget);
+    expect(find.text('本期预算'), findsOneWidget);
   });
 
   testWidgets('总览含分类支出卡与快捷入口', (tester) async {

@@ -466,7 +466,7 @@ class BookkeepingRepository {
       totalBudgetCents: totalBudget,
       totalSpentCents: totalSpent,
       lines: lines,
-      remainingPerDayCents: daysLeft <= 0 ? 0 : remaining ~/ daysLeft,
+      remainingDailyCents: daysLeft <= 0 ? 0 : remaining ~/ daysLeft,
       usingDefault: usingDefault,
     );
   }
@@ -491,15 +491,19 @@ class BudgetProgress {
       {required this.totalBudgetCents,
       required this.totalSpentCents,
       required this.lines,
-      required this.remainingPerDayCents,
+      required this.remainingDailyCents,
       this.usingDefault = false});
   final int totalBudgetCents;
   final int totalSpentCents;
   final List<BudgetLine> lines;
-  final int remainingPerDayCents;
+  final int remainingDailyCents;
   final bool usingDefault; // 是否回退用了默认预算（本月无预算记录）
   double get totalPct =>
       totalBudgetCents == 0 ? 0 : totalSpentCents * 100 / totalBudgetCents;
+
+  /// 85% 预警：总预算>0 且已用占比 ∈ [85%, 100%)。
+  bool get nearLimit =>
+      totalBudgetCents > 0 && totalPct >= 85 && totalPct < 100;
 }
 
 class MonthlySummary {

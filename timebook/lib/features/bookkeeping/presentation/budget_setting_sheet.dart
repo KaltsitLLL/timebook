@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/util/formats.dart';
 import 'bookkeeping_providers.dart';
+import 'budget_period_helper.dart';
 
 class BudgetSettingSheet extends ConsumerStatefulWidget {
   const BudgetSettingSheet({super.key});
@@ -49,7 +50,9 @@ class _BudgetSettingSheetState extends ConsumerState<BudgetSettingSheet> {
     final repo = ref.read(bookkeepingRepositoryProvider);
     final l = await _ledgerId(ref);
     if (l == null) return;
-    final month = monthKey(DateTime.now());
+    final startDay = int.tryParse(_periodStart.text.trim()) ?? 1;
+    final startDayClamped = startDay.clamp(1, 28).toInt();
+    final month = budgetCycleKeyMonth(DateTime.now(), startDayClamped);
     final totalCents = _yuanToCents(_total.text);
     final foodCents = _yuanToCents(_food.text);
     if (totalCents != null) {
@@ -61,8 +64,7 @@ class _BudgetSettingSheetState extends ConsumerState<BudgetSettingSheet> {
       await repo.upsertBudget(
           ledgerId: l, categoryId: food.first.id, month: month, amountCents: foodCents);
     }
-    final startDay = int.tryParse(_periodStart.text.trim()) ?? 1;
-    await repo.setPeriodStartDay(startDay.clamp(1, 28).toInt());
+    await repo.setPeriodStartDay(startDayClamped);
     if (!mounted) return;
     final nav = Navigator.of(context);
     if (nav.canPop()) nav.pop();
@@ -93,7 +95,8 @@ class _BudgetSettingSheetState extends ConsumerState<BudgetSettingSheet> {
     final repo = ref.read(bookkeepingRepositoryProvider);
     final l = await _ledgerId(ref);
     if (l == null) return;
-    final nowMonth = monthKey(DateTime.now());
+    final startDay = await repo.periodStartDay();
+    final nowMonth = budgetCycleKeyMonth(DateTime.now(), startDay);
     final lastMonth = prevMonthKey(nowMonth);
     final lastBudgets =
         await repo.budgetsForMonth(ledgerId: l, month: lastMonth);
@@ -138,7 +141,7 @@ class _BudgetSettingSheetState extends ConsumerState<BudgetSettingSheet> {
               controller: _total,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                  labelText: '本月总预算（元）',
+                  labelText: '本期总预算（元）',
                   border: OutlineInputBorder(),
                   prefixText: '¥ '),
             ),

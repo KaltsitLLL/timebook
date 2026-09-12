@@ -302,7 +302,7 @@ void main() {
     expect(p.totalBudgetCents, 1000000);
     expect(p.totalSpentCents, 270000);
     expect(p.totalPct, closeTo(27.0, 0.05));
-    expect(p.remainingPerDayCents,
+    expect(p.remainingDailyCents,
         greaterThanOrEqualTo(24000)); // (1000000-270000)/当月剩余天数
     final foodLine = p.lines.singleWhere((x) => x.categoryId == food);
     expect(foodLine.spentCents, 150000);
@@ -310,6 +310,42 @@ void main() {
     final transLine = p.lines.singleWhere((x) => x.categoryId == trans);
     expect(transLine.spentCents, 120000);
     expect(transLine.isOverBudget, isFalse); // 未设分类预算 → 不参与超支判定
+  });
+
+  test('budgetProgress：85% 阈值触发 nearLimit（>=100% 不触发）', () async {
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final now = DateTime.now();
+    final month = monthKey(now);
+    await repo.upsertBudget(ledgerId: l, month: month, amountCents: 100000);
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense',
+        amountCents: 90000, bookAt: now); // 90% → 预警
+
+    final p = await repo.budgetProgress(ledgerId: l, month: month);
+    expect(p.nearLimit, isTrue);
+
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense',
+        amountCents: 20000, bookAt: now); // 110% → 超支
+    final over = await repo.budgetProgress(ledgerId: l, month: month);
+    expect(over.nearLimit, isFalse);
+  });
+
+  test('budgetProgress：过去期 remainingDailyCents 为 0', () async {
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    await repo.upsertBudget(ledgerId: l, month: '2020-01', amountCents: 100000);
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense',
+        amountCents: 20000, bookAt: DateTime(2020, 1, 5));
+
+    final p = await repo.budgetProgress(ledgerId: l, month: '2020-01',
+        periodStart: DateTime(2020, 1, 1),
+        periodEnd: DateTime(2020, 1, 31, 23, 59, 59, 999));
+    expect(p.remainingDailyCents, 0);
   });
 
   test('addTransaction 开启 applyRules 时从未分类自动推断分类', () async {

@@ -21,3 +21,16 @@ PeriodRange periodRangeFor(DateTime now, int startDay) {
     DateTime(now.year, now.month + 1, startDay - 1, 23, 59, 59, 999),
   );
 }
+
+/// 预算存储键月 = 周期起始日所在月（零迁移口径）。
+/// date.day >= startDay → 当月，否则上月（yyyy-MM）。
+String budgetCycleKeyMonth(DateTime date, int startDay) {
+  final y = date.year;
+  final m = date.month;
+  if (date.day >= startDay) {
+    return '${y.toString().padLeft(4, '0')}-${m.toString().padLeft(2, '0')}';
+  }
+  final prev = DateTime(y, m - 1);
+  return '${prev.year.toString().padLeft(4, '0')}-'
+      '${prev.month.toString().padLeft(2, '0')}';
+}

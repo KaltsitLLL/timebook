@@ -46,7 +46,7 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: BudgetScreen()))));
     await tester.pumpAndSettle();
 
-    expect(find.text('本月预算'), findsOneWidget);
+    expect(find.text('本期预算'), findsOneWidget);
     expect(find.textContaining('10,000.00'), findsWidgets); // 总预算 ¥10,000
     expect(find.textContaining('800.00'), findsWidgets); // 餐饮净额 ¥800
     expect(find.text('餐饮'), findsWidgets);
@@ -102,5 +102,31 @@ void main() {
     final lastDay = DateTime(now.year, now.month + 1, 0).day;
     expect(find.text('本期（${now.month}/1–${now.month}/$lastDay）'),
         findsOneWidget);
+  });
+
+  testWidgets('预算页 85% 预警显示「已用 xx%（预警）」', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final now = DateTime.now();
+    await repo.upsertBudget(
+        ledgerId: l, month: monthKey(now), amountCents: 100000);
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense',
+        amountCents: 90000, bookAt: DateTime(now.year, now.month, 12));
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: BudgetScreen()))));
+    await tester.pumpAndSettle();
+
+    expect(find.text('已用 90%'), findsOneWidget);
   });
 }

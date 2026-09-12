@@ -92,14 +92,14 @@ class BudgetScreen extends ConsumerWidget {
             totalBudgetCents: 0,
             totalSpentCents: 0,
             lines: [],
-            remainingPerDayCents: 0),
+            remainingDailyCents: 0),
         label,
         const <int?, (Color, IconData)>{}
       );
     }
     final s = await repo.budgetProgress(
         ledgerId: ledgerId,
-        month: monthKey(now),
+        month: budgetCycleKeyMonth(now, startDay),
         periodStart: range.start,
         periodEnd: range.end);
     final cats = await repo.categories(ledgerId);
@@ -133,7 +133,7 @@ class BudgetScreen extends ConsumerWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text('本月预算',
+          Text('本期预算',
               style: TextStyle(color: scheme.onPrimaryContainer, fontSize: 13)),
           const Spacer(),
           Text('${p.totalPct.round()}%',
@@ -184,8 +184,14 @@ class BudgetScreen extends ConsumerWidget {
             Text('已超支',
                 style: TextStyle(
                     color: scheme.error, fontWeight: FontWeight.w700, fontSize: 13)),
-          if (!over)
-            Text('剩余日均 ¥ ${formatCents(p.remainingPerDayCents)}',
+          if (!over && p.nearLimit)
+            Text('已用 ${p.totalPct.round()}%',
+                style: const TextStyle(
+                    color: Color(0xFFC8891A),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13)),
+          if (!over && !p.nearLimit)
+            Text('剩余日均 ¥ ${formatCents(p.remainingDailyCents)}',
                 style: TextStyle(
                     color: scheme.onPrimaryContainer.withValues(alpha: .8),
                     fontSize: 12)),

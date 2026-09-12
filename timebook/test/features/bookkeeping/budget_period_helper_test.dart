@@ -31,4 +31,16 @@ void main() {
     expect(r.start, DateTime(2026, 12, 22));
     expect(r.end, DateTime(2027, 1, 21, 23, 59, 59, 999));
   });
+
+  test('budgetCycleKeyMonth startDay=22: 9/12 → 2026-08', () {
+    expect(budgetCycleKeyMonth(DateTime(2026, 9, 12), 22), '2026-08');
+  });
+
+  test('budgetCycleKeyMonth startDay=22: 9/25 → 2026-09', () {
+    expect(budgetCycleKeyMonth(DateTime(2026, 9, 25), 22), '2026-09');
+  });
+
+  test('budgetCycleKeyMonth startDay=1: 9/12 → 2026-09', () {
+    expect(budgetCycleKeyMonth(DateTime(2026, 9, 12), 1), '2026-09');
+  });
 }
