@@ -57,6 +57,24 @@ class FocusTimer {
     // UI 每秒调用本方法触发 setState 即可，休眠/阻塞后自动补偿。
   }
 
+  /// 专注中延长结束时间（仅 focus 专注计时有效）。成功返回 true，
+  /// 其它状态/模式（idle/paused/休息/流式）保持原状返回 false。
+  bool extend(Duration d, {DateTime? now}) {
+    if (phase != TimerPhase.focusing || mode != TimerMode.focus) return false;
+    _endAt = _endAt!.add(d);
+    return true;
+  }
+
+  /// 休息中（短/长休计时）直接跳过：回到 idle 并清空结束时间。
+  /// 专注/流式/非计时中无操作。
+  void skipRest({DateTime? now}) {
+    if (phase != TimerPhase.focusing) return;
+    if (mode != TimerMode.short && mode != TimerMode.long) return;
+    phase = TimerPhase.idle;
+    _endAt = null;
+    _remainAtPauseSeconds = null;
+  }
+
   void pause({DateTime? now}) {
     if (phase != TimerPhase.focusing) return;
     _remainAtPauseSeconds = remainingSeconds(now: now);

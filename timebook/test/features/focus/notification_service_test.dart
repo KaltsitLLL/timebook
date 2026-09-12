@@ -90,6 +90,10 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump();
 
+    // 到 0 后进入 overtime，3 秒后自动完成再弹确认框
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+
     // 专注完成弹确认框，点「取消」以关闭
     await tester.tap(find.text('取消'));
     await tester.pumpAndSettle();

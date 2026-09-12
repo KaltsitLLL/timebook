@@ -36,6 +36,8 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
   late final FocusTimer _timer;
   Timer? _clock;
   DateTime? _flowStart;
+  bool _overtimePending = false;
+  Timer? _overtimeTimer;
 
   @override
   void initState() {
@@ -55,6 +57,7 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
   @override
   void dispose() {
     _clock?.cancel();
+    _overtimeTimer?.cancel();
     super.dispose();
   }
 
@@ -62,10 +65,54 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
     if (_timer.mode != TimerMode.flowtime &&
         _timer.phase == TimerPhase.focusing &&
         _timer.remainingSeconds(now: widget.now()) <= 0) {
-      final finishedMode = _timer.mode;
-      _timer.reset();
-      widget.onComplete?.call(finishedMode);
+      if (_timer.mode == TimerMode.focus) {
+        // 专注到 0：进入 overtime 待决态，3 秒内可点「继续专注」延长，
+        // 否则自动走完成回调。避免重复进入。
+        if (!_overtimePending) {
+          _overtimePending = true;
+          _overtimeTimer = Timer(const Duration(seconds: 3), () {
+            if (mounted) _completeFocus();
+          });
+        }
+      } else {
+        // 休息到 0：直接按休息完成语义落库。
+        final finishedMode = _timer.mode;
+        _timer.reset();
+        widget.onComplete?.call(finishedMode);
+      }
     }
+    setState(() {});
+  }
+
+  void _cancelOvertime() {
+    _overtimeTimer?.cancel();
+    _overtimeTimer = null;
+    _overtimePending = false;
+  }
+
+  void _completeFocus() {
+    _cancelOvertime();
+    final finishedMode = _timer.mode;
+    _timer.reset();
+    widget.onComplete?.call(finishedMode);
+    if (mounted) setState(() {});
+  }
+
+  void _onExtend() {
+    _timer.extend(const Duration(minutes: 5));
+    setState(() {});
+  }
+
+  void _onSkipBreak() {
+    final finishedMode = _timer.mode;
+    _timer.skipRest();
+    widget.onComplete?.call(finishedMode);
+    setState(() {});
+  }
+
+  void _onOvertimeContinue() {
+    _cancelOvertime();
+    _timer.extend(const Duration(minutes: 5));
     setState(() {});
   }
 
@@ -74,6 +121,7 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
       _mode = mode;
       _timer.mode = mode;
       _timer.reset();
+      _cancelOvertime();
     });
   }
 
@@ -191,6 +239,15 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
           style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700),
         ),
       ]),
+      if (_overtimePending) ...[
+        const SizedBox(height: 8),
+        FilledButton.icon(
+          key: const Key('overtime_continue'),
+          onPressed: _onOvertimeContinue,
+          icon: const Icon(Icons.play_arrow, size: 16),
+          label: const Text('继续专注'),
+        ),
+      ],
       const SizedBox(height: 10),
       Text(
         widget.boundTask != null
@@ -199,11 +256,36 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
         style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
       ),
       const SizedBox(height: 14),
-      FilledButton.icon(
-        key: const Key('focus_start'),
-        onPressed: _onPrimary,
-        icon: Icon(icon),
-        label: Text(label),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FilledButton.icon(
+            key: const Key('focus_start'),
+            onPressed: _onPrimary,
+            icon: Icon(icon),
+            label: Text(label),
+          ),
+          if (phase == TimerPhase.focusing &&
+              _mode == TimerMode.focus) ...[
+            const SizedBox(width: 8),
+            TextButton.icon(
+              key: const Key('focus_extend'),
+              onPressed: _onExtend,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('+5 分'),
+            ),
+          ],
+          if (phase == TimerPhase.focusing &&
+              (_mode == TimerMode.short || _mode == TimerMode.long)) ...[
+            const SizedBox(width: 8),
+            TextButton.icon(
+              key: const Key('skip_break'),
+              onPressed: _onSkipBreak,
+              icon: const Icon(Icons.skip_next, size: 18),
+              label: const Text('跳过休息'),
+            ),
+          ],
+        ],
       ),
     ]);
   }
