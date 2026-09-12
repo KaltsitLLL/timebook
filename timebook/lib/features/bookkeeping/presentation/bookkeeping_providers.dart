@@ -19,9 +19,15 @@ final bookkeepingRepositoryProvider =
 
 final categoriesProvider = FutureProvider<List<Category>>((ref) async {
   final repo = ref.watch(bookkeepingRepositoryProvider);
-  final ledgers = await repo.ledgers();
-  if (ledgers.isEmpty) return const [];
-  return repo.categories(ledgers.first.id);
+  final ledgerId = await ref.watch(currentLedgerProvider.future);
+  if (ledgerId == null) return const [];
+  var cats = await repo.categories(ledgerId);
+  if (cats.isEmpty) {
+    // 兜底：既有账本无分类时自动预置默认分类（对齐原型 8 分类）
+    await repo.ensureDefaultCategories(ledgerId);
+    cats = await repo.categories(ledgerId);
+  }
+  return cats;
 });
 
 /// 首个账本的账户列表（供记账 Sheet/设置默认账户使用）。
