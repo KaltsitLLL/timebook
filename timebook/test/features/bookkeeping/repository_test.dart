@@ -16,7 +16,7 @@ void main() {
   tearDown(() async => db.close());
 
   test('schema v1 可打开且各表可查询', () async {
-    final txn = await db.transaction(() async {
+    await db.transaction(() async {
       await db.into(db.ledgers).insert(LedgersCompanion.insert(
           name: '测试账本', currency: const Value('CNY')));
       await db
