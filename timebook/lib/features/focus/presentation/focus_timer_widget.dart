@@ -12,6 +12,7 @@ class FocusTimerWidget extends StatefulWidget {
     this.shortBreakMinutes = 5,
     this.longBreakMinutes = 15,
     this.boundTask,
+    this.hintTask,
     this.onComplete,
     required this.now,
   });
@@ -19,6 +20,7 @@ class FocusTimerWidget extends StatefulWidget {
   final int shortBreakMinutes;
   final int longBreakMinutes;
   final String? boundTask;
+  final String? hintTask;
   final VoidCallback? onComplete;
   final DateTime Function() now;
 
@@ -145,7 +147,9 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
       ]),
       const SizedBox(height: 10),
       Text(
-        widget.boundTask != null ? '专注中：${widget.boundTask}' : '请先选择任务',
+        widget.boundTask != null
+            ? '专注中：${widget.boundTask}'
+            : (widget.hintTask ?? '请先选择任务'),
         style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
       ),
       const SizedBox(height: 14),

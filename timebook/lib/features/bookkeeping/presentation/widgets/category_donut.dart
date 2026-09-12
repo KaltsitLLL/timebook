@@ -26,6 +26,28 @@ class CategoryDonut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = slices.fold<int>(0, (s, e) => s + e.value);
+    // 无数据：占位灰环 + 中心 ¥ 0.00 + 图例灰字提示
+    if (slices.isEmpty || total == 0) {
+      return Row(children: [
+        SizedBox(
+          width: 128,
+          height: 128,
+          child: CustomPaint(painter: _EmptyDonutPainter()),
+        ),
+        const SizedBox(width: 18),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            _TotalLine(amountCents: 0, centerLabel: centerLabel),
+            const SizedBox(height: 10),
+            const Text('暂无支出数据',
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w400)),
+          ]),
+        ),
+      ]);
+    }
     final top = [...slices]..sort((a, b) => b.value - a.value);
     return Row(children: [
       SizedBox(
@@ -82,4 +104,48 @@ class CategoryDonut extends StatelessWidget {
       ),
     ]);
   }
+}
+
+/// 中心合计行（空态复用以渲染 ¥ 0.00 {centerLabel}）。
+class _TotalLine extends StatelessWidget {
+  const _TotalLine({required this.amountCents, required this.centerLabel});
+  final int amountCents;
+  final String centerLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('¥ ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        Text(formatCents(amountCents),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        const SizedBox(width: 4),
+        Text(centerLabel,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+}
+
+/// 空态占位：70% 透明度灰环弧段。
+class _EmptyDonutPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final stroke = 14.0;
+    final radius = size.shortestSide / 2 - stroke / 2;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.grey.withValues(alpha: 0.7);
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
+        -1.5708, 1.25 * 3.141592653589793, false, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -20,4 +20,14 @@ void main() {
     expect(find.text('交通'), findsOneWidget);
     expect(find.text('娱乐'), findsNothing); // 仅 Top4
   });
+
+  testWidgets('空态：无数据时显示占位圆环与灰字暂无支出数据', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+            body: CategoryDonut(slices: [], centerLabel: '本月支出'))));
+    await tester.pumpAndSettle();
+    expect(find.text('暂无支出数据'), findsOneWidget);
+    expect(find.textContaining('0.00'), findsOneWidget);
+    expect(find.text('本月支出'), findsOneWidget);
+  });
 }

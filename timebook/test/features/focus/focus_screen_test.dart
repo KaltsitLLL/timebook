@@ -99,4 +99,26 @@ void main() {
     expect(find.text('重要·不紧急'), findsOneWidget);
     expect(find.text('整理PRD'), findsOneWidget);
   });
+
+  testWidgets('无待办任务时显示绑定引导文案', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = FocusRepository(db);
+
+    final container = ProviderContainer(overrides: [
+      focusDatabaseProvider.overrideWithValue(db),
+      focusRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: FocusScreen()))));
+    await tester.pumpAndSettle();
+
+    await tester.dragUntilVisible(find.byKey(const Key('focus_guide')),
+        find.byType(ListView), const Offset(0, -100));
+    expect(find.byKey(const Key('focus_guide')), findsOneWidget);
+    expect(find.text('添加任务后在任务行点 🍅 绑定开始专注'), findsOneWidget);
+  });
 }

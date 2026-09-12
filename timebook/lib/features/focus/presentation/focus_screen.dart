@@ -150,23 +150,34 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
               child: const Text('四象限'),
             ),
           ]),
-          for (final t in tasks)
-            ListTile(
-              dense: true,
-              leading: Checkbox(
-                value: false,
-                onChanged: (_) async {
-                  await repo.toggleCompleted(taskId: t.id);
-                  setState(() {});
-                },
+          if (tasks.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 8),
+              child: Text(
+                '添加任务后在任务行点 🍅 绑定开始专注',
+                key: const Key('focus_guide'),
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w400),
               ),
-              title: Text(t.title),
-              trailing: TextButton(
-                key: Key('bind_${t.id}'),
-                onPressed: () => setState(() => _bound = t),
-                child: const Text('🍅'),
+            )
+          else
+            for (final t in tasks)
+              ListTile(
+                dense: true,
+                leading: Checkbox(
+                  value: false,
+                  onChanged: (_) async {
+                    await repo.toggleCompleted(taskId: t.id);
+                    setState(() {});
+                  },
+                ),
+                title: Text(t.title),
+                trailing: TextButton(
+                  key: Key('bind_${t.id}'),
+                  onPressed: () => setState(() => _bound = t),
+                  child: const Text('🍅'),
+                ),
               ),
-            ),
           const SizedBox(height: 8),
           TextField(
             controller: _quick,
