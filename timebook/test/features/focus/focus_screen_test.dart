@@ -5,6 +5,7 @@ import 'package:timebook/core/db/app_database.dart';
 import 'package:timebook/features/focus/data/focus_repository.dart';
 import 'package:timebook/features/focus/presentation/focus_providers.dart';
 import 'package:timebook/features/focus/presentation/focus_screen.dart';
+import 'package:timebook/features/focus/presentation/quadrant_view.dart';
 
 import '../../helpers/db.dart';
 
@@ -43,5 +44,29 @@ void main() {
     fakeNow = fakeNow.add(const Duration(seconds: 2));
     await tester.pump(const Duration(seconds: 2));
     expect(find.textContaining('24:5'), findsOneWidget); // 倒计时开始
+  });
+
+  testWidgets('四象限视图按重要/紧急分组', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = FocusRepository(db);
+    final pid = await repo.createProject(name: '研究');
+    await repo.createTask(title: '整理PRD', projectId: pid, priority: 1);
+
+    final container = ProviderContainer(overrides: [
+      focusDatabaseProvider.overrideWithValue(db),
+      focusRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: QuadrantView()))));
+    await tester.pumpAndSettle();
+
+    // priority=1 → 重要；无 dueDate → 不紧急，故落在「重要·不紧急」
+    expect(find.text('重要·紧急'), findsOneWidget);
+    expect(find.text('重要·不紧急'), findsOneWidget);
+    expect(find.text('整理PRD'), findsOneWidget);
   });
 }

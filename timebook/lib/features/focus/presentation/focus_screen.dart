@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
-import '../../bookkeeping/presentation/placeholder_screens.dart';
 import '../domain/quick_add_parser.dart';
 import 'focus_providers.dart';
 import 'focus_timer_widget.dart';
+import 'quadrant_view.dart';
 
 class FocusScreen extends ConsumerStatefulWidget {
   const FocusScreen({super.key});
@@ -79,7 +79,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
             const Spacer(),
             TextButton(
               onPressed: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: '四象限'))),
+                  MaterialPageRoute(builder: (_) => const QuadrantView())),
               child: const Text('四象限'),
             ),
           ]),
