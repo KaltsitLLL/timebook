@@ -301,6 +301,7 @@ class Transactions extends Table {
       integer().nullable().references(Categories, #id)();
   TextColumn get direction => text()(); // income / expense / transfer
   IntColumn get amountCents => integer()();
+  IntColumn get refundedCents => integer().withDefault(const Constant(0))(); // 退款冲抵金额（含部分退款），统计按净额
   DateTimeColumn get bookAt => dateTime()();
   TextColumn get counterparty => text().withDefault(const Constant(''))();
   TextColumn get remark => text().withDefault(const Constant(''))();
@@ -521,6 +522,25 @@ test('重复 importKey 触发唯一约束（去重指纹）', () async {
   await ins('WX-20260901-1'); // 首次 OK
   expect(() => ins('WX-20260901-1'), throwsA(anything));
 });
+
+test('退款冲抵：按净额统计且原行保留，不新增收入行', () async {
+  final repo = BookkeepingRepository(db);
+  final l = await repo.createLedger(name: '生活');
+  final a = await repo.createAccount(ledgerId: l, name: '卡');
+  final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+  final tid = await repo.addTransaction(
+      ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+      amountCents: 5000, bookAt: DateTime(2026, 9, 12), counterparty: '某店');
+
+  await repo.updateRefundedCents(transactionId: tid, refundedCents: 5000);
+
+  final s = await repo.monthlySummary(ledgerId: l, month: '2026-09');
+  expect(s.expenseCents, 0); // 全额退款 → 净支出 0
+
+  final all = await repo.recentTransactions(ledgerId: l, limit: 10);
+  expect(all, hasLength(1)); // 原行保留、无新增行
+  expect(all.single.refundedCents, 5000);
+});
 ```
 
 - [ ] **Step 2: 跑测试确认失败**
@@ -582,6 +602,12 @@ Repository 追加方法：
     ));
   }
 
+  Future<void> updateRefundedCents(
+      {required int transactionId, required int refundedCents}) async {
+    await (db.update(db.transactions)..where((t) => t.id.equals(transactionId)))
+        .write(TransactionsCompanion(refundedCents: Value(refundedCents)));
+  }
+
   Future<MonthlySummary> monthlySummary(
       {required int ledgerId, required String month}) async {
     final start = DateTime.parse('$month-01');
@@ -594,7 +620,9 @@ Repository 追加方法：
     int inc = 0, exp = 0;
     for (final r in rows) {
       if (r.direction == 'income') inc += r.amountCents;
-      if (r.direction == 'expense') exp += r.amountCents;
+      if (r.direction == 'expense') {
+        exp += r.amountCents - r.refundedCents; // 净额：退款冲抵
+      }
     }
     return MonthlySummary(incomeCents: inc, expenseCents: exp);
   }
@@ -611,7 +639,8 @@ Repository 追加方法：
         .get();
     final map = <int?, int>{};
     for (final r in rows) {
-      map[r.categoryId] = (map[r.categoryId] ?? 0) + r.amountCents;
+      map[r.categoryId] =
+          (map[r.categoryId] ?? 0) + (r.amountCents - r.refundedCents);
     }
     return [
       for (final e in map.entries) CategorySpend(categoryId: e.key, amountCents: e.value)
@@ -634,7 +663,7 @@ Repository 追加方法：
 flutter test test/features/bookkeeping/repository_test.dart
 ```
 
-Expected: PASS（6 个测试）。
+Expected: PASS（repository_test.dart 共 5 个测试：schema / CRUD / 记账聚合 / 去重 / 退款冲抵）。
 
 - [ ] **Step 5: 提交**
 
@@ -1421,7 +1450,7 @@ flutter analyze
 flutter test
 ```
 
-Expected: `No issues found!`；全部测试 PASS（12 个）。
+Expected: `No issues found!`；全部测试 PASS（11 个）。
 
 - [ ] **Step 6: 提交**
 
@@ -1443,7 +1472,7 @@ flutter analyze
 flutter test
 ```
 
-Expected: `No issues found!` 且全部测试 PASS（repository 6 + home 2 + sheet 2 + list 2 = 12）。
+Expected: `No issues found!` 且全部测试 PASS（repository 5 + home 2 + sheet 2 + list 2 = 11）。
 
 - [ ] **Step 2: Windows 实机冒烟**
 

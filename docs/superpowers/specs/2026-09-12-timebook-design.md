@@ -78,7 +78,7 @@ lib/
 | `ledgers` 账本 | id, name, currency, icon, color, archived | 生活/工作/投资隔离 |
 | `accounts` 账户 | ledger_id, name, type, sort_order, archived | type: 现金/储蓄卡/信用卡/平台 |
 | `categories` 分类 | ledger_id, parent_id(可空=二级), name, icon, sort_order | 父子两级 |
-| `transactions` 流水 | ledger_id, account_id, category_id, direction, amount_cents, currency, book_at, counterparty, remark, pay_method, order_id, import_key, is_pending, transfer_id(可空), raw_json, created_at, updated_at | 转账=两行共享 transfer_id；索引 `(ledger_id, book_at)`/`(account_id, book_at)`/`(category_id, book_at)`；**唯一 `(ledger_id, import_key)`** 去重 |
+| `transactions` 流水 | ledger_id, account_id, category_id, direction, amount_cents, **refunded_cents(默认0)**, currency, book_at, counterparty, remark, pay_method, order_id, import_key, is_pending, transfer_id(可空), raw_json, created_at, updated_at | 转账=两行共享 transfer_id；**退款冲抵**：退款只更新原行 refunded_cents（支持部分退款），不新增收入行，统计一律按净额 `amount_cents - refunded_cents`；索引 `(ledger_id, book_at)`/`(account_id, book_at)`/`(category_id, book_at)`；**唯一 `(ledger_id, import_key)`** 去重 |
 | `budgets` 预算 | ledger_id, category_id(可空=总预算), month, amount_cents | 月度+分类 |
 | `recurring_transactions` 周期记账（吸收自 Firefly III / BeeCount） | ledger_id, account_id, category_id, direction, amount_cents, counterparty, remark, frequency(每周期: 月/周/自定义), day_of_month, next_run, active, last_generated | 到期自动生成一条**待确认**流水；复用 M5 的确认机制 |
 | `import_batches` 导入批次 | source, file_name, imported_at, ok_rows, skip_rows, dup_rows, error_rows_json | 导入留痕 |
@@ -134,6 +134,8 @@ skip_rows:
 **规范化管道**：字段级纯函数流水线（trim → 去 BOM → 金额解析 → 多格式日期兜底 → 方向枚举映射/借贷推断 → 符号一致性校验）；不一致**显式报错并跳行记录**，绝不静默入库。
 
 **去重**：支付宝/微信用官方交易单号（最强）；银行无全局单号用 `hash(日期+金额+对方+摘要)`。两级比对（对账本已有、对批次内），命中"疑似重复"由用户决定。
+
+**退款冲抵（用户硬性要求）**：导入识别到退款行（支付宝"交易类型=退款"、微信"已退款"等）时，**不生成收入/支出新行**；优先按 order_id 匹配原支出并把金额计入原行 `refunded_cents`（支持部分退款；累计不超过原金额），原行保留并标注「已退款 ¥x」；无法匹配时进「未匹配退款」待确认列表由人工关联。所有收支/分类/预算统计按净额 `amount_cents - refunded_cents`，保证"实际花了多少钱"不被退款虚增。
 
 **分类打标三层递进**：本地关键词规则表 → GLM-4-Flash 建议分类（对方+备注+金额）→ 人工确认；**纠正结果回写规则表**（越用越准）。
 
@@ -213,7 +215,7 @@ idle ──开始──▶ focusing ──完成──▶ 确认弹窗(完成/�
 | M2 图表仪表盘 | 月度收支、分类占比、趋势（fl_chart） | 数据正确呈现 |
 | M3 预算 | 预算设置 + 月度进度 + 超支提醒 | 进度数字准确 |
 | M4 待办+番茄钟 | 任务 CRUD + **短语法快速创建** + **四象限视图** + 可配置计时器 + 联动绑定 + 专注记录 | 计时/打断/补记全场景可用，短语法/四象限可演示 |
-| M5 账单导入 | 模板引擎 + 微信/支付宝 CSV + 去重 + 待确认列表 + **周期记账**（到期生成待确认流水） | fixtures 全绿、正确率达标、周期账单按期生成 |
+| M5 账单导入 | 模板引擎 + 微信/支付宝 CSV + 去重 + 待确认列表 + 周期记账（到期生成待确认流水） + **退款冲抵（按净额统计、原行标注已退款）** | fixtures 全绿、正确率达标、周期账单按期生成、退款不虚增收支 |
 | M6 AI 记账 | 对话记账 + ML Kit OCR + 确认流程 | 三段式全通 |
 | M7 打磨开源 | **每日小结报告** + 回归测试、README、GitHub 开源、面试演示脚本 | 开箱可演示 |
 
@@ -243,9 +245,10 @@ idle ──开始──▶ focusing ──完成──▶ 确认弹窗(完成/�
 | 四象限视图 | 着落 / Vikunja | M4（由 priority+due_date 派生，无新表） |
 | 周期记账 | Firefly III / BeeCount | M5（新表 recurring_transactions，汇入待确认） |
 | 每日小结 | Super Productivity | M7（新表 day_summaries，收工一键归档） |
+| 退款冲抵 | Veri Fin + 用户硬性要求 | M5（transactions.refunded_cents，按净额统计，原行标注已退款） |
 
 > **M5 设计约束（源自用户对 Veri Fin 的痛点）**：支付宝/微信导入"几行错误"不可静默丢弃——每行要么成功解析，要么进错误行清单（含原因 + 原始行快照）可见可重处理；每来源 ≥10 个脱敏真实 fixtures 锁行为防版本漂移。
 
 ### 未来扩展池（候选，按优先级排队，不阻塞 v1）
 
-云同步（WebDAV/iCloud/Supabase，复用 BeeCount/Veri Fin 思路）· 多币种（Firefly III / Veri Fin：本位币+账户币种，缺率明确阻止猜测）· AI 财务问答（Maybe / Veri Fin：只读工具查账，接 GLM 复用 AI 模块）· 储蓄目标/储蓄罐（Firefly III）· **预算周期按发薪日**（Veri Fin：如 22 日→次月 21 日为一期，高意向）· 报销/退款冲抵（Veri Fin）· 按日预算上限与今日进度（Veri Fin）· 应用锁（PIN/图案/生物，Veri Fin）· 桌面快速记账小组件（Veri Fin / BeeCount）· Flowtime 无限时专注（Super Productivity）· 专注热力图与深度统计 · 规则引擎自动分类 · 多皮肤主题（BeeCount）· 语音记账与桌面 OCR（v1 已明确后置）· 插件系统（Super Productivity，重）· GitHub/Jira 集成（个人场景低优）
+云同步（WebDAV/iCloud/Supabase，复用 BeeCount/Veri Fin 思路）· 多币种（Firefly III / Veri Fin：本位币+账户币种，缺率明确阻止猜测）· AI 财务问答（Maybe / Veri Fin：只读工具查账，接 GLM 复用 AI 模块）· 储蓄目标/储蓄罐（Firefly III）· **预算周期按发薪日**（Veri Fin：如 22 日→次月 21 日为一期，高意向）· 报销标记/待报销筛选（Veri Fin，区别于退款冲抵）· 按日预算上限与今日进度（Veri Fin）· 应用锁（PIN/图案/生物，Veri Fin）· 桌面快速记账小组件（Veri Fin / BeeCount）· Flowtime 无限时专注（Super Productivity）· 专注热力图与深度统计 · 规则引擎自动分类 · 多皮肤主题（BeeCount）· 语音记账与桌面 OCR（v1 已明确后置）· 插件系统（Super Productivity，重）· GitHub/Jira 集成（个人场景低优）
