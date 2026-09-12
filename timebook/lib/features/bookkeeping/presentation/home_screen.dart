@@ -4,6 +4,7 @@ import '../../../core/db/app_database.dart';
 import '../data/bookkeeping_repository.dart';
 import 'add_transaction_sheet.dart';
 import 'bookkeeping_providers.dart';
+import 'transaction_list_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -98,7 +99,17 @@ class _HomeView extends StatelessWidget {
           ]),
         )
       else ...[
-        Text('最近流水', style: theme.textTheme.titleMedium),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('最近流水', style: theme.textTheme.titleMedium),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => const TransactionListScreen())),
+              child: const Text('全部'),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         for (final t in recent)
           ListTile(
