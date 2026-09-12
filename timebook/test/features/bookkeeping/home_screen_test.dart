@@ -47,7 +47,7 @@ void main() {
 
     expect(find.textContaining('¥ 8,467.50'), findsOneWidget); // 850000 - 3250 = 846750 分
     expect(find.textContaining('收入'), findsOneWidget);
-    expect(find.text('支出 ¥ 32.50'), findsOneWidget); // 结余卡的支出（分类支出卡新增同名文本）
+    expect(find.text('¥ 32.50'), findsOneWidget); // 结余卡支出金额（标签与金额分行渲染）
     // 分类支出卡使列表变长，最近流水需滚动可见
     await tester.scrollUntilVisible(find.text('美团外卖'), 300,
         scrollable: find.byType(Scrollable).first);

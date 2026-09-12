@@ -148,6 +148,67 @@ class _HomeView extends StatelessWidget {
 
   String get _fmt => '¥ ${formatCents(balanceCents)}';
 
+  static String _shortDate(DateTime d) =>
+      '${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  Widget _recentRow(BuildContext context, Transaction t) {
+    final scheme = Theme.of(context).colorScheme;
+    final col =
+        t.direction == 'income' ? const Color(0xFF4CB3C4) : scheme.primary;
+    final sign = t.direction == 'income' ? '+' : '-';
+    final subtitles = <String>[
+      if (t.remark.isNotEmpty) t.remark,
+      _shortDate(t.bookAt),
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        _categoryAvatar(t, scheme),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              t.counterparty.isEmpty
+                  ? (t.direction == 'income' ? '收入' : '支出')
+                  : t.counterparty,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 2),
+            Text(subtitles.join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 12, color: scheme.onSurfaceVariant)),
+          ]),
+        ),
+        const SizedBox(width: 12),
+        Text('$sign¥ ${formatCents(t.amountCents)}',
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w600, color: col)),
+      ]),
+    );
+  }
+
+  Widget _balanceMetric(String label, int cents) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: TextStyle(
+                fontSize: 11, color: Colors.white.withValues(alpha: .75))),
+        const SizedBox(height: 2),
+        Text('¥ ${formatCents(cents)}',
+            style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white)),
+      ],
+    );
+  }
+
   Widget _categoryAvatar(Transaction t, ColorScheme scheme) {
     if (t.direction == 'income') {
       return Container(
@@ -181,39 +242,50 @@ class _HomeView extends StatelessWidget {
     final empty = recent.isEmpty;
     return ListView(padding: const EdgeInsets.all(16), children: [
       Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           gradient: const LinearGradient(
               colors: [Color(0xFF3F77B6), Color(0xFF6FA8DC)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight),
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x473F77B6),
+                blurRadius: 24,
+                offset: Offset(0, 8)),
+          ],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('本月结余', style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: .85))),
           const SizedBox(height: 4),
           Text(_fmt, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: Colors.white)),
           const SizedBox(height: 12),
-          Row(children: [
-            Text('收入 ¥ ${formatCents(delta.$1)}',
-                style: const TextStyle(color: Colors.white, fontSize: 14)),
-            const SizedBox(width: 22),
-            Text('支出 ¥ ${formatCents(delta.$2)}',
-                style: const TextStyle(color: Colors.white, fontSize: 14)),
-          ]),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            _balanceMetric('收入', delta.$1),
+            const SizedBox(width: 26),
+            _balanceMetric('支出', delta.$2),
+            const Spacer(),
+            InkWell(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => const BudgetScreen())),
-              style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.white.withValues(alpha: .18)),
-              icon: const Icon(Icons.savings_outlined, size: 16),
-              label: const Text('预算进度', style: TextStyle(fontSize: 12)),
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text('预算进度',
+                      style: TextStyle(color: Colors.white, fontSize: 12)),
+                  SizedBox(width: 4),
+                  Icon(Icons.chevron_right, color: Colors.white, size: 16),
+                ]),
+              ),
             ),
-          ),
+          ]),
         ]),
       ),
       const SizedBox(height: 18),
@@ -223,6 +295,7 @@ class _HomeView extends StatelessWidget {
           title: '流水明细',
           sub: '${recent.length} 笔记录',
           color: scheme.primaryContainer,
+          iconColor: scheme.onPrimaryContainer,
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => const TransactionListScreen())),
         ),
@@ -232,6 +305,7 @@ class _HomeView extends StatelessWidget {
           title: '本月预算',
           sub: budgetSub,
           color: scheme.secondaryContainer,
+          iconColor: scheme.onSecondaryContainer,
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => const BudgetScreen())),
         ),
@@ -241,7 +315,8 @@ class _HomeView extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('分类支出', style: theme.textTheme.titleMedium),
+            const Text('分类支出',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             CategoryDonut(slices: catSlices, centerLabel: '本月支出'),
           ]),
@@ -262,7 +337,8 @@ class _HomeView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('最近流水', style: theme.textTheme.titleMedium),
+            const Text('最近流水',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             TextButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => const TransactionListScreen())),
@@ -271,22 +347,7 @@ class _HomeView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        for (final t in recent)
-          ListTile(
-            dense: true,
-            leading: _categoryAvatar(t, scheme),
-            title: Text(t.counterparty.isEmpty
-                ? (t.direction == 'income' ? '收入' : '支出')
-                : t.counterparty),
-            trailing: Text(
-              '${t.direction == 'income' ? '+' : '-'}¥ ${formatCents(t.amountCents)}',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: t.direction == 'income'
-                    ? const Color(0xFF4CB3C4)
-                    : theme.colorScheme.primary),
-            ),
-          ),
+        for (final t in recent) _recentRow(context, t),
       ],
     ]);
   }
@@ -298,11 +359,13 @@ class _QuickCard extends StatelessWidget {
       required this.title,
       required this.sub,
       required this.color,
+      required this.iconColor,
       required this.onTap});
   final IconData icon;
   final String title;
   final String sub;
   final Color color;
+  final Color iconColor;
   final VoidCallback onTap;
 
   @override
@@ -310,19 +373,37 @@ class _QuickCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Expanded(
       child: Material(
-        color: color,
+        color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Icon(icon, size: 22, color: scheme.onPrimaryContainer),
-              const SizedBox(height: 10),
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 2),
-              Text(sub, style: Theme.of(context).textTheme.bodySmall),
+            child: Row(children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 22, color: iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(sub,
+                          style: TextStyle(
+                              fontSize: 12, color: scheme.onSurfaceVariant)),
+                    ]),
+              ),
             ]),
           ),
         ),
