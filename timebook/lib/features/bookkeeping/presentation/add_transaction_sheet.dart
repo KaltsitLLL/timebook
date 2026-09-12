@@ -104,7 +104,11 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           children: [
             ListTile(
               key: const Key('pick_none'),
+              leading: const Icon(Icons.credit_card_off_outlined),
               title: const Text('不记账户'),
+              trailing: _useNoneAccount
+                  ? const Icon(Icons.check, size: 18)
+                  : null,
               onTap: () {
                 setState(() {
                   _useNoneAccount = true;
@@ -116,7 +120,11 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             for (final a in accounts)
               ListTile(
                 key: Key('pick_${a.id}'),
+                leading: const Icon(Icons.credit_card),
                 title: Text(a.name),
+                trailing: !_useNoneAccount && _pickedAccountId == a.id
+                    ? const Icon(Icons.check, size: 18)
+                    : null,
                 onTap: () {
                   setState(() {
                     _pickedAccountId = a.id;
@@ -306,8 +314,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             ),
           ),
         const SizedBox(height: 16),
-        Text('账户', style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 8),
         Row(
           children: [
             Material(
@@ -330,11 +336,13 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.credit_card,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          size: 18,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant),
                       const SizedBox(width: 6),
                       Text(accountLabel,
                           style: TextStyle(
+                              fontSize: 13,
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurfaceVariant)),
@@ -344,11 +352,32 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               ),
             ),
             const SizedBox(width: 8),
-            FilterChip(
+            // 日期 chip（原型 m3.chip：outlineVariant 边框·surface 底·图标 18·字号 13）
+            Container(
               key: const Key('book_at_chip'),
-              avatar: const Icon(Icons.calendar_today, size: 16),
-              label: Text('今天 $hh:$mm'),
-              onSelected: (_) {}, // 只读展示，保存仍用 DateTime.now()
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.calendar_today,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  const SizedBox(width: 6),
+                  Text('今天 $hh:$mm',
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant)),
+                ],
+              ),
             ),
           ],
         ),
