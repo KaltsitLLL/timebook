@@ -29,4 +29,25 @@ void main() {
     final rows = await db.select(db.transactions).get();
     expect(rows.single.amountCents, 5000);
   });
+
+  testWidgets('金额不足 0.5 元仍可入账（按分精确入库）', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final svc = AiBookkeepingService(db);
+    await svc.createLedgerIfEmpty(name: '生活');
+    await db.into(db.accounts).insert(AccountsCompanion.insert(ledgerId: 1, name: '卡'));
+    addTearDown(db.close);
+
+    await tester.pumpWidget(MaterialApp(home: ConfirmScreen(
+        draft: const AiDraft(direction: 'expense', amountCents: 5000,
+            counterparty: '滴滴'),
+        service: svc)));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('confirm_amount')), '0.40');
+    await tester.tap(find.byKey(const Key('confirm_save')));
+    await tester.pumpAndSettle();
+    final rows = await db.select(db.transactions).get();
+    expect(rows, hasLength(1));
+    expect(rows.single.amountCents, 40);
+  });
 }

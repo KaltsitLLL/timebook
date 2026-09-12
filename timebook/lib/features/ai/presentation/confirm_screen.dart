@@ -30,13 +30,13 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   }
 
   Future<void> _save() async {
-    final n = double.tryParse(_amount.text)?.round() ?? 0;
-    if (n <= 0) return;
+    final parsed = double.tryParse(_amount.text);
+    if (parsed == null || parsed <= 0) return; // 非法/非正金额不入账
     final svc = widget.service;
     if (svc == null) return;
     final draft = AiDraft(
       direction: widget.draft.direction,
-      amountCents: (double.parse(_amount.text) * 100).round(),
+      amountCents: (parsed * 100).round(),
       counterparty: _counterparty.text,
       remark: widget.draft.remark,
       category: widget.draft.category,
