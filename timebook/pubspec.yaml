@@ -44,6 +44,8 @@ dependencies:
   yaml: ^3.1.2
   http: ^1.2.2
   flutter_secure_storage: ^9.2.4
+  file_picker: ^8.1.2
+  gbk_codec: ^0.4.0
 
 dev_dependencies:
   flutter_test:
