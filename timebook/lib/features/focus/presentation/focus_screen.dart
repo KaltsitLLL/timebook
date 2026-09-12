@@ -9,16 +9,27 @@ import 'focus_providers.dart';
 import 'focus_timer_widget.dart';
 import 'quadrant_view.dart';
 import 'timeline_widget.dart';
+import '../notifications/notification_service.dart';
 
 class FocusScreen extends ConsumerStatefulWidget {
-  const FocusScreen({super.key});
+  const FocusScreen({super.key, this.notification});
+  /// 完成通知服务；不传时生产用 [FlutterNotificationService]，测试注入 Fake。
+  final NotificationService? notification;
   @override
   ConsumerState<FocusScreen> createState() => _FocusScreenState();
 }
 
 class _FocusScreenState extends ConsumerState<FocusScreen> {
   final _quick = TextEditingController();
+  late final NotificationService _notification =
+      widget.notification ?? FlutterNotificationService();
   Task? _bound;
+
+  @override
+  void initState() {
+    super.initState();
+    _notification.initialize();
+  }
 
   @override
   void dispose() {
@@ -48,6 +59,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
   }
 
   Future<void> _onComplete(TimerMode mode) async {
+    _notifyCompleted(mode);
     final repo = ref.read(focusRepositoryProvider);
     final settings = await repo.settings();
     final endAt = DateTime.now();
@@ -96,6 +108,16 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
         durationMinutes: minutes,
         interrupted: false);
     setState(() {});
+  }
+
+  /// 计时周期完成时发系统通知；按模式给不同文案。
+  void _notifyCompleted(TimerMode mode) {
+    final (title, body) = switch (mode) {
+      TimerMode.focus => ('番茄完成 🍅', '休息一下吧'),
+      TimerMode.short => ('短休结束', '可以开始下一轮专注了'),
+      TimerMode.long => ('长休结束', '可以开始下一轮专注了'),
+    };
+    _notification.show(id: 1, title: title, body: body);
   }
 
   @override
