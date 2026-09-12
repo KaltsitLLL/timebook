@@ -92,6 +92,45 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
   Future<void> _openAiDialog() => openAiDialog(context, ref);
 
+  /// 打开账户选择弹层：列出「不记账户」+ 各真实账户，点击后更新选中态并关闭。
+  Future<void> _openAccountPicker() {
+    final accounts =
+        ref.read(ledgerAccountsProvider).value ?? const <Account>[];
+    return showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('pick_none'),
+              title: const Text('不记账户'),
+              onTap: () {
+                setState(() {
+                  _useNoneAccount = true;
+                  _pickedAccountId = null;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+            for (final a in accounts)
+              ListTile(
+                key: Key('pick_${a.id}'),
+                title: Text(a.name),
+                onTap: () {
+                  setState(() {
+                    _pickedAccountId = a.id;
+                    _useNoneAccount = false;
+                  });
+                  Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 记一笔顶部方向胶囊：选中=primary/tertiary 底·白字；未选中=surface 底·outlineVariant 边框。
   Widget _directionPill(String key, String label, String value,
       {required bool selected, required Color selectedColor}) {
@@ -170,6 +209,15 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       effectiveAccountId = _pickedAccountId ??
           defaultId ??
           (accounts.isEmpty ? null : accounts.first.id);
+    }
+
+    // 账户区单 chip 的 label：不记账户 / 当前有效账户名 / 无账户时「选择账户」。
+    final String accountLabel;
+    if (_useNoneAccount) {
+      accountLabel = '不记账户';
+    } else {
+      final found = accounts.where((a) => a.id == effectiveAccountId);
+      accountLabel = found.isEmpty ? '选择账户' : found.first.name;
     }
 
     final raw = _amount.text.trim();
@@ -260,29 +308,42 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         const SizedBox(height: 16),
         Text('账户', style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        Row(
           children: [
-            FilterChip(
-              key: const Key('none_account'),
-              label: const Text('不记账户'),
-              selected: _useNoneAccount,
-              onSelected: (v) => setState(() {
-                _useNoneAccount = v;
-                if (v) _pickedAccountId = null;
-              }),
-            ),
-            for (final a in accounts)
-              ChoiceChip(
-                key: Key('account_${a.id}'),
-                label: Text(a.name),
-                selected: effectiveAccountId == a.id,
-                onSelected: (_) => setState(() {
-                  _pickedAccountId = a.id;
-                  _useNoneAccount = false;
-                }),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                key: const Key('account_pick'),
+                borderRadius: BorderRadius.circular(999),
+                onTap: _openAccountPicker,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.credit_card,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 6),
+                      Text(accountLabel,
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
+                    ],
+                  ),
+                ),
               ),
+            ),
+            const SizedBox(width: 8),
             FilterChip(
               key: const Key('book_at_chip'),
               avatar: const Icon(Icons.calendar_today, size: 16),

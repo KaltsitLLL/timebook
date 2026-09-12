@@ -107,8 +107,9 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
     await tester.pumpAndSettle();
 
-    final chip = tester.widget<ChoiceChip>(find.byKey(Key('account_$a2')));
-    expect(chip.selected, isTrue);
+    // 单 chip label 预选默认付款账户「钱包」，且不再平铺账户 ChoiceChip
+    expect(find.text('钱包'), findsOneWidget);
+    expect(find.byKey(Key('account_$a2')), findsNothing);
   });
 
   testWidgets('选择“不记账户”后保存落库到无账户 id', (tester) async {
@@ -123,8 +124,10 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('none_account')));
-    await tester.pump();
+    await tester.tap(find.byKey(const Key('account_pick')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('pick_none')));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('amount_field')), '20');
     await tester.tap(find.byKey(const Key('save_button')));
     await tester.pumpAndSettle();
@@ -234,5 +237,39 @@ void main() {
         matching: find.byType(Container)));
     final decor = container.decoration! as BoxDecoration;
     expect(decor.color, const Color(0xFF4CB3C4));
+  });
+
+  testWidgets('账户区为单 chip 显示当前账户名（不记账户/选择账户可切换且非平铺）',
+      (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
+    final l = await repo.createLedger(name: '生活');
+    await repo.createAccount(ledgerId: l, name: '卡');
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+      kvSettingsProvider.overrideWithValue(KvSettings(MemoryKeyValueStorage())),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    // 单 chip 显示默认账户「卡」，且无平铺账户 chip
+    expect(find.byKey(const Key('account_pick')), findsOneWidget);
+    expect(find.text('卡'), findsOneWidget);
+    expect(find.byKey(const Key('account_1')), findsNothing);
+
+    // 弹层中选择「不记账户」后 label 更新
+    await tester.tap(find.byKey(const Key('account_pick')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('pick_none')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('pick_none')));
+    await tester.pumpAndSettle();
+    expect(find.text('不记账户'), findsOneWidget);
+    expect(find.text('卡'), findsNothing);
   });
 }
