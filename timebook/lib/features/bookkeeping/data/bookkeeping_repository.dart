@@ -93,9 +93,24 @@ class BookkeepingRepository {
   }
 
   // ---- 分类 ----
-  Future<int> createCategory({required int ledgerId, required String name}) {
+  Future<int> createCategory(
+      {required int ledgerId, required String name, String? icon, int? sortOrder}) {
     return db.into(db.categories).insert(CategoriesCompanion.insert(
-        ledgerId: ledgerId, name: name));
+        ledgerId: ledgerId,
+        name: name,
+        icon: icon == null ? const Value.absent() : Value(icon),
+        sortOrder: sortOrder == null ? const Value.absent() : Value(sortOrder)));
+  }
+
+  /// 按名确保分类存在（幂等）：该账本已有同名分类返回其 id，否则新建（兜底语义，
+  /// icon 固定 'category'、排末位），绝不与默认分类重名时仍各自独立。
+  Future<int> ensureCategoryByName(int ledgerId, String name) async {
+    final existing = await (db.select(db.categories)
+          ..where((t) => t.ledgerId.equals(ledgerId) & t.name.equals(name)))
+        .getSingleOrNull();
+    if (existing != null) return existing.id;
+    return createCategory(ledgerId: ledgerId, name: name,
+        icon: 'category', sortOrder: 999);
   }
 
   Future<List<Category>> categories(int ledgerId) =>

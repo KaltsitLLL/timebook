@@ -77,4 +77,34 @@ void main() {
     final t = await (db.select(db.transactions)..where((x) => x.orderId.equals('WX-7'))).getSingle();
     expect(t.categoryId, catId);
   });
+
+  test('无规则且行无分类 → 兜底归入「未分类」且创建该分类', () async {
+    final result = await svc.importRows(
+        source: 'wechat', fileName: 'a.csv', rows: [row(orderId: 'WX-U')]);
+    expect(result.saved, 1);
+
+    final t = await (db.select(db.transactions)..where((x) => x.orderId.equals('WX-U'))).getSingle();
+
+    final uncat = await (db.select(db.categories)
+          ..where((c) => c.ledgerId.equals(1) & c.name.equals('未分类')))
+        .getSingle();
+    expect(t.categoryId, uncat.id);
+  });
+
+  test('有规则命中时仍走规则，不落到「未分类」兜底', () async {
+    final catId = await db.into(db.categories).insert(
+        CategoriesCompanion.insert(ledgerId: 1, name: '外卖'));
+    await db.into(db.importRules).insert(ImportRulesCompanion.insert(
+        keyword: '美团', categoryId: catId, priority: Value(1)));
+
+    await svc.importRows(
+        source: 'wechat', fileName: 'a.csv', rows: [row(orderId: 'WX-8')]);
+    final t = await (db.select(db.transactions)..where((x) => x.orderId.equals('WX-8'))).getSingle();
+    expect(t.categoryId, catId);
+
+    final uncat = await (db.select(db.categories)
+          ..where((c) => c.name.equals('未分类')))
+        .get();
+    expect(uncat, isEmpty);
+  });
 }

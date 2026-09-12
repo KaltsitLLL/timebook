@@ -59,7 +59,7 @@ class ImportService {
             continue;
           }
         }
-        await repo.addTransaction(
+        final txId = await repo.addTransaction(
           ledgerId: ledgerId,
           accountId: account.id,
           categoryId: r.categoryId,
@@ -73,6 +73,18 @@ class ImportService {
           importKey: r.orderId,
           applyRules: true,
         );
+        // 分类兜底：无显式分类且规则引擎未命中时归入「未分类」，导入行绝不落空
+        // categoryId（仅在导入主流程；退款冲抵路径不建行、不兜底）。
+        if (r.categoryId == null) {
+          final tx = await (db.select(db.transactions)
+                ..where((t) => t.id.equals(txId)))
+              .getSingle();
+          if (tx.categoryId == null) {
+            final uncatId = await repo.ensureCategoryByName(ledgerId, '未分类');
+            await (db.update(db.transactions)..where((t) => t.id.equals(txId)))
+                .write(TransactionsCompanion(categoryId: Value(uncatId)));
+          }
+        }
         outcome.saved++;
       }
 

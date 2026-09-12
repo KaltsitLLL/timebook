@@ -449,6 +449,22 @@ void main() {
     expect(acct.type, 'none');
   });
 
+  test('ensureCategoryByName 幂等：同名返回同一 id，且不与默认 8 分类重名', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final id1 = await repo.ensureCategoryByName(l, '未分类');
+    final id2 = await repo.ensureCategoryByName(l, '未分类');
+    expect(id1, id2);
+
+    final all = await repo.categories(l);
+    expect(all, hasLength(9)); // 8 默认 + 未分类
+    final uncat = all.where((c) => c.name == '未分类').toList();
+    expect(uncat, hasLength(1));
+    expect(uncat.single.id, id1);
+    expect(uncat.single.icon, 'category');
+    expect(uncat.single.sortOrder, 999);
+  });
+
   test('createLedger 自动预置 8 个默认分类且幂等同 session', () async {
     final repo = BookkeepingRepository(db);
 
