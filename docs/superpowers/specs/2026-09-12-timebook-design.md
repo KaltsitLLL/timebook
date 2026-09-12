@@ -80,6 +80,7 @@ lib/
 | `categories` 分类 | ledger_id, parent_id(可空=二级), name, icon, sort_order | 父子两级 |
 | `transactions` 流水 | ledger_id, account_id, category_id, direction, amount_cents, currency, book_at, counterparty, remark, pay_method, order_id, import_key, is_pending, transfer_id(可空), raw_json, created_at, updated_at | 转账=两行共享 transfer_id；索引 `(ledger_id, book_at)`/`(account_id, book_at)`/`(category_id, book_at)`；**唯一 `(ledger_id, import_key)`** 去重 |
 | `budgets` 预算 | ledger_id, category_id(可空=总预算), month, amount_cents | 月度+分类 |
+| `recurring_transactions` 周期记账（吸收自 Firefly III / BeeCount） | ledger_id, account_id, category_id, direction, amount_cents, counterparty, remark, frequency(每周期: 月/周/自定义), day_of_month, next_run, active, last_generated | 到期自动生成一条**待确认**流水；复用 M5 的确认机制 |
 | `import_batches` 导入批次 | source, file_name, imported_at, ok_rows, skip_rows, dup_rows, error_rows_json | 导入留痕 |
 | `import_rules` 分类规则 | keyword, category_id, priority | 用户纠正回写，本地学习 |
 
@@ -91,6 +92,12 @@ lib/
 | `tasks` 待办 | project_id, title, notes, priority, due_date, tags(json), estimate_minutes, actual_minutes, completed_at | tags 用 JSON 存字符串列表 |
 | `pomodoro_sessions` 专注记录 | task_id(可空), kind(focus/short/long), start_at, end_at, duration_minutes, interrupted | 与待办联动，可统计"每日专注时长" |
 | `pomodoro_settings` 设置 | 单行：focus/short/long 时长, 长休间隔 | 可配置 |
+
+### 总结域（吸收自 Super Productivity）
+
+| 表 | 关键字段 | 要点 |
+|---|---|---|
+| `day_summaries` 每日小结 | date(主键), pomodoro_count, focus_minutes, expense_total, tasks_done, rating(可空), snapshot_json | 收工一键生成当日小结并存档，历史可回看 |
 
 ### 配置域
 
@@ -181,6 +188,11 @@ idle ──开始──▶ focusing ──完成──▶ 确认弹窗(完成/�
 
 ---
 
+### 待办增强（吸收自 Super Productivity / 着落 / Vikunja）
+
+- **任务短语法**：一行输入创建/修改任务，支持 `#标签 +项目 25m @明天`（标签/项目/预估时长/截止）；与快速添加入口结合
+- **四象限视图**：基于 priority 与 due_date 由现有字段派生（重要紧急/重要不紧急/紧急不重要/不重要不紧急），不新增表
+
 ## 8. UI 规范（Material 3）
 
 - 主色 seed：`#3F77B6`（蓝白浅色调，浅色优先，避免深色）；Flutter 用 `ColorScheme.fromSeed` 生成精确 tonal ramp（原型中为近似值）
@@ -200,10 +212,10 @@ idle ──开始──▶ focusing ──完成──▶ 确认弹窗(完成/�
 | M1 记账核心 | 账本/账户/分类 CRUD + 手工记账 | 记账全流程可走通 |
 | M2 图表仪表盘 | 月度收支、分类占比、趋势（fl_chart） | 数据正确呈现 |
 | M3 预算 | 预算设置 + 月度进度 + 超支提醒 | 进度数字准确 |
-| M4 待办+番茄钟 | 任务 CRUD + 可配置计时器 + **联动绑定** + 专注记录 | 计时/打断/补记全场景可用 |
-| M5 账单导入 | 模板引擎 + 微信/支付宝 CSV + 去重 + 待确认列表 | fixtures 全绿、正确率达标 |
+| M4 待办+番茄钟 | 任务 CRUD + **短语法快速创建** + **四象限视图** + 可配置计时器 + 联动绑定 + 专注记录 | 计时/打断/补记全场景可用，短语法/四象限可演示 |
+| M5 账单导入 | 模板引擎 + 微信/支付宝 CSV + 去重 + 待确认列表 + **周期记账**（到期生成待确认流水） | fixtures 全绿、正确率达标、周期账单按期生成 |
 | M6 AI 记账 | 对话记账 + ML Kit OCR + 确认流程 | 三段式全通 |
-| M7 打磨开源 | 回归测试、README、GitHub 开源、面试演示脚本 | 开箱可演示 |
+| M7 打磨开源 | **每日小结报告** + 回归测试、README、GitHub 开源、面试演示脚本 | 开箱可演示 |
 
 执行顺序说明：M5 先于 M6，先用"导入+待确认"机制兜住准确性，AI 记账只是多一条产生流水的通道，复用同一确认流程，风险最低。
 
@@ -218,3 +230,20 @@ idle ──开始──▶ focusing ──完成──▶ 确认弹窗(完成/�
 | 面试被追代码来源 | 全自研 + 开源 commit 历史 + 可讲清每一处设计决策 |
 | API 免费额度变动 | GLM 免费档长期存在；超量时切换其他 OpenAI 兼容厂商成本也极低 |
 | 范围失控 | 按里程碑推进，每个里程碑独立可演示，砍功能不砍质量 |
+
+---
+
+## 11. 高星项目功能吸收与未来扩展
+
+### v1 已吸收（2026-09-12 决策）
+
+| 功能 | 来源 | 落点 |
+|---|---|---|
+| 任务短语法 | Super Productivity | M4（新增 tasks 创建解析层） |
+| 四象限视图 | 着落 / Vikunja | M4（由 priority+due_date 派生，无新表） |
+| 周期记账 | Firefly III / BeeCount | M5（新表 recurring_transactions，汇入待确认） |
+| 每日小结 | Super Productivity | M7（新表 day_summaries，收工一键归档） |
+
+### 未来扩展池（候选，按优先级排队，不阻塞 v1）
+
+云同步（WebDAV/iCloud/Supabase，复用 BeeCount 思路）· 多币种（Firefly III）· AI 财务问答（Maybe：自然语言查账，接 GLM 复用 AI 模块）· 储蓄目标/储蓄罐（Firefly III）· Flowtime 无限时专注（Super Productivity）· 专注热力图与深度统计 · 规则引擎自动分类 · 多皮肤主题（BeeCount）· 语音记账与桌面 OCR（v1 已明确后置）· 插件系统（Super Productivity，重）· GitHub/Jira 集成（个人场景低优）
