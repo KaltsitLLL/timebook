@@ -178,10 +178,26 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           keyboardType:
               const TextInputType.numberWithOptions(decimal: true),
           onChanged: (_) => setState(() {}),
-          decoration: const InputDecoration(
-            labelText: '金额（元）',
-            border: OutlineInputBorder(),
+          style: const TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.w700,
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: '0.00',
+            hintStyle: TextStyle(
+              fontSize: 32,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurfaceVariant
+                  .withValues(alpha: .6),
+            ),
             prefixText: '¥ ',
+            prefixStyle: TextStyle(
+              fontSize: 18,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         if (raw.isNotEmpty && arithCents != null && arithCents > 0)

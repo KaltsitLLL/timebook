@@ -136,6 +136,20 @@ void main() {
     expect(rows.single.amountCents, 2000);
   });
 
+  testWidgets('金额区为展示式大数字行（去 label、40px 大字、无边框）', (tester) async {
+    final (c, _) = await setup();
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextField>(find.byKey(const Key('amount_field')));
+    expect(field.decoration!.labelText, isNull);
+    expect(field.style!.fontSize, 40);
+    expect(field.decoration!.border, isA<InputBorder>());
+    expect(field.decoration!.border, isNot(isA<OutlineInputBorder>()));
+  });
+
   testWidgets('记账 Sheet 显示日期行 chip（今天 HH:mm）', (tester) async {
     final (c, _) = await setup();
 
