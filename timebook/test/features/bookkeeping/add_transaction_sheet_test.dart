@@ -17,7 +17,7 @@ void main() {
     final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
     await repo.createAccount(ledgerId: l, name: '卡');
-    await repo.createCategory(ledgerId: l, name: '餐饮');
+    await repo.categories(l); // 默认 8 分类已随 createLedger 预置
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
       bookkeepingRepositoryProvider.overrideWithValue(repo),
@@ -29,6 +29,9 @@ void main() {
   }
 
   testWidgets('保存一笔支出后写入数据库', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final (c, repo) = await setup();
     final l = await repo.ledgers();
 
@@ -48,6 +51,9 @@ void main() {
   });
 
   testWidgets('金额为空或 0 时点击保存不落库', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final (c, repo) = await setup();
     final l = await repo.ledgers();
 
@@ -106,6 +112,9 @@ void main() {
   });
 
   testWidgets('选择“不记账户”后保存落库到无账户 id', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final (c, repo) = await setup();
     final l = await repo.ledgers();
 
@@ -171,10 +180,13 @@ void main() {
   });
 
   testWidgets('选中分类后保存落库 categoryId', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final (c, repo) = await setup();
     final l = await repo.ledgers();
     final cats = await repo.categories(l.first.id);
-    final foodId = cats.single.id; // setup 创建的唯一分类「餐饮」
+    final foodId = cats.singleWhere((c) => c.name == '餐饮').id; // 默认分类「餐饮」
 
     await tester.pumpWidget(UncontrolledProviderScope(
         container: c,

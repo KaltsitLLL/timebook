@@ -51,7 +51,7 @@ void main() {
 
     expect(ledgers.single.name, '生活');
     expect(accounts.single.name, '招行储蓄卡');
-    expect(cats.single.name, '餐饮');
+    expect(cats.map((c) => c.name), contains('餐饮')); // 默认分类已预置
     expect(foodId, greaterThan(0));
   });
 
@@ -411,5 +411,23 @@ void main() {
         .getSingle();
     expect(acct.name, '不记账户');
     expect(acct.type, 'none');
+  });
+
+  test('createLedger 自动预置 8 个默认分类且幂等同 session', () async {
+    final repo = BookkeepingRepository(db);
+
+    final l1 = await repo.createLedger(name: '生活');
+    final cats1 = await repo.categories(l1);
+    expect(cats1, hasLength(8));
+    expect(cats1.map((c) => c.name),
+        containsAll(['餐饮', '交通', '购物', '娱乐', '居住', '医疗', '工资', '其他']));
+    expect(cats1.map((c) => c.icon),
+        containsAll(['restaurant', 'directions_bus', 'shopping_bag', 'movie',
+                     'home', 'medical_services', 'payments', 'more_horiz']));
+
+    // 幂等：再建账本各自预置 8 个（不重复、不泄漏跨账本）
+    final l2 = await repo.createLedger(name: '生意');
+    expect(await repo.categories(l2), hasLength(8));
+    expect(await repo.categories(l1), hasLength(8));
   });
 }

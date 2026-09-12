@@ -96,6 +96,9 @@ void main() {
   });
 
   testWidgets('点击 FAB 打开记一笔 Sheet', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final c = await containerWith(0, 0);
     await tester.pumpWidget(UncontrolledProviderScope(
         container: c,

@@ -17,8 +17,13 @@ IconData _catIcon(String name) {
     case 'restaurant': return Icons.restaurant;
     case 'shopping': return Icons.shopping_bag;
     case 'directions': return Icons.directions_bus;
+    case 'directions_bus': return Icons.directions_bus;
+    case 'shopping_bag': return Icons.shopping_bag;
     case 'movie': return Icons.movie;
     case 'home': return Icons.home;
+    case 'medical_services': return Icons.medical_services;
+    case 'payments': return Icons.payments;
+    case 'more_horiz': return Icons.more_horiz;
     case 'school': return Icons.school;
     case 'savings': return Icons.savings;
     default: return Icons.receipt_long;
@@ -226,7 +231,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         ),
         const SizedBox(height: 16),
         if (cats.isEmpty)
-          const Text('暂无分类，可在后续里程碑管理')
+          const Text('默认分类未生成，请新建账本或稍后重试')
         else
           GridView.count(
             crossAxisCount: 4,

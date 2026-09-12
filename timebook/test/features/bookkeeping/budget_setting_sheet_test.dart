@@ -16,7 +16,7 @@ void main() {
     final db = AppDatabase.forTesting(inMemoryExecutor());
     final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
-    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final food = (await repo.categories(l)).singleWhere((c) => c.name == '餐饮').id;
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
       bookkeepingRepositoryProvider.overrideWithValue(repo),
@@ -47,7 +47,7 @@ void main() {
     final db = AppDatabase.forTesting(inMemoryExecutor());
     final repo = BookkeepingRepository(db, storage: MemoryKeyValueStorage());
     final l = await repo.createLedger(name: '生活');
-    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final food = (await repo.categories(l)).singleWhere((c) => c.name == '餐饮').id;
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
       bookkeepingRepositoryProvider.overrideWithValue(repo),

@@ -15,9 +15,44 @@ class BookkeepingRepository {
   final KvSettings settings;
 
   // ---- 账本 ----
-  Future<int> createLedger({required String name, String currency = 'CNY'}) {
-    return db.into(db.ledgers).insert(LedgersCompanion.insert(
-        name: name, currency: Value(currency)));
+  Future<int> createLedger(
+      {required String name, String currency = 'CNY'}) async {
+    final id = await db.into(db.ledgers).insert(
+        LedgersCompanion.insert(name: name, currency: Value(currency)));
+    await ensureDefaultCategories(id);
+    return id;
+  }
+
+  /// 分类表无 color 字段，按预置顺序取色；icon 存 Material 图标名近似值。
+  static const defaultCategories = <(String, String)>[
+    ('餐饮', 'restaurant'),
+    ('交通', 'directions_bus'),
+    ('购物', 'shopping_bag'),
+    ('娱乐', 'movie'),
+    ('居住', 'home'),
+    ('医疗', 'medical_services'),
+    ('工资', 'payments'),
+    ('其他', 'more_horiz'),
+  ];
+
+  /// 为新账本预置默认分类（按序、跳过同名者，幂等）。
+  Future<void> ensureDefaultCategories(int ledgerId) async {
+    final existing = await (db.select(db.categories)
+          ..where((t) => t.ledgerId.equals(ledgerId)))
+        .get();
+    final existingNames = {for (final c in existing) c.name};
+    await db.batch((b) {
+      for (var i = 0; i < defaultCategories.length; i++) {
+        final (name, icon) = defaultCategories[i];
+        if (!existingNames.contains(name)) {
+          b.insert(db.categories, CategoriesCompanion.insert(
+              ledgerId: ledgerId,
+              name: name,
+              icon: Value(icon),
+              sortOrder: Value(i)));
+        }
+      }
+    });
   }
 
   Future<List<Ledger>> ledgers() => db.select(db.ledgers).get();

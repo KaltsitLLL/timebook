@@ -14,7 +14,8 @@ void main() {
     final bk = BookkeepingRepository(db);
     final l = await bk.createLedger(name: '生活');
     await bk.createAccount(ledgerId: l, name: '卡');
-    final food = await bk.createCategory(ledgerId: l, name: '餐饮');
+    final food =
+        (await bk.categories(l)).singleWhere((c) => c.name == '餐饮').id;
     await bk.upsertRule(keyword: '美团', categoryId: food, priority: 1);
     return (db, food);
   }
