@@ -17,30 +17,30 @@
   html, body { height: 100%; }
   body {
     font-family: 'Roboto', 'Noto Sans SC', -apple-system, sans-serif;
-    background: #F1E7E2;
-    color: #231916;
+    background: #E9F1F8;
+    color: #1B2634;
     -webkit-font-smoothing: antialiased;
   }
   #root { min-height: 100vh; }
 
-  /* ---- Material 3 设计令牌（seed #C04A1A 暖橙，近似 M3 tonal ramp；Flutter 用 ColorScheme.fromSeed 出精确版） ---- */
+  /* ---- Material 3 设计令牌（seed #3F77B6 蓝白浅色调，近似 M3 tonal ramp；Flutter 用 ColorScheme.fromSeed 出精确版） ---- */
   :root {
-    --primary: #9A4129;            --on-primary: #FFFFFF;
-    --primary-container: #FFDACE;  --on-primary-container: #3B0B00;
-    --secondary: #77574A;          --on-secondary: #FFFFFF;
-    --secondary-container: #FFDBCE;
-    --tertiary: #4E6B3A;           --on-tertiary: #FFFFFF;
-    --tertiary-container: #D2F2B6; --on-tertiary-container: #0B1F00;
+    --primary: #3F77B6;            --on-primary: #FFFFFF;
+    --primary-container: #D5E8FB;  --on-primary-container: #0A3760;
+    --secondary: #546E86;          --on-secondary: #FFFFFF;
+    --secondary-container: #D6E8F6;
+    --tertiary: #4CB3C4;           --on-tertiary: #FFFFFF;
+    --tertiary-container: #D3F1F7; --on-tertiary-container: #0A3640;
     --error: #BA1A1A;              --on-error: #FFFFFF;
-    --background: #FFF8F6;
-    --surface: #FFF8F6;            --on-surface: #231916;  --on-surface-variant: #53443E;
+    --background: #EAF1F8;
+    --surface: #FDFDFF;            --on-surface: #1B2634;  --on-surface-variant: #4E5F72;
     --surface-container-lowest: #FFFFFF;
-    --surface-container-low: #FEF1EC;
-    --surface-container: #F8EBE6;
-    --surface-container-high: #F2E5E0;
-    --surface-container-highest: #ECDFDA;
-    --outline: #87736C;            --outline-variant: #DBC2BA;
-    --scrim: rgba(32,18,12,.55);
+    --surface-container-low: #F3F7FC;
+    --surface-container: #EAEFF6;
+    --surface-container-high: #E1E8F1;
+    --surface-container-highest: #D8E1EB;
+    --outline: #7B8B9C;            --outline-variant: #C9D4E0;
+    --scrim: rgba(15,26,36,.55);
     --shape-xs: 8px; --shape-sm: 12px; --shape-lg: 16px; --shape-xl: 28px;
   }
 
@@ -52,13 +52,13 @@
     max-width: 1200px; margin: 0 auto; padding: 28px 24px 4px;
   }
   .proto-meta h1 { font-size: 26px; font-weight: 700; letter-spacing: .2px; }
-  .proto-meta p  { color: #53443E; font-size: 14px; margin-top: 6px; }
+  .proto-meta p  { color: #4E5F72; font-size: 14px; margin-top: 6px; }
 
   .zones { max-width: 1200px; margin: 0 auto; padding: 20px 24px 64px; }
   .zone-label { display: flex; align-items: center; gap: 10px; margin: 28px 0 14px; }
   .zone-label .tag { background: var(--primary); color: #fff; border-radius: 999px;
                      padding: 4px 12px; font-size: 12px; font-weight: 500; }
-  .zone-label .desc { color: #53443E; font-size: 13px; }
+  .zone-label .desc { color: #4E5F72; font-size: 13px; }
 
   /* 手机交互中枢 */
   .phone-stage { display: flex; justify-content: center; padding: 8px 0 28px; }
@@ -66,17 +66,17 @@
   /* 桌面静态示意区 */
   .desktop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
   .dwin { border-radius: 20px; overflow: hidden; background: var(--surface);
-          box-shadow: 0 8px 30px rgba(59,30,18,.14);
+          box-shadow: 0 8px 30px rgba(47,88,133,.14);
           border: 1px solid var(--outline-variant); }
   .dwin-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px;
               background: var(--surface-container-low); border-bottom: 1px solid var(--outline-variant);
-              font-size: 12px; color: #53443E; }
+              font-size: 12px; color: #4E5F72; }
   .dot { width: 11px; height: 11px; border-radius: 50%; }
   .dwin-body { display: flex; min-height: 380px; }
   .drail { width: 76px; border-right: 1px solid var(--outline-variant);
            background: var(--surface-container-low); padding: 14px 8px; display: flex; flex-direction: column; gap: 4px; }
   .drail-item { display: flex; flex-direction: column; align-items: center; gap: 3px;
-                padding: 10px 4px; border-radius: 14px; font-size: 11px; color: #53443E; cursor: default; }
+                padding: 10px 4px; border-radius: 14px; font-size: 11px; color: #4E5F72; cursor: default; }
   .drail-item.on { background: var(--secondary-container); color: var(--on-secondary-container); }
   .drail-item .ms { font-size: 20px; }
   .dcontent { flex: 1; padding: 20px 24px; overflow: hidden; }
@@ -90,14 +90,14 @@ const { useState, useEffect, useRef, useMemo } = React;
 
 /* ================= 数据 ================= */
 const CATS = [
-  { id:'food',   name:'餐饮', icon:'restaurant',      color:'#E07A5F' },
-  { id:'trans',  name:'交通', icon:'directions_bus',  color:'#81B29A' },
-  { id:'shop',   name:'购物', icon:'shopping_bag',    color:'#E9AE4C' },
-  { id:'fun',    name:'娱乐', icon:'movie',           color:'#9A8CF0' },
+  { id:'food',   name:'餐饮', icon:'restaurant',      color:'#5B9BD5' },
+  { id:'trans',  name:'交通', icon:'directions_bus',  color:'#4DB6AC' },
+  { id:'shop',   name:'购物', icon:'shopping_bag',    color:'#5C6BC0' },
+  { id:'fun',    name:'娱乐', icon:'movie',           color:'#8F9AD1' },
   { id:'house',  name:'居住', icon:'home',            color:'#6C96C9' },
-  { id:'med',    name:'医疗', icon:'medical_services',color:'#E76F51' },
-  { id:'salary', name:'工资', icon:'payments',        color:'#4E6B3A' },
-  { id:'other',  name:'其他', icon:'more_horiz',      color:'#87736C' },
+  { id:'med',    name:'医疗', icon:'medical_services',color:'#7FB3D5' },
+  { id:'salary', name:'工资', icon:'payments',        color:'#4CB3C4' },
+  { id:'other',  name:'其他', icon:'more_horiz',      color:'#7B8B9C' },
 ];
 const cat = id => CATS.find(c => c.id === id);
 
@@ -172,8 +172,8 @@ function DotDonut({ slices, size = 148, inner = .66 }) {
             strokeDashoffset={-a0} transform={`rotate(-90 ${size/2} ${size/2})`} r={r} />
         );
       })}
-      <text x="50%" y="46%" textAnchor="middle" fontSize={16} fontWeight={700} fill="#231916">¥{fmt(total)}</text>
-      <text x="50%" y="60%" textAnchor="middle" fontSize={11} fill="#53443E">本月支出</text>
+      <text x="50%" y="46%" textAnchor="middle" fontSize={16} fontWeight={700} fill="#1B2634">¥{fmt(total)}</text>
+      <text x="50%" y="60%" textAnchor="middle" fontSize={11} fill="#4E5F72">本月支出</text>
     </svg>
   );
 }
@@ -189,15 +189,15 @@ function BarChart({ data, h = 150 }) {
         const he = (d.exp / max) * (h - 34);
         return (
           <g key={i}>
-            <rect x={x} y={h - 14 - he} width={bw/2 - 2} height={he} rx={4} fill="#4E6B3A" />
-            <rect x={x + bw/2 + 2} y={h - 14 - hi} width={bw/2 - 2} height={hi} rx={4} fill="#9A4129" opacity={.85} />
-            <text x={x + bw/2} y={h - 2} textAnchor="middle" fontSize={10} fill="#53443E">{d.m}</text>
+            <rect x={x} y={h - 14 - he} width={bw/2 - 2} height={he} rx={4} fill="#4CB3C4" />
+            <rect x={x + bw/2 + 2} y={h - 14 - hi} width={bw/2 - 2} height={hi} rx={4} fill="#3F77B6" opacity={.85} />
+            <text x={x + bw/2} y={h - 2} textAnchor="middle" fontSize={10} fill="#4E5F72">{d.m}</text>
           </g>
         );
       })}
       <g transform={`translate(0 ${h - 34})`}>
-        <text x={150} y={30} fontSize={10} fill="#4E6B3A">■ 收入</text>
-        <text x={200} y={30} fontSize={10} fill="#9A4129">■ 支出</text>
+        <text x={150} y={30} fontSize={10} fill="#4CB3C4">■ 收入</text>
+        <text x={200} y={30} fontSize={10} fill="#3F77B6">■ 支出</text>
       </g>
     </svg>
   );
@@ -217,11 +217,11 @@ function Progress({ pct, warn = false }) {
 const m3 = {
   card: { background: 'var(--surface-container-low)', borderRadius: 'var(--shape-lg)', padding: 16 },
   chip: { display:'inline-flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:999,
-          border:'1px solid var(--outline-variant)', fontSize:13, color:'#53443E', background:'var(--surface)' },
+          border:'1px solid var(--outline-variant)', fontSize:13, color:'#4E5F72', background:'var(--surface)' },
   chipOn:{ background:'var(--secondary-container)', borderColor:'transparent', color:'var(--on-secondary-container)' },
   fab:  { position:'absolute', right:20, bottom:96, background:'var(--primary-container)', color:'var(--on-primary-container)',
           borderRadius:16, height:56, padding:'0 20px', display:'flex', alignItems:'center', gap:8,
-          boxShadow:'0 3px 10px rgba(59,30,18,.3)', fontWeight:500, cursor:'pointer', border:'none', fontSize:14, zIndex:5 },
+          boxShadow:'0 3px 10px rgba(47,88,133,.3)', fontWeight:500, cursor:'pointer', border:'none', fontSize:14, zIndex:5 },
 };
 
 function Ms({ n, size = 22, style }) { return <span className="ms" style={{ fontSize: size, ...style }}>{n}</span>; }
@@ -304,7 +304,7 @@ function ScreenHome({ txs, onOpenTx, onOpenBudget, onAdd }) {
     <div style={{ paddingBottom: 90 }}>
       <div style={{ padding: '6px 20px 2px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div>
-          <div style={{ fontSize: 13, color:'#53443E' }}>2026年9月</div>
+          <div style={{ fontSize: 13, color:'#4E5F72' }}>2026年9月</div>
           <div style={{ fontSize: 22, fontWeight: 700 }}>时账</div>
         </div>
         <div style={{ width:40, height:40, borderRadius:'50%', background:'var(--primary-container)',
@@ -315,7 +315,7 @@ function ScreenHome({ txs, onOpenTx, onOpenBudget, onAdd }) {
 
       {/* 结余卡 */}
       <div style={{ margin:'12px 20px 4px', borderRadius:24, padding:18,
-        background:'linear-gradient(135deg, #9A4129, #C76B45)', color:'#fff', boxShadow:'0 8px 24px rgba(154,65,41,.28)' }}>
+        background:'linear-gradient(135deg, #3F77B6, #6FA8DC)', color:'#fff', boxShadow:'0 8px 24px rgba(63,119,182,.28)' }}>
         <div style={{ fontSize: 13, opacity:.85 }}>本月结余</div>
         <div style={{ fontSize: 34, fontWeight: 700, marginTop: 2 }}>¥ {fmt(bal)}</div>
         <div style={{ display:'flex', gap: 26, marginTop: 12 }}>
@@ -335,14 +335,14 @@ function ScreenHome({ txs, onOpenTx, onOpenBudget, onAdd }) {
             <Ms n="receipt_long" />
           </div>
           <div><div style={{ fontWeight:600, fontSize:15 }}>流水明细</div>
-          <div style={{ fontSize:12, color:'#53443E' }}>{txs.length} 笔记录</div></div>
+          <div style={{ fontSize:12, color:'#4E5F72' }}>{txs.length} 笔记录</div></div>
         </div>
         <div onClick={onOpenBudget} style={{ ...m3.card, flex:1, cursor:'pointer', display:'flex', alignItems:'center', gap:12 }}>
           <div style={{ width:42, height:42, borderRadius:14, background:'var(--secondary-container)', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <Ms n="savings" />
           </div>
           <div><div style={{ fontWeight:600, fontSize:15 }}>本月预算</div>
-          <div style={{ fontSize:12, color:'#53443E' }}>剩 ¥ {fmt(BUDGET - exp)}</div></div>
+          <div style={{ fontSize:12, color:'#4E5F72' }}>剩 ¥ {fmt(BUDGET - exp)}</div></div>
         </div>
       </div>
 
@@ -379,7 +379,7 @@ function ScreenHome({ txs, onOpenTx, onOpenBudget, onAdd }) {
             </div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontSize:14, fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.who}</div>
-              <div style={{ fontSize:12, color:'#53443E' }}>{t.memo} · {t.d}</div>
+              <div style={{ fontSize:12, color:'#4E5F72' }}>{t.memo} · {t.d}</div>
             </div>
             <div style={{ fontSize:14, fontWeight:600, color: t.amt > 0 ? 'var(--tertiary)' : 'var(--primary)' }}>
               {fmtSign(t.amt)}
@@ -413,12 +413,12 @@ function ScreenTx({ txs, onBack, onAdd }) {
           </div>
         ))}
       </div>
-      <div style={{ padding:'8px 20px 0', fontSize:12, color:'#53443E' }}>
+      <div style={{ padding:'8px 20px 0', fontSize:12, color:'#4E5F72' }}>
         共 {list.length} 笔 · 支出 ¥{fmt(sumExp(list))} · 收入 ¥{fmt(sumInc(list))}
       </div>
       {groups.map(([d, items]) => (
         <div key={d} style={{ margin:'8px 16px 0' }}>
-          <div style={{ fontSize:12, color:'#53443E', padding:'4px 4px 2px' }}>{d}</div>
+          <div style={{ fontSize:12, color:'#4E5F72', padding:'4px 4px 2px' }}>{d}</div>
           <div style={{ ...m3.card, padding: '4px 12px', borderRadius: 'var(--shape-sm)' }}>
             {items.map((t, i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 0',
@@ -429,11 +429,11 @@ function ScreenTx({ txs, onBack, onAdd }) {
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:14, fontWeight:500 }}>{t.who}</div>
-                  <div style={{ fontSize:12, color:'#53443E', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.memo}</div>
+                  <div style={{ fontSize:12, color:'#4E5F72', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.memo}</div>
                 </div>
                 <div style={{ fontSize:14, fontWeight:600, textAlign:'right', color: t.amt > 0 ? 'var(--tertiary)' : 'var(--primary)' }}>
                   {fmtSign(t.amt)}
-                  <div style={{ fontSize:11, fontWeight:400, color:'#53443E' }}>{cat(t.cat).name}</div>
+                  <div style={{ fontSize:11, fontWeight:400, color:'#4E5F72' }}>{cat(t.cat).name}</div>
                 </div>
               </div>
             ))}
@@ -465,7 +465,7 @@ function ScreenBudget({ txs, onBack }) {
         <div style={{ display:'flex', gap:22, marginTop:12 }}>
           <div style={{ fontSize:12, color:'var(--on-primary-container)', opacity:.75 }}>已用 <b style={{ fontSize:14 }}>¥ {fmt(exp)}</b></div>
           <div style={{ fontSize:12, color:'var(--on-primary-container)', opacity:.75 }}>剩余 <b style={{ fontSize:14 }}>¥ {fmt(left)}</b></div>
-          <div style={{ marginLeft:'auto', fontSize:12, background:'rgba(59,11,0,.08)', padding:'5px 10px', borderRadius:999, color:'var(--on-primary-container)' }}>
+          <div style={{ marginLeft:'auto', fontSize:12, background:'rgba(10,55,96,.08)', padding:'5px 10px', borderRadius:999, color:'var(--on-primary-container)' }}>
             剩余日均 ¥ {fmt(per)}
           </div>
         </div>
@@ -483,7 +483,7 @@ function ScreenBudget({ txs, onBack }) {
               <div style={{ flex:1 }}>
                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
                   <span style={{ fontSize:14, fontWeight:500 }}>{cat(b.cat).name}</span>
-                  <span style={{ fontSize:13, color: p >= 100 ? 'var(--error)' : '#53443E' }}>
+                  <span style={{ fontSize:13, color: p >= 100 ? 'var(--error)' : '#4E5F72' }}>
                     <b>{fmt(used)}</b> / {fmt(b.cap)}
                   </span>
                 </div>
@@ -536,12 +536,12 @@ function ScreenStats({ txs, onTab }) {
         <div style={{ marginTop:12, borderTop:'1px solid var(--surface-container-highest)', paddingTop:10 }}>
           {slices.map((s, i) => (
             <div key={s.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'6px 0' }}>
-              <span style={{ width:20, fontSize:12, color:'#53443E', textAlign:'center' }}>{i+1}</span>
+              <span style={{ width:20, fontSize:12, color:'#4E5F72', textAlign:'center' }}>{i+1}</span>
               <div style={{ width:30, height:30, borderRadius:10, background:s.color+'22', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <Ms n={s.icon} size={18} />
               </div>
               <span style={{ fontSize:14, flex:1, fontWeight:500 }}>{s.name}</span>
-              <span style={{ fontSize:13, color:'#53443E' }}>{((s.v/exp)*100).toFixed(1)}%</span>
+              <span style={{ fontSize:13, color:'#4E5F72' }}>{((s.v/exp)*100).toFixed(1)}%</span>
               <span style={{ fontSize:14, fontWeight:600 }}>¥ {fmt(s.v)}</span>
             </div>
           ))}
@@ -555,7 +555,7 @@ function ScreenFocus({ onTab }) {
   const [tasks, setTasks] = useState(TASKS);
   const [mode, setMode] = useState('focus');   // focus / short / long
   const MODES = { focus: { label:'专注', sec:25*60, c:'var(--primary)' },
-                  short: { label:'短休', sec:5*60,  c:'#4E6B3A' },
+                  short: { label:'短休', sec:5*60,  c:'#4CB3C4' },
                   long:  { label:'长休', sec:15*60, c:'#6C96C9' } };
   const total = MODES[mode].sec;
   const [left, setLeft] = useState(total);
@@ -582,12 +582,12 @@ function ScreenFocus({ onTab }) {
       <div style={{ margin:'12px 20px 4px', ...m3.card }}>
         <div style={{ display:'flex', gap:18 }}>
           <div>
-            <div style={{ fontSize:12, color:'#53443E' }}>今日待办</div>
-            <div style={{ fontSize:20, fontWeight:700 }}>{done} / {tasks.length} <span style={{ fontSize:12, fontWeight:400, color:'#53443E' }}>已完成</span></div>
+            <div style={{ fontSize:12, color:'#4E5F72' }}>今日待办</div>
+            <div style={{ fontSize:20, fontWeight:700 }}>{done} / {tasks.length} <span style={{ fontSize:12, fontWeight:400, color:'#4E5F72' }}>已完成</span></div>
           </div>
           <div>
-            <div style={{ fontSize:12, color:'#53443E' }}>今日专注</div>
-            <div style={{ fontSize:20, fontWeight:700 }}>3 <span style={{ fontSize:14 }}>🍅</span> · 75<span style={{ fontSize:12, fontWeight:400, color:'#53443E' }}> 分钟</span></div>
+            <div style={{ fontSize:12, color:'#4E5F72' }}>今日专注</div>
+            <div style={{ fontSize:20, fontWeight:700 }}>3 <span style={{ fontSize:14 }}>🍅</span> · 75<span style={{ fontSize:12, fontWeight:400, color:'#4E5F72' }}> 分钟</span></div>
           </div>
         </div>
       </div>
@@ -612,7 +612,7 @@ function ScreenFocus({ onTab }) {
             <div style={{ fontSize:34, fontWeight:700, fontVariantNumeric:'tabular-nums' }}>
               {`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`}
             </div>
-            <div style={{ fontSize:12, color:'#53443E', marginTop:2 }}>
+            <div style={{ fontSize:12, color:'#4E5F72', marginTop:2 }}>
               {active ? `专注中：${active.title}` : '请先选择任务'}
             </div>
           </div>
@@ -620,7 +620,7 @@ function ScreenFocus({ onTab }) {
         <button onClick={() => setRun(r => !r)} style={{
           marginTop:14, border:'none', cursor:'pointer', borderRadius:999, height:48, padding:'0 34px',
           background: run ? 'var(--surface-container-highest)' : MODES[mode].c,
-          color: run ? '#53443E' : '#fff', fontSize:15, fontWeight:600, boxShadow: run ? 'none' : '0 4px 12px rgba(59,30,18,.25)' }}>
+          color: run ? '#4E5F72' : '#fff', fontSize:15, fontWeight:600, boxShadow: run ? 'none' : '0 4px 12px rgba(47,88,133,.25)' }}>
           {run ? '暂停' : (left < total ? '继续' : '开始专注')}
         </button>
       </div>
@@ -637,7 +637,7 @@ function ScreenFocus({ onTab }) {
               cursor:'pointer', flexShrink:0 }} />
             <div style={{ flex:1 }}>
               <div style={{ fontSize:14, fontWeight:500 }}>{t.title}</div>
-              <div style={{ fontSize:12, color:'#53443E' }}>{t.proj} · 预计 {t.est} 分钟</div>
+              <div style={{ fontSize:12, color:'#4E5F72' }}>{t.proj} · 预计 {t.est} 分钟</div>
             </div>
             <div onClick={() => { setActive(t); startNew('focus'); setRun(true); }}
               style={{ ...m3.chip, cursor:'pointer', padding:'4px 10px' }}> 🍅 </div>
@@ -664,8 +664,8 @@ function ScreenSettings() {
       {[['账本管理','多账本 · 币种 · 顺序'],['AI 记账','GLM API Key · 隐私声明'],['导入导出','CSV · 备份'],['关于','版本 · 开源许可']].map(([t, s]) => (
         <div key={t} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 4px',
           borderBottom:'1px solid var(--surface-container-highest)' }}>
-          <div style={{ flex:1 }}><div style={{ fontSize:15 }}>{t}</div><div style={{ fontSize:12, color:'#53443E' }}>{s}</div></div>
-          <Ms n="chevron_right" size={20} style={{ color:'#87736C' }} />
+          <div style={{ flex:1 }}><div style={{ fontSize:15 }}>{t}</div><div style={{ fontSize:12, color:'#4E5F72' }}>{s}</div></div>
+          <Ms n="chevron_right" size={20} style={{ color:'#7B8B9C' }} />
         </div>
       ))}
     </div>
@@ -699,7 +699,7 @@ function SheetAdd({ ok, data, onSave, onClose }) {
           {[['exp','支出'],['inc','收入']].map(([k, v]) => (
             <div key={k} onClick={() => setDir(k)} style={{ ...m3.chip, cursor:'pointer', padding:'6px 18px',
               background: dir === k ? (k === 'exp' ? 'var(--primary)' : 'var(--tertiary)') : 'var(--surface)',
-              color: dir === k ? '#fff' : '#53443E', borderColor: dir === k ? 'transparent' : 'var(--outline-variant)' }}>{v}</div>
+              color: dir === k ? '#fff' : '#4E5F72', borderColor: dir === k ? 'transparent' : 'var(--outline-variant)' }}>{v}</div>
           ))}
         </div>
         <div style={{ display:'flex', alignItems:'baseline', gap:6, margin:'6px 0 12px' }}>
@@ -727,7 +727,7 @@ function SheetAdd({ ok, data, onSave, onClose }) {
           style={{ width:'100%', border:'none', borderBottom:'1px solid var(--outline-variant)', outline:'none',
             padding:'10px 2px', fontSize:15, background:'transparent' }} />
         <button onClick={submit} style={{ width:'100%', marginTop:16, border:'none', cursor:'pointer', borderRadius:999,
-          background:'var(--primary)', color:'#fff', height:50, fontSize:16, fontWeight:600, boxShadow:'0 4px 12px rgba(154,65,41,.3)' }}>
+          background:'var(--primary)', color:'#fff', height:50, fontSize:16, fontWeight:600, boxShadow:'0 4px 12px rgba(63,119,182,.3)' }}>
           保存
         </button>
       </div>
@@ -744,8 +744,8 @@ function NavBar({ tab, set }) {
         <div key={k} onClick={() => set(k)} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2,
           padding:'4px 0', cursor:'pointer', borderRadius:12,
           background: tab === k ? 'var(--secondary-container)' : 'transparent' }}>
-          <Ms n={ic} size={24} style={{ color: tab === k ? 'var(--on-secondary-container)' : '#53443E', fontVariationSettings: `'FILL' ${tab===k?1:0}` }} />
-          <span style={{ fontSize:11, color: tab === k ? 'var(--on-secondary-container)' : '#53443E' }}>{v}</span>
+          <Ms n={ic} size={24} style={{ color: tab === k ? 'var(--on-secondary-container)' : '#4E5F72', fontVariationSettings: `'FILL' ${tab===k?1:0}` }} />
+          <span style={{ fontSize:11, color: tab === k ? 'var(--on-secondary-container)' : '#4E5F72' }}>{v}</span>
         </div>
       ))}
     </div>
@@ -818,7 +818,7 @@ function DeskWideHome() {
   return (
     <div style={{ display:'grid', gridTemplateColumns:'1.1fr 1fr 1fr', gap:16 }}>
       <div style={{ gridColumn:'1 / span 2', borderRadius:24, padding:22,
-        background:'linear-gradient(135deg,#9A4129,#C76B45)', color:'#fff' }}>
+        background:'linear-gradient(135deg,#3F77B6,#6FA8DC)', color:'#fff' }}>
         <div style={{ fontSize:13, opacity:.85 }}>本月结余 · 2026年9月</div>
         <div style={{ fontSize:40, fontWeight:700, marginTop:4 }}>¥ {fmt(bal)}</div>
         <div style={{ display:'flex', gap:30, marginTop:14, fontSize:14 }}>
@@ -829,7 +829,7 @@ function DeskWideHome() {
         <div style={{ fontWeight:600, fontSize:15 }}>本月预算</div>
         <div style={{ fontSize:28, fontWeight:700, marginTop:6 }}>¥ {fmt(BUDGET)}</div>
         <div style={{ marginTop:10 }}><Progress pct={exp/BUDGET*100} warn={exp/BUDGET>.8} /></div>
-        <div style={{ fontSize:13, color:'#53443E', marginTop:8 }}>剩余 ¥ {fmt(BUDGET-exp)} · 日均 ¥{fmt((BUDGET-exp)/18)}</div>
+        <div style={{ fontSize:13, color:'#4E5F72', marginTop:8 }}>剩余 ¥ {fmt(BUDGET-exp)} · 日均 ¥{fmt((BUDGET-exp)/18)}</div>
       </div>
       <div style={{ ...m3.card, cursor:'default' }}>
         <div style={{ fontWeight:600, fontSize:15, marginBottom:6 }}>分类支出</div>
@@ -849,7 +849,7 @@ function DeskWideHome() {
             <div style={{ width:34,height:34,borderRadius:10,background:cat(t.cat).color+'22',display:'flex',alignItems:'center',justifyContent:'center' }}>
               <Ms n={cat(t.cat).icon} size={18} />
             </div>
-            <div style={{ flex:1 }}><div style={{ fontSize:14,fontWeight:500 }}>{t.who}</div><div style={{ fontSize:12,color:'#53443E' }}>{t.memo}</div></div>
+            <div style={{ flex:1 }}><div style={{ fontSize:14,fontWeight:500 }}>{t.who}</div><div style={{ fontSize:12,color:'#4E5F72' }}>{t.memo}</div></div>
             <div style={{ fontSize:14,fontWeight:600,color:t.amt>0?'var(--tertiary)':'var(--primary)' }}>{fmtSign(t.amt)}</div>
           </div>
         ))}
@@ -885,10 +885,10 @@ function DeskWideStats() {
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
           {slices.map((s,i)=>(
             <div key={s.id} style={{ display:'flex', gap:10, alignItems:'center', padding:'10px', borderRadius:14, background:'var(--surface-container-lowest)' }}>
-              <span style={{ fontSize:13, color:'#53443E', width:18 }}>{i+1}</span>
+              <span style={{ fontSize:13, color:'#4E5F72', width:18 }}>{i+1}</span>
               <Ms n={s.icon} size={20} style={{ color:s.color }} />
               <div style={{ flex:1 }}><div style={{ fontSize:13,fontWeight:500 }}>{s.name}</div>
-              <div style={{ fontSize:12,color:'#53443E' }}>¥ {fmt(s.v)}</div></div>
+              <div style={{ fontSize:12,color:'#4E5F72' }}>¥ {fmt(s.v)}</div></div>
             </div>
           ))}
         </div>
@@ -910,10 +910,10 @@ function DeskWideFocus() {
           </svg>
           <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
             <div style={{ fontSize:32, fontWeight:700 }}>25:00</div>
-            <div style={{ fontSize:12, color:'#53443E' }}>Drift 数据库表设计</div>
+            <div style={{ fontSize:12, color:'#4E5F72' }}>Drift 数据库表设计</div>
           </div>
         </div>
-        <div style={{ marginTop:8, fontSize:13, color:'#53443E' }}>今日 3 🍅 · 75 分钟 · 4 项待办完成 1</div>
+        <div style={{ marginTop:8, fontSize:13, color:'#4E5F72' }}>今日 3 🍅 · 75 分钟 · 4 项待办完成 1</div>
         <div style={{ marginTop:14, display:'flex', gap:10 }}>
           {[['focus','专注'],['short','短休'],['long','长休']].map(([k,v])=>(
             <div key={k} style={{ ...m3.chip, ...(k==='focus'?m3.chipOn:{}), padding:'6px 16px' }}>{v}</div>
@@ -930,7 +930,7 @@ function DeskWideFocus() {
             </div>
             <div style={{ flex:1 }}>
               <div style={{ fontSize:14, fontWeight:500, textDecoration: t.done ? 'line-through' : 'none', opacity: t.done ? .6 : 1 }}>{t.title}</div>
-              <div style={{ fontSize:12, color:'#53443E' }}>{t.proj} · 预计 {t.est} 分钟</div>
+              <div style={{ fontSize:12, color:'#4E5F72' }}>{t.proj} · 预计 {t.est} 分钟</div>
             </div>
             <div style={{ ...m3.chip, padding:'3px 10px' }}> 🍅 </div>
           </div>
@@ -946,7 +946,7 @@ function App() {
     <div>
       <div className="proto-meta">
         <h1>时账 · Material 3 记账 UI 原型</h1>
-        <p>主色 seed #C04A1A 暖橙 · Navigation Bar（移动）/ Navigation Rail（桌面）· 上半部分手机端<b>可交互</b>（点 FAB 记一笔、切 Tab、进流水/预算），下半部分为桌面端静态示意。</p>
+        <p>主色 seed #3F77B6 蓝白浅色调 · Navigation Bar（移动）/ Navigation Rail（桌面）· 上半部分手机端<b>可交互</b>（点 FAB 记一笔、切 Tab、进流水/预算），下半部分为桌面端静态示意。</p>
       </div>
 
       <div className="phone-stage">

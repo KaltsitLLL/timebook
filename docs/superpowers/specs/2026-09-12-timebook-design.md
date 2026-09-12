@@ -183,8 +183,8 @@ idle ──开始──▶ focusing ──完成──▶ 确认弹窗(完成/�
 
 ## 8. UI 规范（Material 3）
 
-- 主色 seed：`#C04A1A`（暖橙）；Flutter 用 `ColorScheme.fromSeed` 生成精确 tonal ramp（原型中为近似值）
-- 语义色：支出=primary 橙红，收入=tertiary 橄榄绿，error=红；surfaceContainer 五级做卡片层级
+- 主色 seed：`#3F77B6`（蓝白浅色调，浅色优先，避免深色）；Flutter 用 `ColorScheme.fromSeed` 生成精确 tonal ramp（原型中为近似值）
+- 语义色：支出=primary 蓝，收入=tertiary 青蓝，error=红（仅错误态用）；surfaceContainer 五级做卡片层级（近白浅蓝灰）；分类图表色板全程冷色系（蓝/青/靛/灰蓝），避免暖橙残留
 - 组件规范：手机底部 Navigation Bar 4 项（记账/专注/统计/设置）+ 记账页内嵌「流水」「预算」子页；桌面 Navigation Rail + 宽屏栅格；「记一笔」= Extended FAB → 全屏 Bottom Sheet
 - 度量：金额一律 tabular-nums；圆角 8/12/16/28；数字信息密度按数据类 App 标准 ≥3 处差异化信息/屏
 - 桌面 OCR 缺口、深色模式、无障碍对比度列入后续迭代
