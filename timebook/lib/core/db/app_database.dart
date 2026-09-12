@@ -2,19 +2,21 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import '../../features/bookkeeping/data/tables.dart';
 import '../../features/focus/data/focus_tables.dart';
+import '../../features/import/data/import_tables.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
     tables: [Ledgers, Accounts, Categories, Transactions, Budgets, Projects,
-        Tasks, PomodoroSessions, PomodoroSettings])
+        Tasks, PomodoroSessions, PomodoroSettings, RecurringTransactions,
+        ImportBatches, ImportRules])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openDefault());
 
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -24,6 +26,11 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(tasks);
             await m.createTable(pomodoroSessions);
             await m.createTable(pomodoroSettings);
+          }
+          if (from < 3) {
+            await m.createTable(recurringTransactions);
+            await m.createTable(importBatches);
+            await m.createTable(importRules);
           }
         },
         beforeOpen: (details) async {

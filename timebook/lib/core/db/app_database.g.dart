@@ -4289,6 +4289,1549 @@ class PomodoroSettingsCompanion extends UpdateCompanion<PomodoroSetting> {
   }
 }
 
+class $RecurringTransactionsTable extends RecurringTransactions
+    with TableInfo<$RecurringTransactionsTable, RecurringTransaction> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecurringTransactionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _ledgerIdMeta = const VerificationMeta(
+    'ledgerId',
+  );
+  @override
+  late final GeneratedColumn<int> ledgerId = GeneratedColumn<int>(
+    'ledger_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<int> accountId = GeneratedColumn<int>(
+    'account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _directionMeta = const VerificationMeta(
+    'direction',
+  );
+  @override
+  late final GeneratedColumn<String> direction = GeneratedColumn<String>(
+    'direction',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountCentsMeta = const VerificationMeta(
+    'amountCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountCents = GeneratedColumn<int>(
+    'amount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _counterpartyMeta = const VerificationMeta(
+    'counterparty',
+  );
+  @override
+  late final GeneratedColumn<String> counterparty = GeneratedColumn<String>(
+    'counterparty',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _remarkMeta = const VerificationMeta('remark');
+  @override
+  late final GeneratedColumn<String> remark = GeneratedColumn<String>(
+    'remark',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _frequencyMeta = const VerificationMeta(
+    'frequency',
+  );
+  @override
+  late final GeneratedColumn<String> frequency = GeneratedColumn<String>(
+    'frequency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('monthly'),
+  );
+  static const VerificationMeta _dayOfMonthMeta = const VerificationMeta(
+    'dayOfMonth',
+  );
+  @override
+  late final GeneratedColumn<int> dayOfMonth = GeneratedColumn<int>(
+    'day_of_month',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _nextRunMeta = const VerificationMeta(
+    'nextRun',
+  );
+  @override
+  late final GeneratedColumn<String> nextRun = GeneratedColumn<String>(
+    'next_run',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _lastGeneratedMeta = const VerificationMeta(
+    'lastGenerated',
+  );
+  @override
+  late final GeneratedColumn<String> lastGenerated = GeneratedColumn<String>(
+    'last_generated',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ledgerId,
+    categoryId,
+    accountId,
+    direction,
+    amountCents,
+    counterparty,
+    remark,
+    frequency,
+    dayOfMonth,
+    nextRun,
+    active,
+    lastGenerated,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recurring_transactions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecurringTransaction> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('ledger_id')) {
+      context.handle(
+        _ledgerIdMeta,
+        ledgerId.isAcceptableOrUnknown(data['ledger_id']!, _ledgerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ledgerIdMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    }
+    if (data.containsKey('direction')) {
+      context.handle(
+        _directionMeta,
+        direction.isAcceptableOrUnknown(data['direction']!, _directionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_directionMeta);
+    }
+    if (data.containsKey('amount_cents')) {
+      context.handle(
+        _amountCentsMeta,
+        amountCents.isAcceptableOrUnknown(
+          data['amount_cents']!,
+          _amountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountCentsMeta);
+    }
+    if (data.containsKey('counterparty')) {
+      context.handle(
+        _counterpartyMeta,
+        counterparty.isAcceptableOrUnknown(
+          data['counterparty']!,
+          _counterpartyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remark')) {
+      context.handle(
+        _remarkMeta,
+        remark.isAcceptableOrUnknown(data['remark']!, _remarkMeta),
+      );
+    }
+    if (data.containsKey('frequency')) {
+      context.handle(
+        _frequencyMeta,
+        frequency.isAcceptableOrUnknown(data['frequency']!, _frequencyMeta),
+      );
+    }
+    if (data.containsKey('day_of_month')) {
+      context.handle(
+        _dayOfMonthMeta,
+        dayOfMonth.isAcceptableOrUnknown(
+          data['day_of_month']!,
+          _dayOfMonthMeta,
+        ),
+      );
+    }
+    if (data.containsKey('next_run')) {
+      context.handle(
+        _nextRunMeta,
+        nextRun.isAcceptableOrUnknown(data['next_run']!, _nextRunMeta),
+      );
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    }
+    if (data.containsKey('last_generated')) {
+      context.handle(
+        _lastGeneratedMeta,
+        lastGenerated.isAcceptableOrUnknown(
+          data['last_generated']!,
+          _lastGeneratedMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecurringTransaction map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecurringTransaction(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      ledgerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ledger_id'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_id'],
+      ),
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}account_id'],
+      ),
+      direction: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}direction'],
+      )!,
+      amountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents'],
+      )!,
+      counterparty: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}counterparty'],
+      )!,
+      remark: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remark'],
+      )!,
+      frequency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}frequency'],
+      )!,
+      dayOfMonth: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}day_of_month'],
+      )!,
+      nextRun: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}next_run'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      lastGenerated: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_generated'],
+      )!,
+    );
+  }
+
+  @override
+  $RecurringTransactionsTable createAlias(String alias) {
+    return $RecurringTransactionsTable(attachedDatabase, alias);
+  }
+}
+
+class RecurringTransaction extends DataClass
+    implements Insertable<RecurringTransaction> {
+  final int id;
+  final int ledgerId;
+  final int? categoryId;
+  final int? accountId;
+  final String direction;
+  final int amountCents;
+  final String counterparty;
+  final String remark;
+  final String frequency;
+  final int dayOfMonth;
+  final String nextRun;
+  final bool active;
+  final String lastGenerated;
+  const RecurringTransaction({
+    required this.id,
+    required this.ledgerId,
+    this.categoryId,
+    this.accountId,
+    required this.direction,
+    required this.amountCents,
+    required this.counterparty,
+    required this.remark,
+    required this.frequency,
+    required this.dayOfMonth,
+    required this.nextRun,
+    required this.active,
+    required this.lastGenerated,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['ledger_id'] = Variable<int>(ledgerId);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<int>(categoryId);
+    }
+    if (!nullToAbsent || accountId != null) {
+      map['account_id'] = Variable<int>(accountId);
+    }
+    map['direction'] = Variable<String>(direction);
+    map['amount_cents'] = Variable<int>(amountCents);
+    map['counterparty'] = Variable<String>(counterparty);
+    map['remark'] = Variable<String>(remark);
+    map['frequency'] = Variable<String>(frequency);
+    map['day_of_month'] = Variable<int>(dayOfMonth);
+    map['next_run'] = Variable<String>(nextRun);
+    map['active'] = Variable<bool>(active);
+    map['last_generated'] = Variable<String>(lastGenerated);
+    return map;
+  }
+
+  RecurringTransactionsCompanion toCompanion(bool nullToAbsent) {
+    return RecurringTransactionsCompanion(
+      id: Value(id),
+      ledgerId: Value(ledgerId),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      accountId: accountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accountId),
+      direction: Value(direction),
+      amountCents: Value(amountCents),
+      counterparty: Value(counterparty),
+      remark: Value(remark),
+      frequency: Value(frequency),
+      dayOfMonth: Value(dayOfMonth),
+      nextRun: Value(nextRun),
+      active: Value(active),
+      lastGenerated: Value(lastGenerated),
+    );
+  }
+
+  factory RecurringTransaction.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecurringTransaction(
+      id: serializer.fromJson<int>(json['id']),
+      ledgerId: serializer.fromJson<int>(json['ledgerId']),
+      categoryId: serializer.fromJson<int?>(json['categoryId']),
+      accountId: serializer.fromJson<int?>(json['accountId']),
+      direction: serializer.fromJson<String>(json['direction']),
+      amountCents: serializer.fromJson<int>(json['amountCents']),
+      counterparty: serializer.fromJson<String>(json['counterparty']),
+      remark: serializer.fromJson<String>(json['remark']),
+      frequency: serializer.fromJson<String>(json['frequency']),
+      dayOfMonth: serializer.fromJson<int>(json['dayOfMonth']),
+      nextRun: serializer.fromJson<String>(json['nextRun']),
+      active: serializer.fromJson<bool>(json['active']),
+      lastGenerated: serializer.fromJson<String>(json['lastGenerated']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'ledgerId': serializer.toJson<int>(ledgerId),
+      'categoryId': serializer.toJson<int?>(categoryId),
+      'accountId': serializer.toJson<int?>(accountId),
+      'direction': serializer.toJson<String>(direction),
+      'amountCents': serializer.toJson<int>(amountCents),
+      'counterparty': serializer.toJson<String>(counterparty),
+      'remark': serializer.toJson<String>(remark),
+      'frequency': serializer.toJson<String>(frequency),
+      'dayOfMonth': serializer.toJson<int>(dayOfMonth),
+      'nextRun': serializer.toJson<String>(nextRun),
+      'active': serializer.toJson<bool>(active),
+      'lastGenerated': serializer.toJson<String>(lastGenerated),
+    };
+  }
+
+  RecurringTransaction copyWith({
+    int? id,
+    int? ledgerId,
+    Value<int?> categoryId = const Value.absent(),
+    Value<int?> accountId = const Value.absent(),
+    String? direction,
+    int? amountCents,
+    String? counterparty,
+    String? remark,
+    String? frequency,
+    int? dayOfMonth,
+    String? nextRun,
+    bool? active,
+    String? lastGenerated,
+  }) => RecurringTransaction(
+    id: id ?? this.id,
+    ledgerId: ledgerId ?? this.ledgerId,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    accountId: accountId.present ? accountId.value : this.accountId,
+    direction: direction ?? this.direction,
+    amountCents: amountCents ?? this.amountCents,
+    counterparty: counterparty ?? this.counterparty,
+    remark: remark ?? this.remark,
+    frequency: frequency ?? this.frequency,
+    dayOfMonth: dayOfMonth ?? this.dayOfMonth,
+    nextRun: nextRun ?? this.nextRun,
+    active: active ?? this.active,
+    lastGenerated: lastGenerated ?? this.lastGenerated,
+  );
+  RecurringTransaction copyWithCompanion(RecurringTransactionsCompanion data) {
+    return RecurringTransaction(
+      id: data.id.present ? data.id.value : this.id,
+      ledgerId: data.ledgerId.present ? data.ledgerId.value : this.ledgerId,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      direction: data.direction.present ? data.direction.value : this.direction,
+      amountCents: data.amountCents.present
+          ? data.amountCents.value
+          : this.amountCents,
+      counterparty: data.counterparty.present
+          ? data.counterparty.value
+          : this.counterparty,
+      remark: data.remark.present ? data.remark.value : this.remark,
+      frequency: data.frequency.present ? data.frequency.value : this.frequency,
+      dayOfMonth: data.dayOfMonth.present
+          ? data.dayOfMonth.value
+          : this.dayOfMonth,
+      nextRun: data.nextRun.present ? data.nextRun.value : this.nextRun,
+      active: data.active.present ? data.active.value : this.active,
+      lastGenerated: data.lastGenerated.present
+          ? data.lastGenerated.value
+          : this.lastGenerated,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecurringTransaction(')
+          ..write('id: $id, ')
+          ..write('ledgerId: $ledgerId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('accountId: $accountId, ')
+          ..write('direction: $direction, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('counterparty: $counterparty, ')
+          ..write('remark: $remark, ')
+          ..write('frequency: $frequency, ')
+          ..write('dayOfMonth: $dayOfMonth, ')
+          ..write('nextRun: $nextRun, ')
+          ..write('active: $active, ')
+          ..write('lastGenerated: $lastGenerated')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    ledgerId,
+    categoryId,
+    accountId,
+    direction,
+    amountCents,
+    counterparty,
+    remark,
+    frequency,
+    dayOfMonth,
+    nextRun,
+    active,
+    lastGenerated,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecurringTransaction &&
+          other.id == this.id &&
+          other.ledgerId == this.ledgerId &&
+          other.categoryId == this.categoryId &&
+          other.accountId == this.accountId &&
+          other.direction == this.direction &&
+          other.amountCents == this.amountCents &&
+          other.counterparty == this.counterparty &&
+          other.remark == this.remark &&
+          other.frequency == this.frequency &&
+          other.dayOfMonth == this.dayOfMonth &&
+          other.nextRun == this.nextRun &&
+          other.active == this.active &&
+          other.lastGenerated == this.lastGenerated);
+}
+
+class RecurringTransactionsCompanion
+    extends UpdateCompanion<RecurringTransaction> {
+  final Value<int> id;
+  final Value<int> ledgerId;
+  final Value<int?> categoryId;
+  final Value<int?> accountId;
+  final Value<String> direction;
+  final Value<int> amountCents;
+  final Value<String> counterparty;
+  final Value<String> remark;
+  final Value<String> frequency;
+  final Value<int> dayOfMonth;
+  final Value<String> nextRun;
+  final Value<bool> active;
+  final Value<String> lastGenerated;
+  const RecurringTransactionsCompanion({
+    this.id = const Value.absent(),
+    this.ledgerId = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.direction = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.counterparty = const Value.absent(),
+    this.remark = const Value.absent(),
+    this.frequency = const Value.absent(),
+    this.dayOfMonth = const Value.absent(),
+    this.nextRun = const Value.absent(),
+    this.active = const Value.absent(),
+    this.lastGenerated = const Value.absent(),
+  });
+  RecurringTransactionsCompanion.insert({
+    this.id = const Value.absent(),
+    required int ledgerId,
+    this.categoryId = const Value.absent(),
+    this.accountId = const Value.absent(),
+    required String direction,
+    required int amountCents,
+    this.counterparty = const Value.absent(),
+    this.remark = const Value.absent(),
+    this.frequency = const Value.absent(),
+    this.dayOfMonth = const Value.absent(),
+    this.nextRun = const Value.absent(),
+    this.active = const Value.absent(),
+    this.lastGenerated = const Value.absent(),
+  }) : ledgerId = Value(ledgerId),
+       direction = Value(direction),
+       amountCents = Value(amountCents);
+  static Insertable<RecurringTransaction> custom({
+    Expression<int>? id,
+    Expression<int>? ledgerId,
+    Expression<int>? categoryId,
+    Expression<int>? accountId,
+    Expression<String>? direction,
+    Expression<int>? amountCents,
+    Expression<String>? counterparty,
+    Expression<String>? remark,
+    Expression<String>? frequency,
+    Expression<int>? dayOfMonth,
+    Expression<String>? nextRun,
+    Expression<bool>? active,
+    Expression<String>? lastGenerated,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ledgerId != null) 'ledger_id': ledgerId,
+      if (categoryId != null) 'category_id': categoryId,
+      if (accountId != null) 'account_id': accountId,
+      if (direction != null) 'direction': direction,
+      if (amountCents != null) 'amount_cents': amountCents,
+      if (counterparty != null) 'counterparty': counterparty,
+      if (remark != null) 'remark': remark,
+      if (frequency != null) 'frequency': frequency,
+      if (dayOfMonth != null) 'day_of_month': dayOfMonth,
+      if (nextRun != null) 'next_run': nextRun,
+      if (active != null) 'active': active,
+      if (lastGenerated != null) 'last_generated': lastGenerated,
+    });
+  }
+
+  RecurringTransactionsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? ledgerId,
+    Value<int?>? categoryId,
+    Value<int?>? accountId,
+    Value<String>? direction,
+    Value<int>? amountCents,
+    Value<String>? counterparty,
+    Value<String>? remark,
+    Value<String>? frequency,
+    Value<int>? dayOfMonth,
+    Value<String>? nextRun,
+    Value<bool>? active,
+    Value<String>? lastGenerated,
+  }) {
+    return RecurringTransactionsCompanion(
+      id: id ?? this.id,
+      ledgerId: ledgerId ?? this.ledgerId,
+      categoryId: categoryId ?? this.categoryId,
+      accountId: accountId ?? this.accountId,
+      direction: direction ?? this.direction,
+      amountCents: amountCents ?? this.amountCents,
+      counterparty: counterparty ?? this.counterparty,
+      remark: remark ?? this.remark,
+      frequency: frequency ?? this.frequency,
+      dayOfMonth: dayOfMonth ?? this.dayOfMonth,
+      nextRun: nextRun ?? this.nextRun,
+      active: active ?? this.active,
+      lastGenerated: lastGenerated ?? this.lastGenerated,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (ledgerId.present) {
+      map['ledger_id'] = Variable<int>(ledgerId.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<int>(categoryId.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<int>(accountId.value);
+    }
+    if (direction.present) {
+      map['direction'] = Variable<String>(direction.value);
+    }
+    if (amountCents.present) {
+      map['amount_cents'] = Variable<int>(amountCents.value);
+    }
+    if (counterparty.present) {
+      map['counterparty'] = Variable<String>(counterparty.value);
+    }
+    if (remark.present) {
+      map['remark'] = Variable<String>(remark.value);
+    }
+    if (frequency.present) {
+      map['frequency'] = Variable<String>(frequency.value);
+    }
+    if (dayOfMonth.present) {
+      map['day_of_month'] = Variable<int>(dayOfMonth.value);
+    }
+    if (nextRun.present) {
+      map['next_run'] = Variable<String>(nextRun.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (lastGenerated.present) {
+      map['last_generated'] = Variable<String>(lastGenerated.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecurringTransactionsCompanion(')
+          ..write('id: $id, ')
+          ..write('ledgerId: $ledgerId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('accountId: $accountId, ')
+          ..write('direction: $direction, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('counterparty: $counterparty, ')
+          ..write('remark: $remark, ')
+          ..write('frequency: $frequency, ')
+          ..write('dayOfMonth: $dayOfMonth, ')
+          ..write('nextRun: $nextRun, ')
+          ..write('active: $active, ')
+          ..write('lastGenerated: $lastGenerated')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ImportBatchesTable extends ImportBatches
+    with TableInfo<$ImportBatchesTable, ImportBatche> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ImportBatchesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fileNameMeta = const VerificationMeta(
+    'fileName',
+  );
+  @override
+  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
+    'file_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _importedAtMeta = const VerificationMeta(
+    'importedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> importedAt = GeneratedColumn<DateTime>(
+    'imported_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _okRowsMeta = const VerificationMeta('okRows');
+  @override
+  late final GeneratedColumn<int> okRows = GeneratedColumn<int>(
+    'ok_rows',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _skipRowsMeta = const VerificationMeta(
+    'skipRows',
+  );
+  @override
+  late final GeneratedColumn<int> skipRows = GeneratedColumn<int>(
+    'skip_rows',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _dupRowsMeta = const VerificationMeta(
+    'dupRows',
+  );
+  @override
+  late final GeneratedColumn<int> dupRows = GeneratedColumn<int>(
+    'dup_rows',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _errorRowsMeta = const VerificationMeta(
+    'errorRows',
+  );
+  @override
+  late final GeneratedColumn<int> errorRows = GeneratedColumn<int>(
+    'error_rows',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    source,
+    fileName,
+    importedAt,
+    okRows,
+    skipRows,
+    dupRows,
+    errorRows,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'import_batches';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ImportBatche> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('file_name')) {
+      context.handle(
+        _fileNameMeta,
+        fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fileNameMeta);
+    }
+    if (data.containsKey('imported_at')) {
+      context.handle(
+        _importedAtMeta,
+        importedAt.isAcceptableOrUnknown(data['imported_at']!, _importedAtMeta),
+      );
+    }
+    if (data.containsKey('ok_rows')) {
+      context.handle(
+        _okRowsMeta,
+        okRows.isAcceptableOrUnknown(data['ok_rows']!, _okRowsMeta),
+      );
+    }
+    if (data.containsKey('skip_rows')) {
+      context.handle(
+        _skipRowsMeta,
+        skipRows.isAcceptableOrUnknown(data['skip_rows']!, _skipRowsMeta),
+      );
+    }
+    if (data.containsKey('dup_rows')) {
+      context.handle(
+        _dupRowsMeta,
+        dupRows.isAcceptableOrUnknown(data['dup_rows']!, _dupRowsMeta),
+      );
+    }
+    if (data.containsKey('error_rows')) {
+      context.handle(
+        _errorRowsMeta,
+        errorRows.isAcceptableOrUnknown(data['error_rows']!, _errorRowsMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ImportBatche map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ImportBatche(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      fileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_name'],
+      )!,
+      importedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}imported_at'],
+      )!,
+      okRows: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ok_rows'],
+      )!,
+      skipRows: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}skip_rows'],
+      )!,
+      dupRows: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dup_rows'],
+      )!,
+      errorRows: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}error_rows'],
+      )!,
+    );
+  }
+
+  @override
+  $ImportBatchesTable createAlias(String alias) {
+    return $ImportBatchesTable(attachedDatabase, alias);
+  }
+}
+
+class ImportBatche extends DataClass implements Insertable<ImportBatche> {
+  final int id;
+  final String source;
+  final String fileName;
+  final DateTime importedAt;
+  final int okRows;
+  final int skipRows;
+  final int dupRows;
+  final int errorRows;
+  const ImportBatche({
+    required this.id,
+    required this.source,
+    required this.fileName,
+    required this.importedAt,
+    required this.okRows,
+    required this.skipRows,
+    required this.dupRows,
+    required this.errorRows,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['source'] = Variable<String>(source);
+    map['file_name'] = Variable<String>(fileName);
+    map['imported_at'] = Variable<DateTime>(importedAt);
+    map['ok_rows'] = Variable<int>(okRows);
+    map['skip_rows'] = Variable<int>(skipRows);
+    map['dup_rows'] = Variable<int>(dupRows);
+    map['error_rows'] = Variable<int>(errorRows);
+    return map;
+  }
+
+  ImportBatchesCompanion toCompanion(bool nullToAbsent) {
+    return ImportBatchesCompanion(
+      id: Value(id),
+      source: Value(source),
+      fileName: Value(fileName),
+      importedAt: Value(importedAt),
+      okRows: Value(okRows),
+      skipRows: Value(skipRows),
+      dupRows: Value(dupRows),
+      errorRows: Value(errorRows),
+    );
+  }
+
+  factory ImportBatche.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ImportBatche(
+      id: serializer.fromJson<int>(json['id']),
+      source: serializer.fromJson<String>(json['source']),
+      fileName: serializer.fromJson<String>(json['fileName']),
+      importedAt: serializer.fromJson<DateTime>(json['importedAt']),
+      okRows: serializer.fromJson<int>(json['okRows']),
+      skipRows: serializer.fromJson<int>(json['skipRows']),
+      dupRows: serializer.fromJson<int>(json['dupRows']),
+      errorRows: serializer.fromJson<int>(json['errorRows']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'source': serializer.toJson<String>(source),
+      'fileName': serializer.toJson<String>(fileName),
+      'importedAt': serializer.toJson<DateTime>(importedAt),
+      'okRows': serializer.toJson<int>(okRows),
+      'skipRows': serializer.toJson<int>(skipRows),
+      'dupRows': serializer.toJson<int>(dupRows),
+      'errorRows': serializer.toJson<int>(errorRows),
+    };
+  }
+
+  ImportBatche copyWith({
+    int? id,
+    String? source,
+    String? fileName,
+    DateTime? importedAt,
+    int? okRows,
+    int? skipRows,
+    int? dupRows,
+    int? errorRows,
+  }) => ImportBatche(
+    id: id ?? this.id,
+    source: source ?? this.source,
+    fileName: fileName ?? this.fileName,
+    importedAt: importedAt ?? this.importedAt,
+    okRows: okRows ?? this.okRows,
+    skipRows: skipRows ?? this.skipRows,
+    dupRows: dupRows ?? this.dupRows,
+    errorRows: errorRows ?? this.errorRows,
+  );
+  ImportBatche copyWithCompanion(ImportBatchesCompanion data) {
+    return ImportBatche(
+      id: data.id.present ? data.id.value : this.id,
+      source: data.source.present ? data.source.value : this.source,
+      fileName: data.fileName.present ? data.fileName.value : this.fileName,
+      importedAt: data.importedAt.present
+          ? data.importedAt.value
+          : this.importedAt,
+      okRows: data.okRows.present ? data.okRows.value : this.okRows,
+      skipRows: data.skipRows.present ? data.skipRows.value : this.skipRows,
+      dupRows: data.dupRows.present ? data.dupRows.value : this.dupRows,
+      errorRows: data.errorRows.present ? data.errorRows.value : this.errorRows,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportBatche(')
+          ..write('id: $id, ')
+          ..write('source: $source, ')
+          ..write('fileName: $fileName, ')
+          ..write('importedAt: $importedAt, ')
+          ..write('okRows: $okRows, ')
+          ..write('skipRows: $skipRows, ')
+          ..write('dupRows: $dupRows, ')
+          ..write('errorRows: $errorRows')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    source,
+    fileName,
+    importedAt,
+    okRows,
+    skipRows,
+    dupRows,
+    errorRows,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ImportBatche &&
+          other.id == this.id &&
+          other.source == this.source &&
+          other.fileName == this.fileName &&
+          other.importedAt == this.importedAt &&
+          other.okRows == this.okRows &&
+          other.skipRows == this.skipRows &&
+          other.dupRows == this.dupRows &&
+          other.errorRows == this.errorRows);
+}
+
+class ImportBatchesCompanion extends UpdateCompanion<ImportBatche> {
+  final Value<int> id;
+  final Value<String> source;
+  final Value<String> fileName;
+  final Value<DateTime> importedAt;
+  final Value<int> okRows;
+  final Value<int> skipRows;
+  final Value<int> dupRows;
+  final Value<int> errorRows;
+  const ImportBatchesCompanion({
+    this.id = const Value.absent(),
+    this.source = const Value.absent(),
+    this.fileName = const Value.absent(),
+    this.importedAt = const Value.absent(),
+    this.okRows = const Value.absent(),
+    this.skipRows = const Value.absent(),
+    this.dupRows = const Value.absent(),
+    this.errorRows = const Value.absent(),
+  });
+  ImportBatchesCompanion.insert({
+    this.id = const Value.absent(),
+    required String source,
+    required String fileName,
+    this.importedAt = const Value.absent(),
+    this.okRows = const Value.absent(),
+    this.skipRows = const Value.absent(),
+    this.dupRows = const Value.absent(),
+    this.errorRows = const Value.absent(),
+  }) : source = Value(source),
+       fileName = Value(fileName);
+  static Insertable<ImportBatche> custom({
+    Expression<int>? id,
+    Expression<String>? source,
+    Expression<String>? fileName,
+    Expression<DateTime>? importedAt,
+    Expression<int>? okRows,
+    Expression<int>? skipRows,
+    Expression<int>? dupRows,
+    Expression<int>? errorRows,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (source != null) 'source': source,
+      if (fileName != null) 'file_name': fileName,
+      if (importedAt != null) 'imported_at': importedAt,
+      if (okRows != null) 'ok_rows': okRows,
+      if (skipRows != null) 'skip_rows': skipRows,
+      if (dupRows != null) 'dup_rows': dupRows,
+      if (errorRows != null) 'error_rows': errorRows,
+    });
+  }
+
+  ImportBatchesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? source,
+    Value<String>? fileName,
+    Value<DateTime>? importedAt,
+    Value<int>? okRows,
+    Value<int>? skipRows,
+    Value<int>? dupRows,
+    Value<int>? errorRows,
+  }) {
+    return ImportBatchesCompanion(
+      id: id ?? this.id,
+      source: source ?? this.source,
+      fileName: fileName ?? this.fileName,
+      importedAt: importedAt ?? this.importedAt,
+      okRows: okRows ?? this.okRows,
+      skipRows: skipRows ?? this.skipRows,
+      dupRows: dupRows ?? this.dupRows,
+      errorRows: errorRows ?? this.errorRows,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (fileName.present) {
+      map['file_name'] = Variable<String>(fileName.value);
+    }
+    if (importedAt.present) {
+      map['imported_at'] = Variable<DateTime>(importedAt.value);
+    }
+    if (okRows.present) {
+      map['ok_rows'] = Variable<int>(okRows.value);
+    }
+    if (skipRows.present) {
+      map['skip_rows'] = Variable<int>(skipRows.value);
+    }
+    if (dupRows.present) {
+      map['dup_rows'] = Variable<int>(dupRows.value);
+    }
+    if (errorRows.present) {
+      map['error_rows'] = Variable<int>(errorRows.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportBatchesCompanion(')
+          ..write('id: $id, ')
+          ..write('source: $source, ')
+          ..write('fileName: $fileName, ')
+          ..write('importedAt: $importedAt, ')
+          ..write('okRows: $okRows, ')
+          ..write('skipRows: $skipRows, ')
+          ..write('dupRows: $dupRows, ')
+          ..write('errorRows: $errorRows')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ImportRulesTable extends ImportRules
+    with TableInfo<$ImportRulesTable, ImportRule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ImportRulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _keywordMeta = const VerificationMeta(
+    'keyword',
+  );
+  @override
+  late final GeneratedColumn<String> keyword = GeneratedColumn<String>(
+    'keyword',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, keyword, categoryId, priority];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'import_rules';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ImportRule> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('keyword')) {
+      context.handle(
+        _keywordMeta,
+        keyword.isAcceptableOrUnknown(data['keyword']!, _keywordMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keywordMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ImportRule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ImportRule(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      keyword: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}keyword'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_id'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+    );
+  }
+
+  @override
+  $ImportRulesTable createAlias(String alias) {
+    return $ImportRulesTable(attachedDatabase, alias);
+  }
+}
+
+class ImportRule extends DataClass implements Insertable<ImportRule> {
+  final int id;
+  final String keyword;
+  final int categoryId;
+  final int priority;
+  const ImportRule({
+    required this.id,
+    required this.keyword,
+    required this.categoryId,
+    required this.priority,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['keyword'] = Variable<String>(keyword);
+    map['category_id'] = Variable<int>(categoryId);
+    map['priority'] = Variable<int>(priority);
+    return map;
+  }
+
+  ImportRulesCompanion toCompanion(bool nullToAbsent) {
+    return ImportRulesCompanion(
+      id: Value(id),
+      keyword: Value(keyword),
+      categoryId: Value(categoryId),
+      priority: Value(priority),
+    );
+  }
+
+  factory ImportRule.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ImportRule(
+      id: serializer.fromJson<int>(json['id']),
+      keyword: serializer.fromJson<String>(json['keyword']),
+      categoryId: serializer.fromJson<int>(json['categoryId']),
+      priority: serializer.fromJson<int>(json['priority']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'keyword': serializer.toJson<String>(keyword),
+      'categoryId': serializer.toJson<int>(categoryId),
+      'priority': serializer.toJson<int>(priority),
+    };
+  }
+
+  ImportRule copyWith({
+    int? id,
+    String? keyword,
+    int? categoryId,
+    int? priority,
+  }) => ImportRule(
+    id: id ?? this.id,
+    keyword: keyword ?? this.keyword,
+    categoryId: categoryId ?? this.categoryId,
+    priority: priority ?? this.priority,
+  );
+  ImportRule copyWithCompanion(ImportRulesCompanion data) {
+    return ImportRule(
+      id: data.id.present ? data.id.value : this.id,
+      keyword: data.keyword.present ? data.keyword.value : this.keyword,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      priority: data.priority.present ? data.priority.value : this.priority,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportRule(')
+          ..write('id: $id, ')
+          ..write('keyword: $keyword, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('priority: $priority')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, keyword, categoryId, priority);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ImportRule &&
+          other.id == this.id &&
+          other.keyword == this.keyword &&
+          other.categoryId == this.categoryId &&
+          other.priority == this.priority);
+}
+
+class ImportRulesCompanion extends UpdateCompanion<ImportRule> {
+  final Value<int> id;
+  final Value<String> keyword;
+  final Value<int> categoryId;
+  final Value<int> priority;
+  const ImportRulesCompanion({
+    this.id = const Value.absent(),
+    this.keyword = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.priority = const Value.absent(),
+  });
+  ImportRulesCompanion.insert({
+    this.id = const Value.absent(),
+    required String keyword,
+    required int categoryId,
+    this.priority = const Value.absent(),
+  }) : keyword = Value(keyword),
+       categoryId = Value(categoryId);
+  static Insertable<ImportRule> custom({
+    Expression<int>? id,
+    Expression<String>? keyword,
+    Expression<int>? categoryId,
+    Expression<int>? priority,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (keyword != null) 'keyword': keyword,
+      if (categoryId != null) 'category_id': categoryId,
+      if (priority != null) 'priority': priority,
+    });
+  }
+
+  ImportRulesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? keyword,
+    Value<int>? categoryId,
+    Value<int>? priority,
+  }) {
+    return ImportRulesCompanion(
+      id: id ?? this.id,
+      keyword: keyword ?? this.keyword,
+      categoryId: categoryId ?? this.categoryId,
+      priority: priority ?? this.priority,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (keyword.present) {
+      map['keyword'] = Variable<String>(keyword.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<int>(categoryId.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportRulesCompanion(')
+          ..write('id: $id, ')
+          ..write('keyword: $keyword, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('priority: $priority')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4305,6 +5848,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PomodoroSettingsTable pomodoroSettings = $PomodoroSettingsTable(
     this,
   );
+  late final $RecurringTransactionsTable recurringTransactions =
+      $RecurringTransactionsTable(this);
+  late final $ImportBatchesTable importBatches = $ImportBatchesTable(this);
+  late final $ImportRulesTable importRules = $ImportRulesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4319,6 +5866,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     tasks,
     pomodoroSessions,
     pomodoroSettings,
+    recurringTransactions,
+    importBatches,
+    importRules,
   ];
 }
 
@@ -6512,6 +8062,811 @@ typedef $$PomodoroSettingsTableProcessedTableManager =
       PomodoroSetting,
       PrefetchHooks Function()
     >;
+typedef $$RecurringTransactionsTableCreateCompanionBuilder =
+    RecurringTransactionsCompanion Function({
+      Value<int> id,
+      required int ledgerId,
+      Value<int?> categoryId,
+      Value<int?> accountId,
+      required String direction,
+      required int amountCents,
+      Value<String> counterparty,
+      Value<String> remark,
+      Value<String> frequency,
+      Value<int> dayOfMonth,
+      Value<String> nextRun,
+      Value<bool> active,
+      Value<String> lastGenerated,
+    });
+typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
+    RecurringTransactionsCompanion Function({
+      Value<int> id,
+      Value<int> ledgerId,
+      Value<int?> categoryId,
+      Value<int?> accountId,
+      Value<String> direction,
+      Value<int> amountCents,
+      Value<String> counterparty,
+      Value<String> remark,
+      Value<String> frequency,
+      Value<int> dayOfMonth,
+      Value<String> nextRun,
+      Value<bool> active,
+      Value<String> lastGenerated,
+    });
+
+class $$RecurringTransactionsTableFilterComposer
+    extends Composer<_$AppDatabase, $RecurringTransactionsTable> {
+  $$RecurringTransactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ledgerId => $composableBuilder(
+    column: $table.ledgerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get direction => $composableBuilder(
+    column: $table.direction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get counterparty => $composableBuilder(
+    column: $table.counterparty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remark => $composableBuilder(
+    column: $table.remark,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get frequency => $composableBuilder(
+    column: $table.frequency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dayOfMonth => $composableBuilder(
+    column: $table.dayOfMonth,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nextRun => $composableBuilder(
+    column: $table.nextRun,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastGenerated => $composableBuilder(
+    column: $table.lastGenerated,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RecurringTransactionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecurringTransactionsTable> {
+  $$RecurringTransactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ledgerId => $composableBuilder(
+    column: $table.ledgerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get direction => $composableBuilder(
+    column: $table.direction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get counterparty => $composableBuilder(
+    column: $table.counterparty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remark => $composableBuilder(
+    column: $table.remark,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get frequency => $composableBuilder(
+    column: $table.frequency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dayOfMonth => $composableBuilder(
+    column: $table.dayOfMonth,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nextRun => $composableBuilder(
+    column: $table.nextRun,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastGenerated => $composableBuilder(
+    column: $table.lastGenerated,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RecurringTransactionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecurringTransactionsTable> {
+  $$RecurringTransactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get ledgerId =>
+      $composableBuilder(column: $table.ledgerId, builder: (column) => column);
+
+  GeneratedColumn<int> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<String> get direction =>
+      $composableBuilder(column: $table.direction, builder: (column) => column);
+
+  GeneratedColumn<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get counterparty => $composableBuilder(
+    column: $table.counterparty,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remark =>
+      $composableBuilder(column: $table.remark, builder: (column) => column);
+
+  GeneratedColumn<String> get frequency =>
+      $composableBuilder(column: $table.frequency, builder: (column) => column);
+
+  GeneratedColumn<int> get dayOfMonth => $composableBuilder(
+    column: $table.dayOfMonth,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nextRun =>
+      $composableBuilder(column: $table.nextRun, builder: (column) => column);
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<String> get lastGenerated => $composableBuilder(
+    column: $table.lastGenerated,
+    builder: (column) => column,
+  );
+}
+
+class $$RecurringTransactionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecurringTransactionsTable,
+          RecurringTransaction,
+          $$RecurringTransactionsTableFilterComposer,
+          $$RecurringTransactionsTableOrderingComposer,
+          $$RecurringTransactionsTableAnnotationComposer,
+          $$RecurringTransactionsTableCreateCompanionBuilder,
+          $$RecurringTransactionsTableUpdateCompanionBuilder,
+          (
+            RecurringTransaction,
+            BaseReferences<
+              _$AppDatabase,
+              $RecurringTransactionsTable,
+              RecurringTransaction
+            >,
+          ),
+          RecurringTransaction,
+          PrefetchHooks Function()
+        > {
+  $$RecurringTransactionsTableTableManager(
+    _$AppDatabase db,
+    $RecurringTransactionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecurringTransactionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RecurringTransactionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RecurringTransactionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> ledgerId = const Value.absent(),
+                Value<int?> categoryId = const Value.absent(),
+                Value<int?> accountId = const Value.absent(),
+                Value<String> direction = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<String> counterparty = const Value.absent(),
+                Value<String> remark = const Value.absent(),
+                Value<String> frequency = const Value.absent(),
+                Value<int> dayOfMonth = const Value.absent(),
+                Value<String> nextRun = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<String> lastGenerated = const Value.absent(),
+              }) => RecurringTransactionsCompanion(
+                id: id,
+                ledgerId: ledgerId,
+                categoryId: categoryId,
+                accountId: accountId,
+                direction: direction,
+                amountCents: amountCents,
+                counterparty: counterparty,
+                remark: remark,
+                frequency: frequency,
+                dayOfMonth: dayOfMonth,
+                nextRun: nextRun,
+                active: active,
+                lastGenerated: lastGenerated,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int ledgerId,
+                Value<int?> categoryId = const Value.absent(),
+                Value<int?> accountId = const Value.absent(),
+                required String direction,
+                required int amountCents,
+                Value<String> counterparty = const Value.absent(),
+                Value<String> remark = const Value.absent(),
+                Value<String> frequency = const Value.absent(),
+                Value<int> dayOfMonth = const Value.absent(),
+                Value<String> nextRun = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<String> lastGenerated = const Value.absent(),
+              }) => RecurringTransactionsCompanion.insert(
+                id: id,
+                ledgerId: ledgerId,
+                categoryId: categoryId,
+                accountId: accountId,
+                direction: direction,
+                amountCents: amountCents,
+                counterparty: counterparty,
+                remark: remark,
+                frequency: frequency,
+                dayOfMonth: dayOfMonth,
+                nextRun: nextRun,
+                active: active,
+                lastGenerated: lastGenerated,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RecurringTransactionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecurringTransactionsTable,
+      RecurringTransaction,
+      $$RecurringTransactionsTableFilterComposer,
+      $$RecurringTransactionsTableOrderingComposer,
+      $$RecurringTransactionsTableAnnotationComposer,
+      $$RecurringTransactionsTableCreateCompanionBuilder,
+      $$RecurringTransactionsTableUpdateCompanionBuilder,
+      (
+        RecurringTransaction,
+        BaseReferences<
+          _$AppDatabase,
+          $RecurringTransactionsTable,
+          RecurringTransaction
+        >,
+      ),
+      RecurringTransaction,
+      PrefetchHooks Function()
+    >;
+typedef $$ImportBatchesTableCreateCompanionBuilder =
+    ImportBatchesCompanion Function({
+      Value<int> id,
+      required String source,
+      required String fileName,
+      Value<DateTime> importedAt,
+      Value<int> okRows,
+      Value<int> skipRows,
+      Value<int> dupRows,
+      Value<int> errorRows,
+    });
+typedef $$ImportBatchesTableUpdateCompanionBuilder =
+    ImportBatchesCompanion Function({
+      Value<int> id,
+      Value<String> source,
+      Value<String> fileName,
+      Value<DateTime> importedAt,
+      Value<int> okRows,
+      Value<int> skipRows,
+      Value<int> dupRows,
+      Value<int> errorRows,
+    });
+
+class $$ImportBatchesTableFilterComposer
+    extends Composer<_$AppDatabase, $ImportBatchesTable> {
+  $$ImportBatchesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get okRows => $composableBuilder(
+    column: $table.okRows,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get skipRows => $composableBuilder(
+    column: $table.skipRows,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dupRows => $composableBuilder(
+    column: $table.dupRows,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get errorRows => $composableBuilder(
+    column: $table.errorRows,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ImportBatchesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ImportBatchesTable> {
+  $$ImportBatchesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get okRows => $composableBuilder(
+    column: $table.okRows,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get skipRows => $composableBuilder(
+    column: $table.skipRows,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dupRows => $composableBuilder(
+    column: $table.dupRows,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get errorRows => $composableBuilder(
+    column: $table.errorRows,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ImportBatchesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ImportBatchesTable> {
+  $$ImportBatchesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get fileName =>
+      $composableBuilder(column: $table.fileName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get okRows =>
+      $composableBuilder(column: $table.okRows, builder: (column) => column);
+
+  GeneratedColumn<int> get skipRows =>
+      $composableBuilder(column: $table.skipRows, builder: (column) => column);
+
+  GeneratedColumn<int> get dupRows =>
+      $composableBuilder(column: $table.dupRows, builder: (column) => column);
+
+  GeneratedColumn<int> get errorRows =>
+      $composableBuilder(column: $table.errorRows, builder: (column) => column);
+}
+
+class $$ImportBatchesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ImportBatchesTable,
+          ImportBatche,
+          $$ImportBatchesTableFilterComposer,
+          $$ImportBatchesTableOrderingComposer,
+          $$ImportBatchesTableAnnotationComposer,
+          $$ImportBatchesTableCreateCompanionBuilder,
+          $$ImportBatchesTableUpdateCompanionBuilder,
+          (
+            ImportBatche,
+            BaseReferences<_$AppDatabase, $ImportBatchesTable, ImportBatche>,
+          ),
+          ImportBatche,
+          PrefetchHooks Function()
+        > {
+  $$ImportBatchesTableTableManager(_$AppDatabase db, $ImportBatchesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ImportBatchesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ImportBatchesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ImportBatchesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String> fileName = const Value.absent(),
+                Value<DateTime> importedAt = const Value.absent(),
+                Value<int> okRows = const Value.absent(),
+                Value<int> skipRows = const Value.absent(),
+                Value<int> dupRows = const Value.absent(),
+                Value<int> errorRows = const Value.absent(),
+              }) => ImportBatchesCompanion(
+                id: id,
+                source: source,
+                fileName: fileName,
+                importedAt: importedAt,
+                okRows: okRows,
+                skipRows: skipRows,
+                dupRows: dupRows,
+                errorRows: errorRows,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String source,
+                required String fileName,
+                Value<DateTime> importedAt = const Value.absent(),
+                Value<int> okRows = const Value.absent(),
+                Value<int> skipRows = const Value.absent(),
+                Value<int> dupRows = const Value.absent(),
+                Value<int> errorRows = const Value.absent(),
+              }) => ImportBatchesCompanion.insert(
+                id: id,
+                source: source,
+                fileName: fileName,
+                importedAt: importedAt,
+                okRows: okRows,
+                skipRows: skipRows,
+                dupRows: dupRows,
+                errorRows: errorRows,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ImportBatchesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ImportBatchesTable,
+      ImportBatche,
+      $$ImportBatchesTableFilterComposer,
+      $$ImportBatchesTableOrderingComposer,
+      $$ImportBatchesTableAnnotationComposer,
+      $$ImportBatchesTableCreateCompanionBuilder,
+      $$ImportBatchesTableUpdateCompanionBuilder,
+      (
+        ImportBatche,
+        BaseReferences<_$AppDatabase, $ImportBatchesTable, ImportBatche>,
+      ),
+      ImportBatche,
+      PrefetchHooks Function()
+    >;
+typedef $$ImportRulesTableCreateCompanionBuilder =
+    ImportRulesCompanion Function({
+      Value<int> id,
+      required String keyword,
+      required int categoryId,
+      Value<int> priority,
+    });
+typedef $$ImportRulesTableUpdateCompanionBuilder =
+    ImportRulesCompanion Function({
+      Value<int> id,
+      Value<String> keyword,
+      Value<int> categoryId,
+      Value<int> priority,
+    });
+
+class $$ImportRulesTableFilterComposer
+    extends Composer<_$AppDatabase, $ImportRulesTable> {
+  $$ImportRulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get keyword => $composableBuilder(
+    column: $table.keyword,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ImportRulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ImportRulesTable> {
+  $$ImportRulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get keyword => $composableBuilder(
+    column: $table.keyword,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ImportRulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ImportRulesTable> {
+  $$ImportRulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get keyword =>
+      $composableBuilder(column: $table.keyword, builder: (column) => column);
+
+  GeneratedColumn<int> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+}
+
+class $$ImportRulesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ImportRulesTable,
+          ImportRule,
+          $$ImportRulesTableFilterComposer,
+          $$ImportRulesTableOrderingComposer,
+          $$ImportRulesTableAnnotationComposer,
+          $$ImportRulesTableCreateCompanionBuilder,
+          $$ImportRulesTableUpdateCompanionBuilder,
+          (
+            ImportRule,
+            BaseReferences<_$AppDatabase, $ImportRulesTable, ImportRule>,
+          ),
+          ImportRule,
+          PrefetchHooks Function()
+        > {
+  $$ImportRulesTableTableManager(_$AppDatabase db, $ImportRulesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ImportRulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ImportRulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ImportRulesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> keyword = const Value.absent(),
+                Value<int> categoryId = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+              }) => ImportRulesCompanion(
+                id: id,
+                keyword: keyword,
+                categoryId: categoryId,
+                priority: priority,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String keyword,
+                required int categoryId,
+                Value<int> priority = const Value.absent(),
+              }) => ImportRulesCompanion.insert(
+                id: id,
+                keyword: keyword,
+                categoryId: categoryId,
+                priority: priority,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ImportRulesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ImportRulesTable,
+      ImportRule,
+      $$ImportRulesTableFilterComposer,
+      $$ImportRulesTableOrderingComposer,
+      $$ImportRulesTableAnnotationComposer,
+      $$ImportRulesTableCreateCompanionBuilder,
+      $$ImportRulesTableUpdateCompanionBuilder,
+      (
+        ImportRule,
+        BaseReferences<_$AppDatabase, $ImportRulesTable, ImportRule>,
+      ),
+      ImportRule,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6534,4 +8889,10 @@ class $AppDatabaseManager {
       $$PomodoroSessionsTableTableManager(_db, _db.pomodoroSessions);
   $$PomodoroSettingsTableTableManager get pomodoroSettings =>
       $$PomodoroSettingsTableTableManager(_db, _db.pomodoroSettings);
+  $$RecurringTransactionsTableTableManager get recurringTransactions =>
+      $$RecurringTransactionsTableTableManager(_db, _db.recurringTransactions);
+  $$ImportBatchesTableTableManager get importBatches =>
+      $$ImportBatchesTableTableManager(_db, _db.importBatches);
+  $$ImportRulesTableTableManager get importRules =>
+      $$ImportRulesTableTableManager(_db, _db.importRules);
 }
