@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../daily/presentation/daily_summary_screen.dart';
 import '../domain/quick_add_parser.dart';
 import 'focus_providers.dart';
 import 'focus_timer_widget.dart';
@@ -61,6 +62,12 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
               child: Row(children: [
                 Text('今日专注', style: Theme.of(context).textTheme.titleMedium),
                 const Spacer(),
+                TextButton.icon(
+                    key: const Key('daily_entry'),
+                    icon: const Icon(Icons.summarize_outlined, size: 16),
+                    label: const Text('收工小结'),
+                    onPressed: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const DailySummaryScreen()))),
                 Text('$focusMin 分钟',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
               ]),

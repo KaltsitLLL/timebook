@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
-import '../data/day_summaries_table.dart';
 
 class DailySummaryService {
   DailySummaryService(this.db);
