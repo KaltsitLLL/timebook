@@ -63,6 +63,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
       TimerMode.long => settings.longBreakMinutes,
     };
     final bound = _bound;
+    if (!mounted) return;
     if (mode == TimerMode.focus) {
       final action = await showDialog<String>(
         context: context,
