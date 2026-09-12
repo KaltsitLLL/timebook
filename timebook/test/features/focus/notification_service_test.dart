@@ -13,6 +13,7 @@ import '../../helpers/db.dart';
 class FakeNotificationService implements NotificationService {
   int initializeCount = 0;
   final List<({int id, String title, String body})> notifications = [];
+  final List<({int id, String title})> dailies = [];
 
   @override
   Future<void> initialize() async {
@@ -23,6 +24,15 @@ class FakeNotificationService implements NotificationService {
   Future<void> show(
       {required int id, required String title, required String body}) async {
     notifications.add((id: id, title: title, body: body));
+  }
+
+  @override
+  Future<void> scheduleDaily(
+      {required int id,
+      required String title,
+      required String body,
+      required TimeOfDay time}) async {
+    dailies.add((id: id, title: title));
   }
 }
 
@@ -37,6 +47,18 @@ void main() {
     expect(fake.notifications, hasLength(1));
     expect(fake.notifications.single.id, 9);
     expect(fake.notifications.single.title, contains('番茄'));
+  });
+
+  test('scheduleDaily 被记录且标题含记账', () async {
+    final fake = FakeNotificationService();
+    await fake.scheduleDaily(
+        id: 1001,
+        title: '记账提醒',
+        body: '记得记录今天的收支',
+        time: const TimeOfDay(hour: 21, minute: 0));
+    expect(fake.dailies, hasLength(1));
+    expect(fake.dailies.single.id, 1001);
+    expect(fake.dailies.single.title, contains('记账'));
   });
 
   testWidgets('专注完成触发系统通知（title 含番茄）', (tester) async {

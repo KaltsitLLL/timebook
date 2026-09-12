@@ -104,4 +104,26 @@ void main() {
     final chip = tester.widget<ChoiceChip>(find.byKey(Key('account_$a2')));
     expect(chip.selected, isTrue);
   });
+
+  testWidgets('选择“不记账户”后保存落库到无账户 id', (tester) async {
+    final (c, repo) = await setup();
+    final l = await repo.ledgers();
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('none_account')));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('amount_field')), '20');
+    await tester.tap(find.byKey(const Key('save_button')));
+    await tester.pumpAndSettle();
+
+    final noneId = await repo.ensureNoneAccount(l.first.id);
+    final rows = await repo.recentTransactions(ledgerId: l.first.id, limit: 10);
+    expect(rows, hasLength(1));
+    expect(rows.single.accountId, noneId);
+    expect(rows.single.amountCents, 2000);
+  });
 }

@@ -161,6 +161,15 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           spacing: 8,
           runSpacing: 8,
           children: [
+            FilterChip(
+              key: const Key('none_account'),
+              label: const Text('不记账户'),
+              selected: _useNoneAccount,
+              onSelected: (v) => setState(() {
+                _useNoneAccount = v;
+                if (v) _pickedAccountId = null;
+              }),
+            ),
             for (final a in accounts)
               ChoiceChip(
                 key: Key('account_${a.id}'),

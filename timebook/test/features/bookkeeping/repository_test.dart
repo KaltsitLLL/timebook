@@ -359,4 +359,16 @@ void main() {
     await repo.saveDefaultAccountId(l, a1);
     expect(await repo.getDefaultAccountId(l), a1);
   });
+
+  test('ensureNoneAccount 幂等：连调两次返回同一『不记账户』 id', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final id1 = await repo.ensureNoneAccount(l);
+    final id2 = await repo.ensureNoneAccount(l);
+    expect(id1, id2);
+    final acct = await (db.select(db.accounts)..where((a) => a.id.equals(id1)))
+        .getSingle();
+    expect(acct.name, '不记账户');
+    expect(acct.type, 'none');
+  });
 }

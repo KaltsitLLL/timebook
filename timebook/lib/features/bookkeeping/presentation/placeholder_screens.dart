@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../ai/presentation/ai_settings_screen.dart';
+import '../../focus/presentation/focus_providers.dart';
 import '../../import/presentation/import_screen.dart';
 import '../../import/presentation/recurring_rules_screen.dart';
 import 'bookkeeping_providers.dart';
@@ -17,6 +18,13 @@ class PlaceholderScreen extends StatelessWidget {
       );
 }
 
+/// 记账提醒配置结果。
+class _ReminderChoice {
+  const _ReminderChoice({required this.on, required this.time});
+  final bool on;
+  final TimeOfDay time;
+}
+
 /// 设置页：静态设置列表入口 + 默认付款账户 + 记账提醒。
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -26,6 +34,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String? _defaultAccountName;
+  bool _reminderOn = false;
 
   Future<void> _pickDefaultAccount() async {
     final repo = ref.read(bookkeepingRepositoryProvider);
@@ -62,6 +71,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() => _defaultAccountName = name);
   }
 
+  Future<void> _editReminder() async {
+    final kv = ref.read(kvSettingsProvider);
+    final currentOn = await kv.getBool('reminder_on');
+    if (!mounted) return;
+    final result = await showDialog<_ReminderChoice>(
+      context: context,
+      builder: (_) => _ReminderDialog(initialOn: currentOn),
+    );
+    if (result == null) return;
+    await kv.setBool('reminder_on', result.on);
+    if (result.on) {
+      final ns = ref.read(notificationServiceProvider);
+      await ns.scheduleDaily(
+        id: 1001,
+        title: '记账提醒',
+        body: '记得记录今天的收支',
+        time: result.time,
+      );
+    }
+    if (!mounted) return;
+    setState(() => _reminderOn = result.on);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,6 +114,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           subtitle: Text(_defaultAccountName ?? '未设置（记账时默认第一个账户）'),
           trailing: const Icon(Icons.chevron_right),
           onTap: _pickDefaultAccount,
+        ),
+        ListTile(
+          key: const Key('reminder_entry'),
+          leading: const Icon(Icons.notifications_outlined),
+          title: const Text('记账提醒'),
+          subtitle: Text(_reminderOn ? '每天 21:00 提醒记账' : '未开启'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: _editReminder,
         ),
         ListTile(
           key: const Key('import_export_entry'),
@@ -176,6 +216,62 @@ class _DefaultAccountDialogState extends State<_DefaultAccountDialog> {
           ],
         );
       },
+    );
+  }
+}
+
+// ---- 记账提醒 Dialog ----
+class _ReminderDialog extends StatefulWidget {
+  const _ReminderDialog({required this.initialOn});
+  final bool initialOn;
+  @override
+  State<_ReminderDialog> createState() => _ReminderDialogState();
+}
+
+class _ReminderDialogState extends State<_ReminderDialog> {
+  late bool _on;
+  final TimeOfDay _time = const TimeOfDay(hour: 21, minute: 0);
+
+  @override
+  void initState() {
+    super.initState();
+    _on = widget.initialOn;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('记账提醒'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SwitchListTile(
+            key: const Key('reminder_on'),
+            value: _on,
+            onChanged: (v) => setState(() => _on = v),
+            title: const Text('每日记账提醒'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.schedule),
+            title: const Text('提醒时间'),
+            trailing: Text(
+              '${_time.hour.toString().padLeft(2, '0')}:'
+              '${_time.minute.toString().padLeft(2, '0')}',
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消')),
+        FilledButton(
+          key: const Key('reminder_save'),
+          onPressed: () => Navigator.of(context)
+              .pop(_ReminderChoice(on: _on, time: _time)),
+          child: const Text('保存'),
+        ),
+      ],
     );
   }
 }

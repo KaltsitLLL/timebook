@@ -6,8 +6,28 @@ import 'package:timebook/core/util/kv_settings.dart';
 import 'package:timebook/features/bookkeeping/data/bookkeeping_repository.dart';
 import 'package:timebook/features/bookkeeping/presentation/bookkeeping_providers.dart';
 import 'package:timebook/features/bookkeeping/presentation/placeholder_screens.dart';
+import 'package:timebook/features/focus/notifications/notification_service.dart';
+import 'package:timebook/features/focus/presentation/focus_providers.dart';
 
 import '../../helpers/db.dart';
+
+/// 记录 scheduleDaily/initialize/show 的 Fake。
+class FakeNotificationService implements NotificationService {
+  final List<({int id, String title})> dailies = [];
+  @override
+  Future<void> initialize() async {}
+  @override
+  Future<void> show(
+      {required int id, required String title, required String body}) async {}
+  @override
+  Future<void> scheduleDaily(
+      {required int id,
+      required String title,
+      required String body,
+      required TimeOfDay time}) async {
+    dailies.add((id: id, title: title));
+  }
+}
 
 void main() {
   setUpAll(initTestSqlite);
@@ -65,5 +85,36 @@ void main() {
     // 行 subtitle 显示所选项的账户名；kv 已持久化所选 id
     expect(find.text('钱包'), findsOneWidget);
     expect(await kv.getInt('defaultAccountId:$l'), a2);
+  });
+
+  testWidgets('开启记账提醒：保存后调用 scheduleDaily 且标题含记账', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final kv = KvSettings(MemoryKeyValueStorage());
+    final fake = FakeNotificationService();
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      kvSettingsProvider.overrideWithValue(kv),
+      notificationServiceProvider.overrideWithValue(fake),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+      container: container,
+      child: const MaterialApp(home: SettingsScreen()),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('reminder_entry')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('reminder_on'))); // 打开开关
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('reminder_save')));
+    await tester.pumpAndSettle();
+
+    expect(fake.dailies, hasLength(1));
+    expect(fake.dailies.single.id, 1001);
+    expect(fake.dailies.single.title, contains('记账'));
+    expect(await kv.getBool('reminder_on'), isTrue);
   });
 }
