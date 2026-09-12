@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/util/formats.dart';
 import '../../../core/db/app_database.dart';
+import '../../import/presentation/import_screen.dart';
 import '../data/bookkeeping_repository.dart';
 import 'bookkeeping_providers.dart';
 
@@ -58,7 +59,20 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('流水明细')),
+      appBar: AppBar(
+        title: const Text('流水明细'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_upload_outlined),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) =>
+                    ImportScreen(database: ref.read(databaseProvider)),
+              ));
+            },
+          ),
+        ],
+      ),
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
