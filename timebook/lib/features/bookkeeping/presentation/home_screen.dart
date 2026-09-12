@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/util/formats.dart';
 import '../../../core/db/app_database.dart';
+import '../../ai/presentation/open_ai_dialog.dart';
 import '../data/bookkeeping_repository.dart';
 import 'add_transaction_sheet.dart';
 import 'bookkeeping_providers.dart';
@@ -9,6 +10,10 @@ import 'budget_period_helper.dart';
 import 'budget_screen.dart';
 import 'transaction_list_screen.dart';
 import 'widgets/category_donut.dart';
+
+/// 「记一笔 → AI 记账」入口回调（生产默认走 [openAiDialog]，测试可注入 fake）。
+typedef AiDialogOpener =
+    Future<void> Function(BuildContext context, WidgetRef ref);
 
 /// 分类色板（冷色），用于环形图切片与分类彩色块。
 const List<Color> _coldPalette = [
@@ -31,7 +36,9 @@ IconData _catIcon(String name) {
 }
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.aiDialogOpener});
+  final AiDialogOpener? aiDialogOpener;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repo = ref.watch(bookkeepingRepositoryProvider);
@@ -52,18 +59,31 @@ class HomeScreen extends ConsumerWidget {
               budgetSub: d.$6);
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (_) => const AddTransactionSheet(),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('记一笔'),
+      floatingActionButton: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onLongPress: () => _openAi(context, ref),
+        child: FloatingActionButton.extended(
+          onPressed: () async {
+            await showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => const AddTransactionSheet(),
+            );
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('记一笔'),
+        ),
       ),
     );
+  }
+
+  Future<void> _openAi(BuildContext context, WidgetRef ref) async {
+    final opener = aiDialogOpener;
+    if (opener != null) {
+      await opener(context, ref);
+    } else {
+      await openAiDialog(context, ref);
+    }
   }
 
   Future<(int, (int, int), List<Transaction>, List<DonutSlice>,

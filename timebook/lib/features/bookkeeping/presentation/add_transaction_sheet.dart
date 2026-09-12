@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import '../../../core/db/app_database.dart';
 import '../../../core/util/formats.dart';
-import '../../ai/data/ai_settings_service.dart';
-import '../../ai/data/glm_chat_client.dart';
-import '../../ai/domain/ai_bookkeeping_service.dart';
-import '../../ai/presentation/ai_dialog.dart';
-import '../../ai/presentation/ai_settings_screen.dart';
+import '../../ai/presentation/open_ai_dialog.dart';
 import 'bookkeeping_providers.dart';
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
@@ -67,25 +62,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     }
   }
 
-  Future<void> _openAiDialog() async {
-    final svc = AISettingsService(const SecureStorage());
-    final key = await svc.apiKey();
-    if (key == null || key.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('请先在「设置 → AI 设置」配置 API Key')));
-      return;
-    }
-    final endpoint = await svc.endpoint();
-    if (!mounted) return;
-    final client =
-        GlmChatClient(client: http.Client(), apiKey: key, endpoint: endpoint);
-    final service = AiBookkeepingService(ref.read(databaseProvider));
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => AiDialog(client: client, service: service));
-  }
+  Future<void> _openAiDialog() => openAiDialog(context, ref);
 
   @override
   Widget build(BuildContext context) {

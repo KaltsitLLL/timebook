@@ -94,4 +94,53 @@ void main() {
     expect(find.text('流水明细'), findsOneWidget);
     expect(find.textContaining('28.50'), findsWidgets); // 环形图 Top4 金额或流水金额
   });
+
+  testWidgets('点击 FAB 打开记一笔 Sheet', (tester) async {
+    final c = await containerWith(0, 0);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: HomeScreen())));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    // Sheet 标题与 FAB 标签文案一致，断言至少出现一次（Sheet 已打开）
+    expect(find.text('记一笔'), findsWidgets);
+    expect(find.byKey(const Key('save_button')), findsOneWidget);
+  });
+
+  testWidgets('长按 FAB 触发 AI 记账入口', (tester) async {
+    final c = await containerWith(0, 0);
+    var aiCalled = false;
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: MaterialApp(
+            home: Scaffold(
+                body: HomeScreen(
+                    aiDialogOpener: (ctx, ref) async {
+          aiCalled = true;
+        })))));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byType(FloatingActionButton));
+    await tester.pump();
+
+    expect(aiCalled, isTrue);
+  });
+
+  testWidgets('长按 FAB 未打开记一笔 Sheet（双入口互斥）', (tester) async {
+    final c = await containerWith(0, 0);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: MaterialApp(
+            home: Scaffold(
+                body: HomeScreen(aiDialogOpener: (ctx, ref) async {})))));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byType(FloatingActionButton));
+    await tester.pump();
+
+    expect(find.byKey(const Key('save_button')), findsNothing);
+  });
 }
