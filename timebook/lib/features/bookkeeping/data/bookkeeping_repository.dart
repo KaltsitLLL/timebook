@@ -191,6 +191,87 @@ class BookkeepingRepository {
                   : t.categoryId.equals(categoryId))))
         .go();
   }
+
+  Future<BudgetProgress> budgetProgress(
+      {required int ledgerId, required String month}) async {
+    final budgets = await budgetsForMonth(ledgerId: ledgerId, month: month);
+    final catNames = <int, String>{
+      for (final c in await categories(ledgerId)) c.id: c.name
+    };
+    final spends = await categorySpending(ledgerId, month);
+    final spendByCat = <int?, int>{
+      for (final s in spends) s.categoryId: s.amountCents
+    };
+    final summary = await monthlySummary(ledgerId: ledgerId, month: month);
+
+    final totalBudget = budgets
+        .where((b) => b.categoryId == null)
+        .fold<int>(0, (s, b) => s + b.amountCents);
+    final totalSpent = summary.expenseCents;
+
+    final budgetedCatIds = <int>{
+      for (final b in budgets)
+        if (b.categoryId != null) b.categoryId!,
+    };
+    final lines = <BudgetLine>[
+      for (final b in budgets.where((b) => b.categoryId != null))
+        BudgetLine(
+          categoryId: b.categoryId,
+          categoryName: catNames[b.categoryId!] ?? '分类#${b.categoryId}',
+          amountCents: b.amountCents,
+          spentCents: spendByCat[b.categoryId] ?? 0,
+        ),
+      // 无预算但有支出的分类也展示（amountCents=0 → 不参与超支判定）
+      for (final e in spendByCat.entries)
+        if (e.key != null && !budgetedCatIds.contains(e.key!))
+          BudgetLine(
+            categoryId: e.key,
+            categoryName: catNames[e.key!] ?? '分类#${e.key}',
+            amountCents: 0,
+            spentCents: e.value,
+          ),
+    ];
+
+    final remaining =
+        totalBudget > totalSpent ? totalBudget - totalSpent : 0;
+    final today = DateTime.now();
+    final daysLeft =
+        DateTime(today.year, today.month + 1, 0).day - today.day + 1;
+    return BudgetProgress(
+      totalBudgetCents: totalBudget,
+      totalSpentCents: totalSpent,
+      lines: lines,
+      remainingPerDayCents: daysLeft <= 0 ? 0 : remaining ~/ daysLeft,
+    );
+  }
+}
+
+class BudgetLine {
+  const BudgetLine(
+      {this.categoryId,
+      required this.categoryName,
+      required this.amountCents,
+      required this.spentCents});
+  final int? categoryId;
+  final String categoryName;
+  final int amountCents; // 预算额
+  final int spentCents; // 该类目净额支出
+  double get pct => amountCents == 0 ? 0 : spentCents * 100 / amountCents;
+  bool get isOverBudget => amountCents > 0 && spentCents > amountCents;
+}
+
+class BudgetProgress {
+  const BudgetProgress(
+      {required this.totalBudgetCents,
+      required this.totalSpentCents,
+      required this.lines,
+      required this.remainingPerDayCents});
+  final int totalBudgetCents;
+  final int totalSpentCents;
+  final List<BudgetLine> lines;
+  final int remainingPerDayCents;
+  double get totalPct =>
+      totalBudgetCents == 0 ? 0 : totalSpentCents * 100 / totalBudgetCents;
 }
 
 class MonthlySummary {

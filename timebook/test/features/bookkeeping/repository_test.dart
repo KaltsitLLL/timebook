@@ -197,4 +197,37 @@ void main() {
     final all = await repo.budgetsForMonth(ledgerId: l, month: month);
     expect(all, isEmpty);
   });
+
+  test('budgetProgress：总分类净额进度与剩余日均、超支标记', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final trans = await repo.createCategory(ledgerId: l, name: '交通');
+    final now = DateTime.now();
+    final month = monthKey(now);
+
+    await repo.upsertBudget(ledgerId: l, month: month, amountCents: 1000000);
+    await repo.upsertBudget(
+        ledgerId: l, categoryId: food, month: month, amountCents: 300000);
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 150000, bookAt: DateTime(now.year, now.month, 12));
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: trans, direction: 'expense',
+        amountCents: 120000, bookAt: DateTime(now.year, now.month, 12));
+
+    final p = await repo.budgetProgress(ledgerId: l, month: month);
+    expect(p.totalBudgetCents, 1000000);
+    expect(p.totalSpentCents, 270000);
+    expect(p.totalPct, closeTo(27.0, 0.05));
+    expect(p.remainingPerDayCents,
+        greaterThanOrEqualTo(24000)); // (1000000-270000)/当月剩余天数
+    final foodLine = p.lines.singleWhere((x) => x.categoryId == food);
+    expect(foodLine.spentCents, 150000);
+    expect(foodLine.pct, closeTo(50.0, 0.05));
+    final transLine = p.lines.singleWhere((x) => x.categoryId == trans);
+    expect(transLine.spentCents, 120000);
+    expect(transLine.isOverBudget, isFalse); // 未设分类预算 → 不参与超支判定
+  });
 }
