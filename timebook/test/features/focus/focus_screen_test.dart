@@ -35,8 +35,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('今日专注'), findsOneWidget);
-    expect(find.text('今日待办'), findsOneWidget);
-    expect(find.text('整理PRD'), findsOneWidget);
     expect(find.text('25:00'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('focus_start')));
@@ -44,6 +42,38 @@ void main() {
     fakeNow = fakeNow.add(const Duration(seconds: 2));
     await tester.pump(const Duration(seconds: 2));
     expect(find.textContaining('24:5'), findsOneWidget); // 倒计时开始
+
+    // 时间线/计时卡加高后待办区在首屏外，滚动以核对今日待办与任务
+    await tester.dragUntilVisible(find.text('整理PRD'), find.byType(ListView),
+        const Offset(0, -100));
+    expect(find.text('今日待办'), findsOneWidget);
+    expect(find.text('整理PRD'), findsOneWidget);
+  });
+
+  testWidgets('专注页提供模式 chips 与任务绑定按钮', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = FocusRepository(db);
+    final pid = await repo.createProject(name: '研究');
+    await repo.createTask(title: '整理PRD', projectId: pid, priority: 1);
+
+    final container = ProviderContainer(overrides: [
+      focusDatabaseProvider.overrideWithValue(db),
+      focusRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: FocusScreen()))));
+    await tester.pumpAndSettle();
+
+    expect(find.text('短休'), findsOneWidget);
+    expect(find.text('长休'), findsOneWidget);
+    // 任务行绑定按钮在首屏外，滚动后再断言
+    await tester.dragUntilVisible(find.byKey(const Key('bind_1')),
+        find.byType(ListView), const Offset(0, -100));
+    expect(find.byKey(const Key('bind_1')), findsOneWidget);
   });
 
   testWidgets('四象限视图按重要/紧急分组', (tester) async {

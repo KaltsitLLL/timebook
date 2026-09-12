@@ -86,6 +86,15 @@ class FocusRepository {
         interrupted: Value(interrupted)));
   }
 
+  Future<List<PomodoroSession>> sessionsToday() async {
+    final now = DateTime.now();
+    final dayStart = DateTime(now.year, now.month, now.day);
+    return (db.select(db.pomodoroSessions)
+          ..where((s) => s.startAt.isBiggerOrEqualValue(dayStart))
+          ..orderBy([(s) => OrderingTerm.desc(s.startAt)]))
+        .get();
+  }
+
   Future<int> todayFocusMinutes() async {
     final now = DateTime.now();
     final dayStart = DateTime(now.year, now.month, now.day);

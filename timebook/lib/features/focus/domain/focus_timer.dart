@@ -1,25 +1,28 @@
 enum TimerPhase { idle, focusing, paused }
 
+enum TimerMode { focus, short, long }
+
 class FocusTimer {
   FocusTimer({
     required this.focusMinutes,
     this.shortBreakMinutes = 5,
     this.longBreakMinutes = 15,
+    this.mode = TimerMode.focus,
   });
 
   final int focusMinutes;
   final int shortBreakMinutes;
   final int longBreakMinutes;
 
+  TimerMode mode;
   TimerPhase phase = TimerPhase.idle;
-  final int _mode = 0; // 0 focus / 1 short / 2 long
   DateTime? _endAt; // 绝对时间戳：剩余 = _endAt - now
   int? _remainAtPauseSeconds;
 
-  int get durationSeconds => switch (_mode) {
-        0 => focusMinutes * 60,
-        1 => shortBreakMinutes * 60,
-        _ => longBreakMinutes * 60,
+  int get durationSeconds => switch (mode) {
+        TimerMode.focus => focusMinutes * 60,
+        TimerMode.short => shortBreakMinutes * 60,
+        TimerMode.long => longBreakMinutes * 60,
       };
 
   int remainingSeconds({DateTime? now}) {
