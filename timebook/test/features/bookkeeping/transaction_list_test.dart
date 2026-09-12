@@ -63,4 +63,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('-¥ 19.90'), findsOneWidget);
   });
+
+  testWidgets('isPending 行显示「待确认」徽标，普通行不显示', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final now = DateTime.now();
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 5000,
+        bookAt: DateTime(now.year, now.month, 5), counterparty: '房东', isPending: true);
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 2850,
+        bookAt: DateTime(now.year, now.month, 6), counterparty: '美团外卖');
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      bookkeepingRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: TransactionListScreen()))));
+    await tester.pumpAndSettle();
+
+    expect(find.text('待确认'), findsOneWidget); // pending 行徽标
+    final badge = tester.widget<Text>(find.text('待确认'));
+    expect(badge.style?.fontSize, 10);
+  });
 }

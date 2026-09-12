@@ -27,11 +27,15 @@ class RecurringService {
           counterparty: Value(rt.counterparty),
           remark: Value(rt.remark),
           isPending: const Value(true)));
-      // 推进：下月同日
+      // 推进：下月同日，若该日超过下月天数则裁剪为月末（dayOfMonth>=28 视为「月末语义」）
       final base = DateTime.parse(todayKey);
-      final next = DateTime(base.year, base.month + 1, rt.dayOfMonth);
-      final nextKey =
-          '${next.year.toString().padLeft(4, '0')}-${next.month.toString().padLeft(2, '0')}-${next.day.toString().padLeft(2, '0')}';
+      final DateTime next;
+      if (rt.dayOfMonth >= 28) {
+        next = DateTime(base.year, base.month + 2, 0); // 下月最后一天
+      } else {
+        next = DateTime(base.year, base.month + 1, rt.dayOfMonth);
+      }
+      final nextKey = _key(next);
       await (db.update(db.recurringTransactions)..where((t) => t.id.equals(rt.id)))
           .write(RecurringTransactionsCompanion(
               nextRun: Value(nextKey), lastGenerated: Value(todayKey)));
@@ -39,4 +43,7 @@ class RecurringService {
     }
     return count;
   }
+
+  String _key(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }

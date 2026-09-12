@@ -105,11 +105,30 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen> {
                         t.direction == 'income'
                             ? Icons.payments
                             : Icons.receipt_long),
-                    title:
-                        Text(t.counterparty.isEmpty ? '收支' : t.counterparty),
-                    subtitle: Text(t.remark.isEmpty
-                        ? t.bookAt.toIso8601String().substring(0, 10)
-                        : t.remark),
+                    title: Text(t.counterparty.isEmpty ? '收支' : t.counterparty),
+                    subtitle: Row(children: [
+                      if (t.isPending)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEDEDED),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text('待确认',
+                                style: TextStyle(fontSize: 10)),
+                          ),
+                        ),
+                      Flexible(
+                        child: Text(
+                          t.remark.isEmpty
+                              ? t.bookAt.toIso8601String().substring(0, 10)
+                              : t.remark,
+                        ),
+                      ),
+                    ]),
                     trailing: Text(
                       '${t.direction == 'income' ? '+' : '-'}¥ ${formatCents(t.amountCents)}',
                       style: TextStyle(

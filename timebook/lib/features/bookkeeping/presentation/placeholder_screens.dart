@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../ai/presentation/ai_settings_screen.dart';
 import '../../import/presentation/import_screen.dart';
+import '../../import/presentation/recurring_rules_screen.dart';
 import 'bookkeeping_providers.dart';
 
 class PlaceholderScreen extends StatelessWidget {
@@ -39,6 +40,16 @@ class SettingsScreen extends ConsumerWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) =>
                   ImportScreen(database: ref.read(databaseProvider)))),
+        ),
+        ListTile(
+          key: const Key('recurring_entry'),
+          leading: const Icon(Icons.autorenew),
+          title: const Text('周期记账'),
+          subtitle: const Text('自动生成每月固定收支流水'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) =>
+                  RecurringRulesScreen(database: ref.read(databaseProvider)))),
         ),
       ]),
     );
