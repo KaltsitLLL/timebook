@@ -5,6 +5,7 @@ import '../../../core/db/app_database.dart';
 import '../data/bookkeeping_repository.dart';
 import 'add_transaction_sheet.dart';
 import 'bookkeeping_providers.dart';
+import 'budget_period_helper.dart';
 import 'budget_screen.dart';
 import 'transaction_list_screen.dart';
 import 'widgets/category_donut.dart';
@@ -74,11 +75,14 @@ class HomeScreen extends ConsumerWidget {
     }
     final l = ledgers.first.id;
     final month = _monthKey(DateTime.now());
-    final s = await repo.monthlySummary(ledgerId: l, month: month);
+    final range = periodRangeFor(DateTime.now(), await repo.periodStartDay());
+    final s = await repo.monthlySummary(ledgerId: l, month: month,
+        periodStart: range.start, periodEnd: range.end);
     final recent = await repo.recentTransactions(ledgerId: l, limit: 6);
     final cats = await repo.categories(l);
     final catNames = <int?, String>{for (final c in cats) c.id: c.name};
-    final spends = await repo.categorySpending(l, month);
+    final spends = await repo.categorySpending(l, month,
+        periodStart: range.start, periodEnd: range.end);
     final slices = <DonutSlice>[];
     var idx = 0;
     for (final sp in spends) {
@@ -95,7 +99,8 @@ class HomeScreen extends ConsumerWidget {
       for (var i = 0; i < cats.length; i++)
         cats[i].id: (_coldPalette[i % _coldPalette.length], cats[i].icon),
     };
-    final bp = await repo.budgetProgress(ledgerId: l, month: month);
+    final bp = await repo.budgetProgress(ledgerId: l, month: month,
+        periodStart: range.start, periodEnd: range.end);
     final budgetSub =
         bp.totalBudgetCents == 0 ? '去设置' : '剩 ¥ ${formatCents(bp.totalBudgetCents - bp.totalSpentCents)}';
     return (s.incomeCents - s.expenseCents, (s.incomeCents, s.expenseCents),
