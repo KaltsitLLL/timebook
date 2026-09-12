@@ -76,6 +76,41 @@ void main() {
     expect(find.byKey(const Key('bind_1')), findsOneWidget);
   });
 
+  testWidgets('短休结束记录 short 会话而非 focus', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = FocusRepository(db);
+
+    var fakeNow = DateTime(2026, 9, 12, 9, 0, 0);
+    final container = ProviderContainer(overrides: [
+      focusDatabaseProvider.overrideWithValue(db),
+      focusRepositoryProvider.overrideWithValue(repo),
+      focusClockProvider.overrideWithValue(() => fakeNow),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: FocusScreen()))));
+    await tester.pumpAndSettle();
+
+    // 切到短休并开始
+    await tester.tap(find.byKey(const Key('mode_short')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('focus_start')));
+    await tester.pump();
+
+    // 推进过短休时长（默认 5min = 300s），触发周期 tick 完成
+    fakeNow = fakeNow.add(const Duration(seconds: 301));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+
+    final sessions = await repo.sessionsToday();
+    expect(sessions, hasLength(1));
+    expect(sessions.single.kind, 'short');
+    expect(sessions.single.durationMinutes, 5);
+  });
+
   testWidgets('四象限视图按重要/紧急分组', (tester) async {
     final db = AppDatabase.forTesting(inMemoryExecutor());
     final repo = FocusRepository(db);

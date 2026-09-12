@@ -21,7 +21,7 @@ class FocusTimerWidget extends StatefulWidget {
   final int longBreakMinutes;
   final String? boundTask;
   final String? hintTask;
-  final VoidCallback? onComplete;
+  final void Function(TimerMode mode)? onComplete;
   final DateTime Function() now;
 
   @override
@@ -57,8 +57,9 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
   void _tick() {
     if (_timer.phase == TimerPhase.focusing &&
         _timer.remainingSeconds(now: widget.now()) <= 0) {
+      final finishedMode = _timer.mode;
       _timer.reset();
-      widget.onComplete?.call();
+      widget.onComplete?.call(finishedMode);
     }
     setState(() {});
   }

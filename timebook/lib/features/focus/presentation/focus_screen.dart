@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/db/app_database.dart';
 import '../../daily/presentation/daily_summary_screen.dart';
 import '../domain/quick_add_parser.dart';
+import '../domain/focus_timer.dart';
 import 'focus_providers.dart';
 import 'focus_timer_widget.dart';
 import 'quadrant_view.dart';
@@ -46,38 +47,52 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     setState(() {});
   }
 
-  Future<void> _onComplete(int focusMinutes) async {
+  Future<void> _onComplete(TimerMode mode) async {
     final repo = ref.read(focusRepositoryProvider);
-    final bound = _bound;
-    final action = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('专注完成'),
-        content: const Text('记一次专注？'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, '标记任务完成'),
-              child: const Text('标记任务完成')),
-          TextButton(
-              onPressed: () => Navigator.pop(context, '仍进行中'),
-              child: const Text('仍进行中')),
-          TextButton(
-              onPressed: () => Navigator.pop(context, '取消'),
-              child: const Text('取消')),
-        ],
-      ),
-    );
-    if (action == null || action == '取消') return;
-    if (action == '标记任务完成' && bound != null) {
-      await repo.toggleCompleted(taskId: bound.id);
-    }
+    final settings = await repo.settings();
     final endAt = DateTime.now();
+    // 休息/专注映射到各自会话类型与时长；专注结束需确认，休息直接落库。
+    final kind = switch (mode) {
+      TimerMode.focus => 'focus',
+      TimerMode.short => 'short',
+      TimerMode.long => 'long',
+    };
+    final minutes = switch (mode) {
+      TimerMode.focus => settings.focusMinutes,
+      TimerMode.short => settings.shortBreakMinutes,
+      TimerMode.long => settings.longBreakMinutes,
+    };
+    final bound = _bound;
+    if (mode == TimerMode.focus) {
+      final action = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('专注完成'),
+          content: const Text('记一次专注？'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context, '标记任务完成'),
+                child: const Text('标记任务完成')),
+            TextButton(
+                onPressed: () => Navigator.pop(context, '仍进行中'),
+                child: const Text('仍进行中')),
+            TextButton(
+                onPressed: () => Navigator.pop(context, '取消'),
+                child: const Text('取消')),
+          ],
+        ),
+      );
+      if (action == null || action == '取消') return;
+      if (action == '标记任务完成' && bound != null) {
+        await repo.toggleCompleted(taskId: bound.id);
+      }
+    }
     await repo.addSession(
-        taskId: bound?.id,
-        kind: 'focus',
-        startAt: endAt.subtract(Duration(minutes: focusMinutes)),
+        taskId: mode == TimerMode.focus ? bound?.id : null,
+        kind: kind,
+        startAt: endAt.subtract(Duration(minutes: minutes)),
         endAt: endAt,
-        durationMinutes: focusMinutes,
+        durationMinutes: minutes,
         interrupted: false);
     setState(() {});
   }
@@ -135,7 +150,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                 shortBreakMinutes: settings.shortBreakMinutes,
                 longBreakMinutes: settings.longBreakMinutes,
                 boundTask: _bound?.title,
-                onComplete: () => _onComplete(settings.focusMinutes),
+                onComplete: _onComplete,
                 now: now,
               ),
             ),
