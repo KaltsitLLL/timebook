@@ -61,3 +61,21 @@ class Budgets extends Table {
   TextColumn get month => text()(); // 'yyyy-MM'
   IntColumn get amountCents => integer()();
 }
+
+/// 退款独立条目：退款作为唯一事实来源挂在原支出上（Veri Fin 式），
+/// `transactions.refunded_cents` 保留为派生缓存，由 `syncRefundData` 重算。
+class RefundEntries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get ledgerId => integer().references(Ledgers, #id)();
+  IntColumn get transactionId => integer().references(Transactions, #id)();
+  IntColumn get amountCents => integer()();
+  IntColumn get accountId => integer().nullable()(); // 收款账户，预留「退到不同账户」
+  DateTimeColumn get bookAt => dateTime()(); // 发起/入账日期
+  DateTimeColumn get settledAt => dateTime().nullable()(); // null=待到账
+  TextColumn get importKey => text().nullable()(); // 导入去重指纹
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {ledgerId, importKey}, // 同账本同导入单号不重复建条目
+      ];
+}

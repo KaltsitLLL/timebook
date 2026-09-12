@@ -10,14 +10,14 @@ part 'app_database.g.dart';
 @DriftDatabase(
     tables: [Ledgers, Accounts, Categories, Transactions, Budgets, Projects,
         Tasks, PomodoroSessions, PomodoroSettings, RecurringTransactions,
-        ImportBatches, ImportRules, DaySummaries])
+        ImportBatches, ImportRules, DaySummaries, RefundEntries])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openDefault());
 
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -35,6 +35,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.createTable(daySummaries);
+          }
+          if (from < 5) {
+            await m.createTable(refundEntries);
           }
         },
         beforeOpen: (details) async {

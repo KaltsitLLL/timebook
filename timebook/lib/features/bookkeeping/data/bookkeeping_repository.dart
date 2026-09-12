@@ -190,6 +190,52 @@ class BookkeepingRepository {
         .write(TransactionsCompanion(refundedCents: Value(refundedCents)));
   }
 
+  // ---- 退款独立条目（唯一事实来源；refunded_cents 为派生缓存）----
+  /// 插入一条退款条目并同步原支出的派生缓存。
+  /// [importKey] 为导入去重指纹（同账本同 key 唯一），非导入场景可省略。
+  Future<int> upsertRefund({
+    required int ledgerId,
+    required int transactionId,
+    required int amountCents,
+    int? accountId,
+    String? importKey,
+    required DateTime bookAt,
+    DateTime? settledAt,
+  }) async {
+    final id = await db.into(db.refundEntries).insert(
+        RefundEntriesCompanion.insert(
+            ledgerId: ledgerId,
+            transactionId: transactionId,
+            amountCents: amountCents,
+            accountId: Value(accountId),
+            bookAt: bookAt,
+            settledAt: Value(settledAt),
+            importKey: Value(importKey)));
+    await syncRefundData(transactionId);
+    return id;
+  }
+
+  /// 重算原支出的 `refundedCents = min(amountCents, Σ 条目金额)`（clamp 防负/溢出）。
+  Future<void> syncRefundData(int transactionId) async {
+    final tx = await (db.select(db.transactions)
+          ..where((t) => t.id.equals(transactionId)))
+        .getSingleOrNull();
+    if (tx == null) return;
+    final entries = await refundEntries(transactionId);
+    var sum = 0;
+    for (final e in entries) {
+      sum += e.amountCents;
+    }
+    final clamped = sum.clamp(0, tx.amountCents);
+    await (db.update(db.transactions)..where((t) => t.id.equals(transactionId)))
+        .write(TransactionsCompanion(refundedCents: Value(clamped)));
+  }
+
+  Future<List<RefundEntry>> refundEntries(int transactionId) =>
+      (db.select(db.refundEntries)
+            ..where((e) => e.transactionId.equals(transactionId)))
+          .get();
+
   Future<MonthlySummary> monthlySummary(
       {required int ledgerId,
       required String month,

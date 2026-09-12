@@ -482,4 +482,78 @@ void main() {
     expect(await repo.categories(l2), hasLength(8));
     expect(await repo.categories(l1), hasLength(8));
   });
+
+  test('退款独立条目：两笔退款缓存截断到原金额', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final tid = await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 100000, bookAt: DateTime(2026, 9, 12)); // 1000 元
+
+    await repo.upsertRefund(ledgerId: l, transactionId: tid, amountCents: 50000,
+        accountId: a, bookAt: DateTime(2026, 9, 12), settledAt: DateTime(2026, 9, 12));
+    await repo.upsertRefund(ledgerId: l, transactionId: tid, amountCents: 80000,
+        accountId: a, bookAt: DateTime(2026, 9, 12), settledAt: DateTime(2026, 9, 12));
+
+    final t = await (db.select(db.transactions)..where((x) => x.id.equals(tid)))
+        .getSingle();
+    expect(t.refundedCents, 100000); // 500+800 截断到 1000 元
+    expect(await repo.refundEntries(tid), hasLength(2));
+  });
+
+  test('退款独立条目：退款超原金额缓存钳到原金额', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final tid = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense',
+        amountCents: 30000, bookAt: DateTime(2026, 9, 12)); // 300 元
+
+    await repo.upsertRefund(ledgerId: l, transactionId: tid, amountCents: 50000,
+        accountId: a, bookAt: DateTime(2026, 9, 12)); // 退 500 元
+
+    final t = await (db.select(db.transactions)..where((x) => x.id.equals(tid)))
+        .getSingle();
+    expect(t.refundedCents, 30000);
+  });
+
+  test('退款独立条目：删除全部条目后 syncRefundData 归零', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final tid = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense',
+        amountCents: 5000, bookAt: DateTime(2026, 9, 12));
+
+    await repo.upsertRefund(ledgerId: l, transactionId: tid, amountCents: 5000,
+        accountId: a, bookAt: DateTime(2026, 9, 12));
+    final before = await (db.select(db.transactions)..where((x) => x.id.equals(tid)))
+        .getSingle();
+    expect(before.refundedCents, 5000);
+
+    await (db.delete(db.refundEntries)..where((e) => e.transactionId.equals(tid)))
+        .go();
+    await repo.syncRefundData(tid);
+
+    final t = await (db.select(db.transactions)..where((x) => x.id.equals(tid)))
+        .getSingle();
+    expect(t.refundedCents, 0); // 无条目 → 缓存归零
+  });
+
+  test('退款独立条目：settledAt null 保留待到账标记', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final tid = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense',
+        amountCents: 5000, bookAt: DateTime(2026, 9, 12));
+
+    await repo.upsertRefund(ledgerId: l, transactionId: tid, amountCents: 5000,
+        accountId: a, bookAt: DateTime(2026, 9, 12), settledAt: null);
+
+    final entries = await repo.refundEntries(tid);
+    expect(entries.single.settledAt, null); // 待到账，未到账日期
+  });
 }

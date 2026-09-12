@@ -6308,6 +6308,523 @@ class DaySummariesCompanion extends UpdateCompanion<DaySummary> {
   }
 }
 
+class $RefundEntriesTable extends RefundEntries
+    with TableInfo<$RefundEntriesTable, RefundEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RefundEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _ledgerIdMeta = const VerificationMeta(
+    'ledgerId',
+  );
+  @override
+  late final GeneratedColumn<int> ledgerId = GeneratedColumn<int>(
+    'ledger_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<int> transactionId = GeneratedColumn<int>(
+    'transaction_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountCentsMeta = const VerificationMeta(
+    'amountCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountCents = GeneratedColumn<int>(
+    'amount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<int> accountId = GeneratedColumn<int>(
+    'account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bookAtMeta = const VerificationMeta('bookAt');
+  @override
+  late final GeneratedColumn<DateTime> bookAt = GeneratedColumn<DateTime>(
+    'book_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _settledAtMeta = const VerificationMeta(
+    'settledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> settledAt = GeneratedColumn<DateTime>(
+    'settled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _importKeyMeta = const VerificationMeta(
+    'importKey',
+  );
+  @override
+  late final GeneratedColumn<String> importKey = GeneratedColumn<String>(
+    'import_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ledgerId,
+    transactionId,
+    amountCents,
+    accountId,
+    bookAt,
+    settledAt,
+    importKey,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'refund_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RefundEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('ledger_id')) {
+      context.handle(
+        _ledgerIdMeta,
+        ledgerId.isAcceptableOrUnknown(data['ledger_id']!, _ledgerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ledgerIdMeta);
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('amount_cents')) {
+      context.handle(
+        _amountCentsMeta,
+        amountCents.isAcceptableOrUnknown(
+          data['amount_cents']!,
+          _amountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountCentsMeta);
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    }
+    if (data.containsKey('book_at')) {
+      context.handle(
+        _bookAtMeta,
+        bookAt.isAcceptableOrUnknown(data['book_at']!, _bookAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bookAtMeta);
+    }
+    if (data.containsKey('settled_at')) {
+      context.handle(
+        _settledAtMeta,
+        settledAt.isAcceptableOrUnknown(data['settled_at']!, _settledAtMeta),
+      );
+    }
+    if (data.containsKey('import_key')) {
+      context.handle(
+        _importKeyMeta,
+        importKey.isAcceptableOrUnknown(data['import_key']!, _importKeyMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {ledgerId, importKey},
+  ];
+  @override
+  RefundEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RefundEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      ledgerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ledger_id'],
+      )!,
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}transaction_id'],
+      )!,
+      amountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents'],
+      )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}account_id'],
+      ),
+      bookAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}book_at'],
+      )!,
+      settledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}settled_at'],
+      ),
+      importKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}import_key'],
+      ),
+    );
+  }
+
+  @override
+  $RefundEntriesTable createAlias(String alias) {
+    return $RefundEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class RefundEntry extends DataClass implements Insertable<RefundEntry> {
+  final int id;
+  final int ledgerId;
+  final int transactionId;
+  final int amountCents;
+  final int? accountId;
+  final DateTime bookAt;
+  final DateTime? settledAt;
+  final String? importKey;
+  const RefundEntry({
+    required this.id,
+    required this.ledgerId,
+    required this.transactionId,
+    required this.amountCents,
+    this.accountId,
+    required this.bookAt,
+    this.settledAt,
+    this.importKey,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['ledger_id'] = Variable<int>(ledgerId);
+    map['transaction_id'] = Variable<int>(transactionId);
+    map['amount_cents'] = Variable<int>(amountCents);
+    if (!nullToAbsent || accountId != null) {
+      map['account_id'] = Variable<int>(accountId);
+    }
+    map['book_at'] = Variable<DateTime>(bookAt);
+    if (!nullToAbsent || settledAt != null) {
+      map['settled_at'] = Variable<DateTime>(settledAt);
+    }
+    if (!nullToAbsent || importKey != null) {
+      map['import_key'] = Variable<String>(importKey);
+    }
+    return map;
+  }
+
+  RefundEntriesCompanion toCompanion(bool nullToAbsent) {
+    return RefundEntriesCompanion(
+      id: Value(id),
+      ledgerId: Value(ledgerId),
+      transactionId: Value(transactionId),
+      amountCents: Value(amountCents),
+      accountId: accountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accountId),
+      bookAt: Value(bookAt),
+      settledAt: settledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(settledAt),
+      importKey: importKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(importKey),
+    );
+  }
+
+  factory RefundEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RefundEntry(
+      id: serializer.fromJson<int>(json['id']),
+      ledgerId: serializer.fromJson<int>(json['ledgerId']),
+      transactionId: serializer.fromJson<int>(json['transactionId']),
+      amountCents: serializer.fromJson<int>(json['amountCents']),
+      accountId: serializer.fromJson<int?>(json['accountId']),
+      bookAt: serializer.fromJson<DateTime>(json['bookAt']),
+      settledAt: serializer.fromJson<DateTime?>(json['settledAt']),
+      importKey: serializer.fromJson<String?>(json['importKey']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'ledgerId': serializer.toJson<int>(ledgerId),
+      'transactionId': serializer.toJson<int>(transactionId),
+      'amountCents': serializer.toJson<int>(amountCents),
+      'accountId': serializer.toJson<int?>(accountId),
+      'bookAt': serializer.toJson<DateTime>(bookAt),
+      'settledAt': serializer.toJson<DateTime?>(settledAt),
+      'importKey': serializer.toJson<String?>(importKey),
+    };
+  }
+
+  RefundEntry copyWith({
+    int? id,
+    int? ledgerId,
+    int? transactionId,
+    int? amountCents,
+    Value<int?> accountId = const Value.absent(),
+    DateTime? bookAt,
+    Value<DateTime?> settledAt = const Value.absent(),
+    Value<String?> importKey = const Value.absent(),
+  }) => RefundEntry(
+    id: id ?? this.id,
+    ledgerId: ledgerId ?? this.ledgerId,
+    transactionId: transactionId ?? this.transactionId,
+    amountCents: amountCents ?? this.amountCents,
+    accountId: accountId.present ? accountId.value : this.accountId,
+    bookAt: bookAt ?? this.bookAt,
+    settledAt: settledAt.present ? settledAt.value : this.settledAt,
+    importKey: importKey.present ? importKey.value : this.importKey,
+  );
+  RefundEntry copyWithCompanion(RefundEntriesCompanion data) {
+    return RefundEntry(
+      id: data.id.present ? data.id.value : this.id,
+      ledgerId: data.ledgerId.present ? data.ledgerId.value : this.ledgerId,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      amountCents: data.amountCents.present
+          ? data.amountCents.value
+          : this.amountCents,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      bookAt: data.bookAt.present ? data.bookAt.value : this.bookAt,
+      settledAt: data.settledAt.present ? data.settledAt.value : this.settledAt,
+      importKey: data.importKey.present ? data.importKey.value : this.importKey,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RefundEntry(')
+          ..write('id: $id, ')
+          ..write('ledgerId: $ledgerId, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('accountId: $accountId, ')
+          ..write('bookAt: $bookAt, ')
+          ..write('settledAt: $settledAt, ')
+          ..write('importKey: $importKey')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    ledgerId,
+    transactionId,
+    amountCents,
+    accountId,
+    bookAt,
+    settledAt,
+    importKey,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RefundEntry &&
+          other.id == this.id &&
+          other.ledgerId == this.ledgerId &&
+          other.transactionId == this.transactionId &&
+          other.amountCents == this.amountCents &&
+          other.accountId == this.accountId &&
+          other.bookAt == this.bookAt &&
+          other.settledAt == this.settledAt &&
+          other.importKey == this.importKey);
+}
+
+class RefundEntriesCompanion extends UpdateCompanion<RefundEntry> {
+  final Value<int> id;
+  final Value<int> ledgerId;
+  final Value<int> transactionId;
+  final Value<int> amountCents;
+  final Value<int?> accountId;
+  final Value<DateTime> bookAt;
+  final Value<DateTime?> settledAt;
+  final Value<String?> importKey;
+  const RefundEntriesCompanion({
+    this.id = const Value.absent(),
+    this.ledgerId = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.bookAt = const Value.absent(),
+    this.settledAt = const Value.absent(),
+    this.importKey = const Value.absent(),
+  });
+  RefundEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int ledgerId,
+    required int transactionId,
+    required int amountCents,
+    this.accountId = const Value.absent(),
+    required DateTime bookAt,
+    this.settledAt = const Value.absent(),
+    this.importKey = const Value.absent(),
+  }) : ledgerId = Value(ledgerId),
+       transactionId = Value(transactionId),
+       amountCents = Value(amountCents),
+       bookAt = Value(bookAt);
+  static Insertable<RefundEntry> custom({
+    Expression<int>? id,
+    Expression<int>? ledgerId,
+    Expression<int>? transactionId,
+    Expression<int>? amountCents,
+    Expression<int>? accountId,
+    Expression<DateTime>? bookAt,
+    Expression<DateTime>? settledAt,
+    Expression<String>? importKey,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ledgerId != null) 'ledger_id': ledgerId,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (amountCents != null) 'amount_cents': amountCents,
+      if (accountId != null) 'account_id': accountId,
+      if (bookAt != null) 'book_at': bookAt,
+      if (settledAt != null) 'settled_at': settledAt,
+      if (importKey != null) 'import_key': importKey,
+    });
+  }
+
+  RefundEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? ledgerId,
+    Value<int>? transactionId,
+    Value<int>? amountCents,
+    Value<int?>? accountId,
+    Value<DateTime>? bookAt,
+    Value<DateTime?>? settledAt,
+    Value<String?>? importKey,
+  }) {
+    return RefundEntriesCompanion(
+      id: id ?? this.id,
+      ledgerId: ledgerId ?? this.ledgerId,
+      transactionId: transactionId ?? this.transactionId,
+      amountCents: amountCents ?? this.amountCents,
+      accountId: accountId ?? this.accountId,
+      bookAt: bookAt ?? this.bookAt,
+      settledAt: settledAt ?? this.settledAt,
+      importKey: importKey ?? this.importKey,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (ledgerId.present) {
+      map['ledger_id'] = Variable<int>(ledgerId.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<int>(transactionId.value);
+    }
+    if (amountCents.present) {
+      map['amount_cents'] = Variable<int>(amountCents.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<int>(accountId.value);
+    }
+    if (bookAt.present) {
+      map['book_at'] = Variable<DateTime>(bookAt.value);
+    }
+    if (settledAt.present) {
+      map['settled_at'] = Variable<DateTime>(settledAt.value);
+    }
+    if (importKey.present) {
+      map['import_key'] = Variable<String>(importKey.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RefundEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('ledgerId: $ledgerId, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('accountId: $accountId, ')
+          ..write('bookAt: $bookAt, ')
+          ..write('settledAt: $settledAt, ')
+          ..write('importKey: $importKey')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6329,6 +6846,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ImportBatchesTable importBatches = $ImportBatchesTable(this);
   late final $ImportRulesTable importRules = $ImportRulesTable(this);
   late final $DaySummariesTable daySummaries = $DaySummariesTable(this);
+  late final $RefundEntriesTable refundEntries = $RefundEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6347,6 +6865,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     importBatches,
     importRules,
     daySummaries,
+    refundEntries,
   ];
 }
 
@@ -9591,6 +10110,261 @@ typedef $$DaySummariesTableProcessedTableManager =
       DaySummary,
       PrefetchHooks Function()
     >;
+typedef $$RefundEntriesTableCreateCompanionBuilder =
+    RefundEntriesCompanion Function({
+      Value<int> id,
+      required int ledgerId,
+      required int transactionId,
+      required int amountCents,
+      Value<int?> accountId,
+      required DateTime bookAt,
+      Value<DateTime?> settledAt,
+      Value<String?> importKey,
+    });
+typedef $$RefundEntriesTableUpdateCompanionBuilder =
+    RefundEntriesCompanion Function({
+      Value<int> id,
+      Value<int> ledgerId,
+      Value<int> transactionId,
+      Value<int> amountCents,
+      Value<int?> accountId,
+      Value<DateTime> bookAt,
+      Value<DateTime?> settledAt,
+      Value<String?> importKey,
+    });
+
+class $$RefundEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $RefundEntriesTable> {
+  $$RefundEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ledgerId => $composableBuilder(
+    column: $table.ledgerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get bookAt => $composableBuilder(
+    column: $table.bookAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get importKey => $composableBuilder(
+    column: $table.importKey,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RefundEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $RefundEntriesTable> {
+  $$RefundEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ledgerId => $composableBuilder(
+    column: $table.ledgerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get bookAt => $composableBuilder(
+    column: $table.bookAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get importKey => $composableBuilder(
+    column: $table.importKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RefundEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RefundEntriesTable> {
+  $$RefundEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get ledgerId =>
+      $composableBuilder(column: $table.ledgerId, builder: (column) => column);
+
+  GeneratedColumn<int> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get bookAt =>
+      $composableBuilder(column: $table.bookAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get settledAt =>
+      $composableBuilder(column: $table.settledAt, builder: (column) => column);
+
+  GeneratedColumn<String> get importKey =>
+      $composableBuilder(column: $table.importKey, builder: (column) => column);
+}
+
+class $$RefundEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RefundEntriesTable,
+          RefundEntry,
+          $$RefundEntriesTableFilterComposer,
+          $$RefundEntriesTableOrderingComposer,
+          $$RefundEntriesTableAnnotationComposer,
+          $$RefundEntriesTableCreateCompanionBuilder,
+          $$RefundEntriesTableUpdateCompanionBuilder,
+          (
+            RefundEntry,
+            BaseReferences<_$AppDatabase, $RefundEntriesTable, RefundEntry>,
+          ),
+          RefundEntry,
+          PrefetchHooks Function()
+        > {
+  $$RefundEntriesTableTableManager(_$AppDatabase db, $RefundEntriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RefundEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RefundEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RefundEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> ledgerId = const Value.absent(),
+                Value<int> transactionId = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<int?> accountId = const Value.absent(),
+                Value<DateTime> bookAt = const Value.absent(),
+                Value<DateTime?> settledAt = const Value.absent(),
+                Value<String?> importKey = const Value.absent(),
+              }) => RefundEntriesCompanion(
+                id: id,
+                ledgerId: ledgerId,
+                transactionId: transactionId,
+                amountCents: amountCents,
+                accountId: accountId,
+                bookAt: bookAt,
+                settledAt: settledAt,
+                importKey: importKey,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int ledgerId,
+                required int transactionId,
+                required int amountCents,
+                Value<int?> accountId = const Value.absent(),
+                required DateTime bookAt,
+                Value<DateTime?> settledAt = const Value.absent(),
+                Value<String?> importKey = const Value.absent(),
+              }) => RefundEntriesCompanion.insert(
+                id: id,
+                ledgerId: ledgerId,
+                transactionId: transactionId,
+                amountCents: amountCents,
+                accountId: accountId,
+                bookAt: bookAt,
+                settledAt: settledAt,
+                importKey: importKey,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RefundEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RefundEntriesTable,
+      RefundEntry,
+      $$RefundEntriesTableFilterComposer,
+      $$RefundEntriesTableOrderingComposer,
+      $$RefundEntriesTableAnnotationComposer,
+      $$RefundEntriesTableCreateCompanionBuilder,
+      $$RefundEntriesTableUpdateCompanionBuilder,
+      (
+        RefundEntry,
+        BaseReferences<_$AppDatabase, $RefundEntriesTable, RefundEntry>,
+      ),
+      RefundEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9621,4 +10395,6 @@ class $AppDatabaseManager {
       $$ImportRulesTableTableManager(_db, _db.importRules);
   $$DaySummariesTableTableManager get daySummaries =>
       $$DaySummariesTableTableManager(_db, _db.daySummaries);
+  $$RefundEntriesTableTableManager get refundEntries =>
+      $$RefundEntriesTableTableManager(_db, _db.refundEntries);
 }
