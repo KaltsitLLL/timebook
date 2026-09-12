@@ -63,4 +63,18 @@ void main() {
     expect(result.saved, 0);
     expect(result.refundUnmatched, 1);
   });
+
+  test('有分类规则时导入自动分类入库（对方命中关键词）', () async {
+    final catId = await db.into(db.categories).insert(
+        CategoriesCompanion.insert(ledgerId: 1, name: '外卖'));
+    await db.into(db.importRules).insert(ImportRulesCompanion.insert(
+        keyword: '美团', categoryId: catId, priority: Value(1)));
+
+    final result = await svc.importRows(
+        source: 'wechat', fileName: 'a.csv', rows: [row(orderId: 'WX-7')]);
+    expect(result.saved, 1);
+
+    final t = await (db.select(db.transactions)..where((x) => x.orderId.equals('WX-7'))).getSingle();
+    expect(t.categoryId, catId);
+  });
 }

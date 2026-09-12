@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
+import '../../bookkeeping/data/bookkeeping_repository.dart';
 import '../domain/import_models.dart';
 
 class ImportOutcome {
@@ -25,6 +26,7 @@ class ImportService {
     int? priorityLedgerId,
   }) async {
     final outcome = ImportOutcome();
+    final repo = BookkeepingRepository(db);
     await db.transaction(() async {
       final ledgers = await db.select(db.ledgers).get();
       if (ledgers.isEmpty) throw StateError('请先创建账本');
@@ -57,18 +59,19 @@ class ImportService {
             continue;
           }
         }
-        await db.into(db.transactions).insert(TransactionsCompanion.insert(
+        await repo.addTransaction(
           ledgerId: ledgerId,
           accountId: account.id,
           direction: r.direction,
           amountCents: r.amountCents,
           bookAt: r.bookAt,
-          counterparty: Value(r.counterparty),
-          remark: Value(r.remark),
-          payMethod: Value(r.payMethod),
-          orderId: Value(r.orderId),
-          importKey: r.orderId == null ? const Value(null) : Value(r.orderId),
-        ));
+          counterparty: r.counterparty,
+          remark: r.remark,
+          payMethod: r.payMethod,
+          orderId: r.orderId,
+          importKey: r.orderId,
+          applyRules: true,
+        );
         outcome.saved++;
       }
 

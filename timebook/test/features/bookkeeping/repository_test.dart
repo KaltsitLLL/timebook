@@ -227,6 +227,58 @@ void main() {
     expect(csv, contains('"店,一家"'));
   });
 
+  test('upsertRule/rules/deleteRule 规则 CRUD', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+
+    final id1 = await repo.upsertRule(keyword: '美团', categoryId: food, priority: 1);
+    await repo.upsertRule(keyword: '滴滴', categoryId: food, priority: 2);
+
+    final all = await repo.rules();
+    expect(all, hasLength(2));
+
+    // 同关键词 upsert 覆盖而非新增
+    await repo.upsertRule(keyword: '滴滴', categoryId: food, priority: 9);
+    expect(await repo.rules(), hasLength(2));
+    expect((await repo.rules()).singleWhere((r) => r.id == id1).id, id1);
+    expect((await repo.rules()).singleWhere((r) => r.keyword == '滴滴').priority, 9);
+
+    await repo.deleteRule(id1);
+    expect(await repo.rules(), hasLength(1));
+  });
+
+  test('addTransaction applyRules：categoryId 为 null 时按规则自动分类', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    await repo.upsertRule(keyword: '美团', categoryId: food, priority: 1);
+
+    final id = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 2850,
+        bookAt: DateTime(2026, 9, 12), counterparty: '美团外卖', applyRules: true);
+
+    final t = await (db.select(db.transactions)..where((x) => x.id.equals(id))).getSingle();
+    expect(t.categoryId, food);
+  });
+
+  test('addTransaction applyRules：已有显式 categoryId 不被覆盖', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    final trans = await repo.createCategory(ledgerId: l, name: '交通');
+    await repo.upsertRule(keyword: '美团', categoryId: trans, priority: 1);
+
+    await repo.addTransaction(
+        ledgerId: l, accountId: a, categoryId: food, direction: 'expense',
+        amountCents: 2850, bookAt: DateTime(2026, 9, 12), counterparty: '美团',
+        applyRules: true);
+    // 显式分类优先，规则不覆盖
+    expect((await repo.recentTransactions(ledgerId: l)).single.categoryId, food);
+  });
+
   test('budgetProgress：总分类净额进度与剩余日均、超支标记', () async {
     final repo = BookkeepingRepository(db);
     final l = await repo.createLedger(name: '生活');
@@ -258,5 +310,37 @@ void main() {
     final transLine = p.lines.singleWhere((x) => x.categoryId == trans);
     expect(transLine.spentCents, 120000);
     expect(transLine.isOverBudget, isFalse); // 未设分类预算 → 不参与超支判定
+  });
+
+  test('addTransaction 开启 applyRules 时从未分类自动推断分类', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final a = await repo.createAccount(ledgerId: l, name: '卡');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+    await repo.upsertRule(keyword: '美团', categoryId: food, priority: 1);
+
+    final tid = await repo.addTransaction(
+        ledgerId: l, accountId: a, direction: 'expense', amountCents: 2850,
+        bookAt: DateTime(2026, 9, 12), counterparty: '美团外卖', applyRules: true);
+    final t = await (db.select(db.transactions)..where((x) => x.id.equals(tid))).getSingle();
+    expect(t.categoryId, food);
+  });
+
+  test('upsertRule/rules/deleteRule 完整 CRUD', () async {
+    final repo = BookkeepingRepository(db);
+    final l = await repo.createLedger(name: '生活');
+    final food = await repo.createCategory(ledgerId: l, name: '餐饮');
+
+    await repo.upsertRule(keyword: '美团', categoryId: food, priority: 1);
+    await repo.upsertRule(keyword: '滴滴', categoryId: food, priority: 2);
+    expect(await repo.rules(), hasLength(2));
+
+    // 同关键词 upsert 覆盖而非新增
+    final id = await repo.upsertRule(keyword: '美团', categoryId: food, priority: 5);
+    expect(await repo.rules(), hasLength(2));
+    expect((await repo.rules()).singleWhere((r) => r.id == id).priority, 5);
+
+    await repo.deleteRule(id);
+    expect(await repo.rules(), hasLength(1));
   });
 }

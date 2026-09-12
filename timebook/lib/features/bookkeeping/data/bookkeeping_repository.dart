@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/util/formats.dart';
+import 'rule_classifier.dart';
 
 class BookkeepingRepository {
   BookkeepingRepository(this.db);
@@ -48,11 +49,23 @@ class BookkeepingRepository {
     String? orderId,
     String? importKey,
     bool isPending = false,
-  }) {
+    bool applyRules = false,
+  }) async {
+    var catId = categoryId;
+    // 未显式指定分类且开启自动分类时，按规则引擎从「对方+备注」推断。
+    if (applyRules && catId == null) {
+      final ruleRows = await rules();
+      catId = RuleClassifier.classify(
+        text: '$counterparty$remark',
+        rules: [
+          for (final r in ruleRows) (r.keyword, r.categoryId, r.priority),
+        ],
+      );
+    }
     return db.into(db.transactions).insert(TransactionsCompanion.insert(
       ledgerId: ledgerId,
       accountId: accountId,
-      categoryId: Value(categoryId),
+      categoryId: Value(catId),
       direction: direction,
       amountCents: amountCents,
       bookAt: bookAt,
@@ -63,6 +76,31 @@ class BookkeepingRepository {
       importKey: Value(importKey),
       isPending: Value(isPending),
     ));
+  }
+
+  // ---- 分类规则 ----
+  Future<int> upsertRule({
+    required String keyword,
+    required int categoryId,
+    required int priority,
+  }) async {
+    final existing = await (db.select(db.importRules)
+          ..where((r) => r.keyword.equals(keyword)))
+        .getSingleOrNull();
+    if (existing != null) {
+      await (db.update(db.importRules)..where((r) => r.id.equals(existing.id)))
+          .write(ImportRulesCompanion(
+              categoryId: Value(categoryId), priority: Value(priority)));
+      return existing.id;
+    }
+    return db.into(db.importRules).insert(ImportRulesCompanion.insert(
+        keyword: keyword, categoryId: categoryId, priority: Value(priority)));
+  }
+
+  Future<List<ImportRule>> rules() => db.select(db.importRules).get();
+
+  Future<void> deleteRule(int id) async {
+    await (db.delete(db.importRules)..where((r) => r.id.equals(id))).go();
   }
 
   Future<void> updateRefundedCents(

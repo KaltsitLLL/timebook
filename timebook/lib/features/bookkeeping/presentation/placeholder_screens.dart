@@ -5,6 +5,7 @@ import '../../ai/presentation/ai_settings_screen.dart';
 import '../../import/presentation/import_screen.dart';
 import '../../import/presentation/recurring_rules_screen.dart';
 import 'bookkeeping_providers.dart';
+import 'rules_screen.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   const PlaceholderScreen({super.key, required this.title});
@@ -50,6 +51,16 @@ class SettingsScreen extends ConsumerWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) =>
                   RecurringRulesScreen(database: ref.read(databaseProvider)))),
+        ),
+        ListTile(
+          key: const Key('rules_entry'),
+          leading: const Icon(Icons.rule),
+          title: const Text('分类规则'),
+          subtitle: const Text('按关键词自动分类导入流水'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) =>
+                  RulesScreen(database: ref.read(databaseProvider)))),
         ),
       ]),
     );
