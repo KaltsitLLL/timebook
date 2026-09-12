@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import '../../features/bookkeeping/data/tables.dart';
 import '../../features/focus/data/focus_tables.dart';
+import '../../features/daily/data/day_summaries_table.dart';
 import '../../features/import/data/import_tables.dart';
 
 part 'app_database.g.dart';
@@ -9,14 +10,14 @@ part 'app_database.g.dart';
 @DriftDatabase(
     tables: [Ledgers, Accounts, Categories, Transactions, Budgets, Projects,
         Tasks, PomodoroSessions, PomodoroSettings, RecurringTransactions,
-        ImportBatches, ImportRules])
+        ImportBatches, ImportRules, DaySummaries])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openDefault());
 
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +32,9 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(recurringTransactions);
             await m.createTable(importBatches);
             await m.createTable(importRules);
+          }
+          if (from < 4) {
+            await m.createTable(daySummaries);
           }
         },
         beforeOpen: (details) async {

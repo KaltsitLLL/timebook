@@ -5832,6 +5832,482 @@ class ImportRulesCompanion extends UpdateCompanion<ImportRule> {
   }
 }
 
+class $DaySummariesTable extends DaySummaries
+    with TableInfo<$DaySummariesTable, DaySummary> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DaySummariesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pomodoroCountMeta = const VerificationMeta(
+    'pomodoroCount',
+  );
+  @override
+  late final GeneratedColumn<int> pomodoroCount = GeneratedColumn<int>(
+    'pomodoro_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _focusMinutesMeta = const VerificationMeta(
+    'focusMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> focusMinutes = GeneratedColumn<int>(
+    'focus_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _expenseTotalCentsMeta = const VerificationMeta(
+    'expenseTotalCents',
+  );
+  @override
+  late final GeneratedColumn<int> expenseTotalCents = GeneratedColumn<int>(
+    'expense_total_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _tasksDoneMeta = const VerificationMeta(
+    'tasksDone',
+  );
+  @override
+  late final GeneratedColumn<int> tasksDone = GeneratedColumn<int>(
+    'tasks_done',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _ratingMeta = const VerificationMeta('rating');
+  @override
+  late final GeneratedColumn<int> rating = GeneratedColumn<int>(
+    'rating',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _snapshotJsonMeta = const VerificationMeta(
+    'snapshotJson',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotJson = GeneratedColumn<String>(
+    'snapshot_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    date,
+    pomodoroCount,
+    focusMinutes,
+    expenseTotalCents,
+    tasksDone,
+    rating,
+    snapshotJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'day_summaries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DaySummary> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('pomodoro_count')) {
+      context.handle(
+        _pomodoroCountMeta,
+        pomodoroCount.isAcceptableOrUnknown(
+          data['pomodoro_count']!,
+          _pomodoroCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('focus_minutes')) {
+      context.handle(
+        _focusMinutesMeta,
+        focusMinutes.isAcceptableOrUnknown(
+          data['focus_minutes']!,
+          _focusMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expense_total_cents')) {
+      context.handle(
+        _expenseTotalCentsMeta,
+        expenseTotalCents.isAcceptableOrUnknown(
+          data['expense_total_cents']!,
+          _expenseTotalCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tasks_done')) {
+      context.handle(
+        _tasksDoneMeta,
+        tasksDone.isAcceptableOrUnknown(data['tasks_done']!, _tasksDoneMeta),
+      );
+    }
+    if (data.containsKey('rating')) {
+      context.handle(
+        _ratingMeta,
+        rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta),
+      );
+    }
+    if (data.containsKey('snapshot_json')) {
+      context.handle(
+        _snapshotJsonMeta,
+        snapshotJson.isAcceptableOrUnknown(
+          data['snapshot_json']!,
+          _snapshotJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {date};
+  @override
+  DaySummary map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DaySummary(
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      pomodoroCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pomodoro_count'],
+      )!,
+      focusMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focus_minutes'],
+      )!,
+      expenseTotalCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expense_total_cents'],
+      )!,
+      tasksDone: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tasks_done'],
+      )!,
+      rating: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rating'],
+      ),
+      snapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_json'],
+      )!,
+    );
+  }
+
+  @override
+  $DaySummariesTable createAlias(String alias) {
+    return $DaySummariesTable(attachedDatabase, alias);
+  }
+}
+
+class DaySummary extends DataClass implements Insertable<DaySummary> {
+  final String date;
+  final int pomodoroCount;
+  final int focusMinutes;
+  final int expenseTotalCents;
+  final int tasksDone;
+  final int? rating;
+  final String snapshotJson;
+  const DaySummary({
+    required this.date,
+    required this.pomodoroCount,
+    required this.focusMinutes,
+    required this.expenseTotalCents,
+    required this.tasksDone,
+    this.rating,
+    required this.snapshotJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['date'] = Variable<String>(date);
+    map['pomodoro_count'] = Variable<int>(pomodoroCount);
+    map['focus_minutes'] = Variable<int>(focusMinutes);
+    map['expense_total_cents'] = Variable<int>(expenseTotalCents);
+    map['tasks_done'] = Variable<int>(tasksDone);
+    if (!nullToAbsent || rating != null) {
+      map['rating'] = Variable<int>(rating);
+    }
+    map['snapshot_json'] = Variable<String>(snapshotJson);
+    return map;
+  }
+
+  DaySummariesCompanion toCompanion(bool nullToAbsent) {
+    return DaySummariesCompanion(
+      date: Value(date),
+      pomodoroCount: Value(pomodoroCount),
+      focusMinutes: Value(focusMinutes),
+      expenseTotalCents: Value(expenseTotalCents),
+      tasksDone: Value(tasksDone),
+      rating: rating == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rating),
+      snapshotJson: Value(snapshotJson),
+    );
+  }
+
+  factory DaySummary.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DaySummary(
+      date: serializer.fromJson<String>(json['date']),
+      pomodoroCount: serializer.fromJson<int>(json['pomodoroCount']),
+      focusMinutes: serializer.fromJson<int>(json['focusMinutes']),
+      expenseTotalCents: serializer.fromJson<int>(json['expenseTotalCents']),
+      tasksDone: serializer.fromJson<int>(json['tasksDone']),
+      rating: serializer.fromJson<int?>(json['rating']),
+      snapshotJson: serializer.fromJson<String>(json['snapshotJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'date': serializer.toJson<String>(date),
+      'pomodoroCount': serializer.toJson<int>(pomodoroCount),
+      'focusMinutes': serializer.toJson<int>(focusMinutes),
+      'expenseTotalCents': serializer.toJson<int>(expenseTotalCents),
+      'tasksDone': serializer.toJson<int>(tasksDone),
+      'rating': serializer.toJson<int?>(rating),
+      'snapshotJson': serializer.toJson<String>(snapshotJson),
+    };
+  }
+
+  DaySummary copyWith({
+    String? date,
+    int? pomodoroCount,
+    int? focusMinutes,
+    int? expenseTotalCents,
+    int? tasksDone,
+    Value<int?> rating = const Value.absent(),
+    String? snapshotJson,
+  }) => DaySummary(
+    date: date ?? this.date,
+    pomodoroCount: pomodoroCount ?? this.pomodoroCount,
+    focusMinutes: focusMinutes ?? this.focusMinutes,
+    expenseTotalCents: expenseTotalCents ?? this.expenseTotalCents,
+    tasksDone: tasksDone ?? this.tasksDone,
+    rating: rating.present ? rating.value : this.rating,
+    snapshotJson: snapshotJson ?? this.snapshotJson,
+  );
+  DaySummary copyWithCompanion(DaySummariesCompanion data) {
+    return DaySummary(
+      date: data.date.present ? data.date.value : this.date,
+      pomodoroCount: data.pomodoroCount.present
+          ? data.pomodoroCount.value
+          : this.pomodoroCount,
+      focusMinutes: data.focusMinutes.present
+          ? data.focusMinutes.value
+          : this.focusMinutes,
+      expenseTotalCents: data.expenseTotalCents.present
+          ? data.expenseTotalCents.value
+          : this.expenseTotalCents,
+      tasksDone: data.tasksDone.present ? data.tasksDone.value : this.tasksDone,
+      rating: data.rating.present ? data.rating.value : this.rating,
+      snapshotJson: data.snapshotJson.present
+          ? data.snapshotJson.value
+          : this.snapshotJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DaySummary(')
+          ..write('date: $date, ')
+          ..write('pomodoroCount: $pomodoroCount, ')
+          ..write('focusMinutes: $focusMinutes, ')
+          ..write('expenseTotalCents: $expenseTotalCents, ')
+          ..write('tasksDone: $tasksDone, ')
+          ..write('rating: $rating, ')
+          ..write('snapshotJson: $snapshotJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    date,
+    pomodoroCount,
+    focusMinutes,
+    expenseTotalCents,
+    tasksDone,
+    rating,
+    snapshotJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DaySummary &&
+          other.date == this.date &&
+          other.pomodoroCount == this.pomodoroCount &&
+          other.focusMinutes == this.focusMinutes &&
+          other.expenseTotalCents == this.expenseTotalCents &&
+          other.tasksDone == this.tasksDone &&
+          other.rating == this.rating &&
+          other.snapshotJson == this.snapshotJson);
+}
+
+class DaySummariesCompanion extends UpdateCompanion<DaySummary> {
+  final Value<String> date;
+  final Value<int> pomodoroCount;
+  final Value<int> focusMinutes;
+  final Value<int> expenseTotalCents;
+  final Value<int> tasksDone;
+  final Value<int?> rating;
+  final Value<String> snapshotJson;
+  final Value<int> rowid;
+  const DaySummariesCompanion({
+    this.date = const Value.absent(),
+    this.pomodoroCount = const Value.absent(),
+    this.focusMinutes = const Value.absent(),
+    this.expenseTotalCents = const Value.absent(),
+    this.tasksDone = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DaySummariesCompanion.insert({
+    required String date,
+    this.pomodoroCount = const Value.absent(),
+    this.focusMinutes = const Value.absent(),
+    this.expenseTotalCents = const Value.absent(),
+    this.tasksDone = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : date = Value(date);
+  static Insertable<DaySummary> custom({
+    Expression<String>? date,
+    Expression<int>? pomodoroCount,
+    Expression<int>? focusMinutes,
+    Expression<int>? expenseTotalCents,
+    Expression<int>? tasksDone,
+    Expression<int>? rating,
+    Expression<String>? snapshotJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (date != null) 'date': date,
+      if (pomodoroCount != null) 'pomodoro_count': pomodoroCount,
+      if (focusMinutes != null) 'focus_minutes': focusMinutes,
+      if (expenseTotalCents != null) 'expense_total_cents': expenseTotalCents,
+      if (tasksDone != null) 'tasks_done': tasksDone,
+      if (rating != null) 'rating': rating,
+      if (snapshotJson != null) 'snapshot_json': snapshotJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DaySummariesCompanion copyWith({
+    Value<String>? date,
+    Value<int>? pomodoroCount,
+    Value<int>? focusMinutes,
+    Value<int>? expenseTotalCents,
+    Value<int>? tasksDone,
+    Value<int?>? rating,
+    Value<String>? snapshotJson,
+    Value<int>? rowid,
+  }) {
+    return DaySummariesCompanion(
+      date: date ?? this.date,
+      pomodoroCount: pomodoroCount ?? this.pomodoroCount,
+      focusMinutes: focusMinutes ?? this.focusMinutes,
+      expenseTotalCents: expenseTotalCents ?? this.expenseTotalCents,
+      tasksDone: tasksDone ?? this.tasksDone,
+      rating: rating ?? this.rating,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (pomodoroCount.present) {
+      map['pomodoro_count'] = Variable<int>(pomodoroCount.value);
+    }
+    if (focusMinutes.present) {
+      map['focus_minutes'] = Variable<int>(focusMinutes.value);
+    }
+    if (expenseTotalCents.present) {
+      map['expense_total_cents'] = Variable<int>(expenseTotalCents.value);
+    }
+    if (tasksDone.present) {
+      map['tasks_done'] = Variable<int>(tasksDone.value);
+    }
+    if (rating.present) {
+      map['rating'] = Variable<int>(rating.value);
+    }
+    if (snapshotJson.present) {
+      map['snapshot_json'] = Variable<String>(snapshotJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DaySummariesCompanion(')
+          ..write('date: $date, ')
+          ..write('pomodoroCount: $pomodoroCount, ')
+          ..write('focusMinutes: $focusMinutes, ')
+          ..write('expenseTotalCents: $expenseTotalCents, ')
+          ..write('tasksDone: $tasksDone, ')
+          ..write('rating: $rating, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5852,6 +6328,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $RecurringTransactionsTable(this);
   late final $ImportBatchesTable importBatches = $ImportBatchesTable(this);
   late final $ImportRulesTable importRules = $ImportRulesTable(this);
+  late final $DaySummariesTable daySummaries = $DaySummariesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5869,6 +6346,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     recurringTransactions,
     importBatches,
     importRules,
+    daySummaries,
   ];
 }
 
@@ -8867,6 +9345,252 @@ typedef $$ImportRulesTableProcessedTableManager =
       ImportRule,
       PrefetchHooks Function()
     >;
+typedef $$DaySummariesTableCreateCompanionBuilder =
+    DaySummariesCompanion Function({
+      required String date,
+      Value<int> pomodoroCount,
+      Value<int> focusMinutes,
+      Value<int> expenseTotalCents,
+      Value<int> tasksDone,
+      Value<int?> rating,
+      Value<String> snapshotJson,
+      Value<int> rowid,
+    });
+typedef $$DaySummariesTableUpdateCompanionBuilder =
+    DaySummariesCompanion Function({
+      Value<String> date,
+      Value<int> pomodoroCount,
+      Value<int> focusMinutes,
+      Value<int> expenseTotalCents,
+      Value<int> tasksDone,
+      Value<int?> rating,
+      Value<String> snapshotJson,
+      Value<int> rowid,
+    });
+
+class $$DaySummariesTableFilterComposer
+    extends Composer<_$AppDatabase, $DaySummariesTable> {
+  $$DaySummariesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pomodoroCount => $composableBuilder(
+    column: $table.pomodoroCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get focusMinutes => $composableBuilder(
+    column: $table.focusMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expenseTotalCents => $composableBuilder(
+    column: $table.expenseTotalCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tasksDone => $composableBuilder(
+    column: $table.tasksDone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rating => $composableBuilder(
+    column: $table.rating,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DaySummariesTableOrderingComposer
+    extends Composer<_$AppDatabase, $DaySummariesTable> {
+  $$DaySummariesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pomodoroCount => $composableBuilder(
+    column: $table.pomodoroCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get focusMinutes => $composableBuilder(
+    column: $table.focusMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expenseTotalCents => $composableBuilder(
+    column: $table.expenseTotalCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tasksDone => $composableBuilder(
+    column: $table.tasksDone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rating => $composableBuilder(
+    column: $table.rating,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DaySummariesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DaySummariesTable> {
+  $$DaySummariesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get pomodoroCount => $composableBuilder(
+    column: $table.pomodoroCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get focusMinutes => $composableBuilder(
+    column: $table.focusMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get expenseTotalCents => $composableBuilder(
+    column: $table.expenseTotalCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get tasksDone =>
+      $composableBuilder(column: $table.tasksDone, builder: (column) => column);
+
+  GeneratedColumn<int> get rating =>
+      $composableBuilder(column: $table.rating, builder: (column) => column);
+
+  GeneratedColumn<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => column,
+  );
+}
+
+class $$DaySummariesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DaySummariesTable,
+          DaySummary,
+          $$DaySummariesTableFilterComposer,
+          $$DaySummariesTableOrderingComposer,
+          $$DaySummariesTableAnnotationComposer,
+          $$DaySummariesTableCreateCompanionBuilder,
+          $$DaySummariesTableUpdateCompanionBuilder,
+          (
+            DaySummary,
+            BaseReferences<_$AppDatabase, $DaySummariesTable, DaySummary>,
+          ),
+          DaySummary,
+          PrefetchHooks Function()
+        > {
+  $$DaySummariesTableTableManager(_$AppDatabase db, $DaySummariesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DaySummariesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DaySummariesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DaySummariesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> date = const Value.absent(),
+                Value<int> pomodoroCount = const Value.absent(),
+                Value<int> focusMinutes = const Value.absent(),
+                Value<int> expenseTotalCents = const Value.absent(),
+                Value<int> tasksDone = const Value.absent(),
+                Value<int?> rating = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DaySummariesCompanion(
+                date: date,
+                pomodoroCount: pomodoroCount,
+                focusMinutes: focusMinutes,
+                expenseTotalCents: expenseTotalCents,
+                tasksDone: tasksDone,
+                rating: rating,
+                snapshotJson: snapshotJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String date,
+                Value<int> pomodoroCount = const Value.absent(),
+                Value<int> focusMinutes = const Value.absent(),
+                Value<int> expenseTotalCents = const Value.absent(),
+                Value<int> tasksDone = const Value.absent(),
+                Value<int?> rating = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DaySummariesCompanion.insert(
+                date: date,
+                pomodoroCount: pomodoroCount,
+                focusMinutes: focusMinutes,
+                expenseTotalCents: expenseTotalCents,
+                tasksDone: tasksDone,
+                rating: rating,
+                snapshotJson: snapshotJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DaySummariesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DaySummariesTable,
+      DaySummary,
+      $$DaySummariesTableFilterComposer,
+      $$DaySummariesTableOrderingComposer,
+      $$DaySummariesTableAnnotationComposer,
+      $$DaySummariesTableCreateCompanionBuilder,
+      $$DaySummariesTableUpdateCompanionBuilder,
+      (
+        DaySummary,
+        BaseReferences<_$AppDatabase, $DaySummariesTable, DaySummary>,
+      ),
+      DaySummary,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8895,4 +9619,6 @@ class $AppDatabaseManager {
       $$ImportBatchesTableTableManager(_db, _db.importBatches);
   $$ImportRulesTableTableManager get importRules =>
       $$ImportRulesTableTableManager(_db, _db.importRules);
+  $$DaySummariesTableTableManager get daySummaries =>
+      $$DaySummariesTableTableManager(_db, _db.daySummaries);
 }
