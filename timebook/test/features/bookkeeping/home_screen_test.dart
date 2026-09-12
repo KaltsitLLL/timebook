@@ -47,7 +47,10 @@ void main() {
 
     expect(find.textContaining('¥ 8,467.50'), findsOneWidget); // 850000 - 3250 = 846750 分
     expect(find.textContaining('收入'), findsOneWidget);
-    expect(find.textContaining('支出'), findsOneWidget);
+    expect(find.text('支出 ¥ 32.50'), findsOneWidget); // 结余卡的支出（分类支出卡新增同名文本）
+    // 分类支出卡使列表变长，最近流水需滚动可见
+    await tester.scrollUntilVisible(find.text('美团外卖'), 300,
+        scrollable: find.byType(Scrollable).first);
     expect(find.text('美团外卖'), findsOneWidget);
   });
 
@@ -79,5 +82,16 @@ void main() {
     await tester.tap(find.text('预算进度'));
     await tester.pumpAndSettle();
     expect(find.text('本月预算'), findsOneWidget);
+  });
+
+  testWidgets('总览含分类支出卡与快捷入口', (tester) async {
+    final c = await containerWith(0, 0); // 复用现有 seeded（餐饮支出 2850 + 交通 400 + 收入）
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: HomeScreen())));
+    await tester.pumpAndSettle();
+    expect(find.text('分类支出'), findsOneWidget);
+    expect(find.text('流水明细'), findsOneWidget);
+    expect(find.textContaining('28.50'), findsWidgets); // 环形图 Top4 金额或流水金额
   });
 }
