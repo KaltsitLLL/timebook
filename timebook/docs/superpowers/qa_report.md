@@ -132,3 +132,23 @@
 **本轮验收**：`flutter analyze` 0 issue · `flutter test` **163 全绿**（146 基线 + 17）
 
 **延后项**（报告已记，改动面大/依赖重）：退款独立条目模型重做、提醒 zonedSchedule 精确时点、批量/搜索筛选器、分类唯一索引迁移、同步基建。
+
+---
+
+## 九、B2 退款独立条目（2026-09-12，吃 Veri Fin）
+
+- 计划：[`2026-09-12-refund-model-b2.md`](../../../docs/superpowers/plans/2026-09-12-refund-model-b2.md)
+- 依据：benchmark §1.2 已标记「已吸收」。
+
+| 项 | 状态 | commit |
+|---|---|---|
+| 新增 `refund_entries` 表（唯一事实来源：`refundOf`→transactionId、`amountCents`、`settled_at` 可空=待到账、`account_id` 收款账户、`book_at`、`import_key`）+ `transactions.refunded_cents` 派生缓存（`syncRefundData` clamp 到 `[0, amountCents]`） | ✅ | `2ea0fa7` |
+| 导入退款改走独立条目：`-REFUND` 单号匹配 → 建条目并同步缓存；单号悬空走「金额相等 + 方向相反 + ≤7 天 + 唯一候选」启发；同账本同单号幂等不重复建条目；未命中仍进 `refundUnmatched` | ✅ | `8abcdfb` |
+| 验收报告本节 + benchmark §1.2 标记 | ✅ | 本提交 |
+
+**本轮验收**：`flutter analyze` 0 issue · `flutter test` **169 全绿**（163 基线 + 6）
+
+**限制说明**：
+- **账户余额联动未做**：退款条目保留 `account_id` 字段与 `settled_at`，但当前无账户余额计算，「退到不同账户」不驱动余额（仅派生净额缓存）。
+- **无新 UI**：退款条目仅为数据层落地，无查看/编辑入口。
+- **脏值迁移未做**：历史 `refunded_cents` 标量未反向合成退款条目（无真实历史数据量可迁，缓存仍按现算法 clamp 防负）。

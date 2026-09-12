@@ -36,7 +36,7 @@
 
 | 功能 | timebook 现状 | 参考实现 | 建议落地方案 | 优先级 |
 |---|---|---|---|---|
-| **退款模型（独立退款条目 + 派生净额）** | `transactions.refunded_cents` 直接改原行，无「待到账/退到不同账户」概念 | Veri Fin `ledger_entry.dart:9-18,146-158`：退款是独立 `EntryType.refund`（`refund_of` 指原支出、`settled_at`=到账日，NULL=待到账）；`refundedBaseAmount` 是**派生缓存**由 `_syncRefundData()` 重算；净额 `netBaseAmount = clamp(0, baseAmount)` 防负（`:151-158`）；账户余额「支出扣全额 + 退款条目入到账账户」（`ledger_math.dart:28-52`），**天然支持部分退款/退不同账户** | v1 保留 `refunded_cents` 冲抵原行；预留独立退款条目（`refund_of`/`settled_at`）以支持「待到账退款」与「退到另一账户」；统计一律读净额并 clamp 防负 | P1 |
+| **退款模型（独立退款条目 + 派生净额）** | `transactions.refunded_cents` 直接改原行，无「待到账/退到不同账户」概念 | Veri Fin `ledger_entry.dart:9-18,146-158`：退款是独立 `EntryType.refund`（`refund_of` 指原支出、`settled_at`=到账日，NULL=待到账）；`refundedBaseAmount` 是**派生缓存**由 `_syncRefundData()` 重算；净额 `netBaseAmount = clamp(0, baseAmount)` 防负（`:151-158`）；账户余额「支出扣全额 + 退款条目入到账账户」（`ledger_math.dart:28-52`），**天然支持部分退款/退不同账户** | v1 保留 `refunded_cents` 冲抵原行；预留独立退款条目（`refund_of`/`settled_at`）以支持「待到账退款」与「退到另一账户」；统计一律读净额并 clamp 防负 | P1 · **已吸收（B2：退款独立条目）** |
 | 账户匹配去重规则（导入/自动分类） | 计划 `import_rules`（keyword→category）；账户匹配未定义 | Veri Fin `plan_builder.dart:108-152`：账户按「**去空格名 + 币种**」匹配，恰好一个同名才复用，多个同名**不猜归属**→交用户映射；`resolveCategory` 按归一化名（容忍大小写/空白/全半角）且**同一父级下**才复用（`:197-244`） | 自动分类/导入映射的匹配键统一为「归一化名 + 归属范围」，模糊不猜；多候选进人工映射区 | P1 |
 | 搜索/过滤 | 无系统化搜索（Task 未覆盖） | Veri Fin `transactions_pages.dart:147-205,156,274-280`：搜索**220ms debounce**、`_filterSignature` 派生缓存避免重复过滤、时间过滤器（月/季/年/近30天/近6周）+ 报销过滤器 + 排序 | 流水页加搜索框（debounce）+ 时间/方向/账户/分类过滤器，过滤签名缓存 | P2 |
 | 批量操作 | Task3 计划多选改分类/删除 | Veri Fin 无专门批量，但 BeeCount `LocalChanges` 操作日志模式（见 1.7） | 维持 Task3；批量改分类/删除走单事务 | P1 |
