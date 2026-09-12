@@ -14,6 +14,7 @@ class FocusTimerWidget extends StatefulWidget {
     this.boundTask,
     this.hintTask,
     this.onComplete,
+    this.onFlowCompleted,
     required this.now,
   });
   final int focusMinutes;
@@ -22,6 +23,8 @@ class FocusTimerWidget extends StatefulWidget {
   final String? boundTask;
   final String? hintTask;
   final void Function(TimerMode mode)? onComplete;
+  /// Flowtime 手动结束时回调实际专注分钟数。
+  final void Function(int minutes)? onFlowCompleted;
   final DateTime Function() now;
 
   @override
@@ -32,6 +35,7 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
   TimerMode _mode = TimerMode.focus;
   late final FocusTimer _timer;
   Timer? _clock;
+  DateTime? _flowStart;
 
   @override
   void initState() {
@@ -55,7 +59,8 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
   }
 
   void _tick() {
-    if (_timer.phase == TimerPhase.focusing &&
+    if (_timer.mode != TimerMode.flowtime &&
+        _timer.phase == TimerPhase.focusing &&
         _timer.remainingSeconds(now: widget.now()) <= 0) {
       final finishedMode = _timer.mode;
       _timer.reset();
@@ -73,11 +78,38 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
   }
 
   String get _label {
+    if (_timer.mode == TimerMode.flowtime) {
+      // 流式无倒计时，展示已专注时长
+      final base = _flowStart ?? DateTime.now();
+      final s = widget.now().difference(base).inSeconds;
+      final sec = s < 0 ? 0 : s;
+      return '${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}';
+    }
     final s = _timer.remainingSeconds(now: widget.now());
     return '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
   }
 
+  int get _elapsedFlowMinutes {
+    final base = _flowStart;
+    if (base == null) return 1;
+    final mins = widget.now().difference(base).inMinutes;
+    return mins < 1 ? 1 : mins;
+  }
+
   void _onPrimary() {
+    if (_timer.mode == TimerMode.flowtime) {
+      if (_timer.phase == TimerPhase.idle) {
+        _flowStart = widget.now();
+        _timer.start(now: widget.now());
+      } else if (_timer.phase == TimerPhase.focusing) {
+        final minutes = _elapsedFlowMinutes;
+        _timer.reset();
+        _flowStart = null;
+        widget.onFlowCompleted?.call(minutes);
+      }
+      _tick();
+      return;
+    }
     if (_timer.phase == TimerPhase.focusing) {
       _timer.pause(now: widget.now());
     } else if (_timer.phase == TimerPhase.paused) {
@@ -92,6 +124,7 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
         TimerMode.focus => scheme.primary,
         TimerMode.short => const Color(0xFF4CB3C4),
         TimerMode.long => const Color(0xFF6C96C9),
+        TimerMode.flowtime => const Color(0xFF7A5AC9),
       };
 
   @override
@@ -101,34 +134,46 @@ class _FocusTimerWidgetState extends State<FocusTimerWidget> {
     final remain = _timer.remainingSeconds(now: widget.now());
     final shown = remain < 0 ? 0 : remain;
     final ringColor = _ringColor(scheme);
-    final (IconData icon, String label) = switch (phase) {
-      TimerPhase.focusing => (Icons.pause, '暂停'),
-      TimerPhase.paused => (Icons.play_arrow, '继续'),
-      TimerPhase.idle => (Icons.play_arrow, '开始专注'),
-    };
+    final (IconData icon, String label) = _mode == TimerMode.flowtime
+        ? (phase == TimerPhase.focusing
+            ? (Icons.stop, '结束')
+            : (Icons.play_arrow, '开始'))
+        : switch (phase) {
+            TimerPhase.focusing => (Icons.pause, '暂停'),
+            TimerPhase.paused => (Icons.play_arrow, '继续'),
+            TimerPhase.idle => (Icons.play_arrow, '开始专注'),
+          };
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        ChoiceChip(
-          key: const Key('mode_focus'),
-          label: const Text('专注'),
-          selected: _mode == TimerMode.focus,
-          onSelected: (_) => _switchMode(TimerMode.focus),
-        ),
-        const SizedBox(width: 8),
-        ChoiceChip(
-          key: const Key('mode_short'),
-          label: const Text('短休'),
-          selected: _mode == TimerMode.short,
-          onSelected: (_) => _switchMode(TimerMode.short),
-        ),
-        const SizedBox(width: 8),
-        ChoiceChip(
-          key: const Key('mode_long'),
-          label: const Text('长休'),
-          selected: _mode == TimerMode.long,
-          onSelected: (_) => _switchMode(TimerMode.long),
-        ),
-      ]),
+      Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        children: [
+          ChoiceChip(
+            key: const Key('mode_focus'),
+            label: const Text('专注'),
+            selected: _mode == TimerMode.focus,
+            onSelected: (_) => _switchMode(TimerMode.focus),
+          ),
+          ChoiceChip(
+            key: const Key('mode_short'),
+            label: const Text('短休'),
+            selected: _mode == TimerMode.short,
+            onSelected: (_) => _switchMode(TimerMode.short),
+          ),
+          ChoiceChip(
+            key: const Key('mode_long'),
+            label: const Text('长休'),
+            selected: _mode == TimerMode.long,
+            onSelected: (_) => _switchMode(TimerMode.long),
+          ),
+          ChoiceChip(
+            key: const Key('mode_flowtime'),
+            label: const Text('流式'),
+            selected: _mode == TimerMode.flowtime,
+            onSelected: (_) => _switchMode(TimerMode.flowtime),
+          ),
+        ],
+      ),
       const SizedBox(height: 16),
       Stack(alignment: Alignment.center, children: [
         SizedBox(

@@ -1,6 +1,6 @@
 enum TimerPhase { idle, focusing, paused }
 
-enum TimerMode { focus, short, long }
+enum TimerMode { focus, short, long, flowtime }
 
 class FocusTimer {
   FocusTimer({
@@ -19,13 +19,16 @@ class FocusTimer {
   DateTime? _endAt; // 绝对时间戳：剩余 = _endAt - now
   int? _remainAtPauseSeconds;
 
+  // flowtime 无固定时长，用一天占位（durationSeconds 仅供非流式 UI 进度环使用）。
   int get durationSeconds => switch (mode) {
         TimerMode.focus => focusMinutes * 60,
         TimerMode.short => shortBreakMinutes * 60,
         TimerMode.long => longBreakMinutes * 60,
+        TimerMode.flowtime => 24 * 60 * 60,
       };
 
   int remainingSeconds({DateTime? now}) {
+    if (mode == TimerMode.flowtime) return 0; // 流式剩余恒显示 0，不结束
     if (phase == TimerPhase.paused) {
       return _remainAtPauseSeconds ?? durationSeconds;
     }
@@ -34,7 +37,10 @@ class FocusTimer {
     return s < 0 ? 0 : s;
   }
 
-  bool get isFinished => phase == TimerPhase.focusing && remainingSeconds() == 0;
+  bool get isFinished =>
+      mode == TimerMode.flowtime
+          ? false
+          : phase == TimerPhase.focusing && remainingSeconds() == 0;
 
   String remainingLabel() {
     final s = remainingSeconds();

@@ -45,4 +45,12 @@ void main() {
     // endAt 早已过去：绝对时间戳归零 → 完成
     expect(t.isFinished, isTrue);
   });
+
+  test('flowtime 不自动归零，由手动停止', () {
+    final t = FocusTimer(focusMinutes: 25, mode: TimerMode.flowtime);
+    t.start(now: DateTime(2026, 1, 1, 10));
+    // 1 小时后：剩余展示为 0 但不触发完成
+    expect(t.remainingSeconds(now: DateTime(2026, 1, 1, 11)), 0);
+    expect(t.isFinished, isFalse); // 不自动结束
+  });
 }

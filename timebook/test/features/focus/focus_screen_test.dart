@@ -189,4 +189,24 @@ void main() {
     // 今日 50 分 → 显示 '50m'
     expect(find.text('50m'), findsOneWidget);
   });
+
+  testWidgets('提供 Flowtime 流式模式 chip', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = FocusRepository(db);
+
+    final container = ProviderContainer(overrides: [
+      focusDatabaseProvider.overrideWithValue(db),
+      focusRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: FocusScreen()))));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('mode_flowtime')), findsOneWidget);
+    expect(find.text('流式'), findsOneWidget);
+  });
 }

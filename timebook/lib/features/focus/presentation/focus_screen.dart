@@ -68,11 +68,13 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
       TimerMode.focus => 'focus',
       TimerMode.short => 'short',
       TimerMode.long => 'long',
+      TimerMode.flowtime => 'focus', // flowtime 不触发本回调，兜底
     };
     final minutes = switch (mode) {
       TimerMode.focus => settings.focusMinutes,
       TimerMode.short => settings.shortBreakMinutes,
       TimerMode.long => settings.longBreakMinutes,
+      TimerMode.flowtime => 0, // 兜底，不实际使用
     };
     final bound = _bound;
     if (!mounted) return;
@@ -116,8 +118,24 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
       TimerMode.focus => ('番茄完成 🍅', '休息一下吧'),
       TimerMode.short => ('短休结束', '可以开始下一轮专注了'),
       TimerMode.long => ('长休结束', '可以开始下一轮专注了'),
+      TimerMode.flowtime => ('专注结束', '辛苦了'),
     };
     _notification.show(id: 1, title: title, body: body);
+  }
+
+  /// Flowtime 手动结束：按实际时长落库为 focus 会话。
+  Future<void> _onFlowCompleted(int minutes) async {
+    final repo = ref.read(focusRepositoryProvider);
+    final endAt = DateTime.now();
+    await repo.addSession(
+        taskId: _bound?.id,
+        kind: 'focus',
+        startAt: endAt.subtract(Duration(minutes: minutes)),
+        endAt: endAt,
+        durationMinutes: minutes,
+        interrupted: false);
+    if (!mounted) return;
+    setState(() {});
   }
 
   @override
@@ -189,6 +207,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                 longBreakMinutes: settings.longBreakMinutes,
                 boundTask: _bound?.title,
                 onComplete: _onComplete,
+                onFlowCompleted: _onFlowCompleted,
                 now: now,
               ),
             ),
