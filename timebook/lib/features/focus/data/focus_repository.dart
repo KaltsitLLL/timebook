@@ -130,4 +130,17 @@ class FocusRepository {
         .get();
     return rows.fold<int>(0, (sum, s) => sum + s.durationMinutes);
   }
+
+  /// 今日完成的专注会话数（番茄数）：kind=='focus' 且未中断、当日不计休息。
+  Future<int> todayPomodoro() async {
+    final now = DateTime.now();
+    final dayStart = DateTime(now.year, now.month, now.day);
+    final rows = await (db.select(db.pomodoroSessions)
+          ..where((s) =>
+              s.kind.equals('focus') &
+              s.startAt.isBiggerOrEqualValue(dayStart) &
+              s.interrupted.equals(false)))
+        .get();
+    return rows.length;
+  }
 }

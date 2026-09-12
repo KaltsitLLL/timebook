@@ -61,4 +61,20 @@ void main() {
     expect(rows[6].$2, 50); // 今日
     expect(rows[0].$2, 0); // 远端空日补 0
   });
+
+  test('todayPomodoro 统计今日完成的专注会话数，短休不计', () async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    await repo.addSession(kind: 'focus', startAt: today, durationMinutes: 25);
+    // 短休不计
+    await repo.addSession(kind: 'short', startAt: today, durationMinutes: 5);
+    // 中断的专注不计
+    await repo.addSession(kind: 'focus', startAt: today, durationMinutes: 25, interrupted: true);
+
+    expect(await repo.todayPomodoro(), 1);
+  });
+
+  test('todayPomodoro 无当日会话时返回 0', () async {
+    expect(await repo.todayPomodoro(), 0);
+  });
 }

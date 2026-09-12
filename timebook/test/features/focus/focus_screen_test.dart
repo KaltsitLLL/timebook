@@ -209,4 +209,35 @@ void main() {
     expect(find.byKey(const Key('mode_flowtime')), findsOneWidget);
     expect(find.text('流式'), findsOneWidget);
   });
+
+  testWidgets('摘要卡显示今日待办完成比与番茄数·分钟', (tester) async {
+    final db = AppDatabase.forTesting(inMemoryExecutor());
+    final repo = FocusRepository(db);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // 1 未完成任务 + 1 已完成（当日）+ 1 条 25 分钟 focus 会话
+    await repo.createTask(title: '进行中事项', priority: 1);
+    final doneId = await repo.createTask(title: '已完成事项', priority: 2);
+    await repo.addSession(kind: 'focus', startAt: today, durationMinutes: 25);
+    // 标记完成 → completedAt 为当日
+    await repo.toggleCompleted(taskId: doneId);
+
+    final container = ProviderContainer(overrides: [
+      focusDatabaseProvider.overrideWithValue(db),
+      focusRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(db.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: FocusScreen()))));
+    await tester.pumpAndSettle();
+
+    // done=1（当日完成），total=open(1)+done(1)=2 → '1/2'
+    expect(find.byKey(const Key('today_todo_stat')), findsOneWidget);
+    expect(find.text('1/2'), findsOneWidget);
+    expect(find.text('1 🍅 · 25 分钟'), findsOneWidget);
+    expect(find.byKey(const Key('today_focus_stat')), findsOneWidget);
+  });
 }

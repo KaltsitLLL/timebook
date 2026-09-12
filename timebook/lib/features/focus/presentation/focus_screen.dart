@@ -143,28 +143,87 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     final repo = ref.watch(focusRepositoryProvider);
     final now = ref.read(focusClockProvider);
     return FutureBuilder(
-      future: Future.wait([repo.openTasks(), repo.todayFocusMinutes(), repo.settings()]),
+      future: Future.wait([
+        repo.openTasks(),
+        repo.completedTasks(),
+        repo.todayFocusMinutes(),
+        repo.todayPomodoro(),
+        repo.settings(),
+      ]),
       builder: (context, snap) {
         if (!snap.hasData) return const Center(child: CircularProgressIndicator());
         final tasks = snap.data![0] as List<Task>;
-        final focusMin = snap.data![1] as int;
-        final settings = snap.data![2] as PomodoroSetting;
+        final completed = snap.data![1] as List<Task>;
+        final focusMin = snap.data![2] as int;
+        final pomodoro = snap.data![3] as int;
+        final settings = snap.data![4] as PomodoroSetting;
+        final nowD = DateTime.now();
+        final done = completed.where((c) {
+          final ct = c.completedAt;
+          return ct != null &&
+              ct.year == nowD.year &&
+              ct.month == nowD.month &&
+              ct.day == nowD.day;
+        }).length;
+        final total = tasks.length + done;
         return ListView(padding: const EdgeInsets.all(16), children: [
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(children: [
-                Text('今日专注', style: Theme.of(context).textTheme.titleMedium),
-                const Spacer(),
-                TextButton.icon(
-                    key: const Key('daily_entry'),
-                    icon: const Icon(Icons.summarize_outlined, size: 16),
-                    label: const Text('收工小结'),
-                    onPressed: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const DailySummaryScreen()))),
-                Text('$focusMin 分钟',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('今日待办',
+                              style: Theme.of(context).textTheme.labelLarge),
+                          const SizedBox(height: 6),
+                          Text('$done/$total',
+                              key: const Key('today_todo_stat'),
+                              style: const TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 2),
+                          const Text('已完成',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey)),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('今日专注',
+                              style: Theme.of(context).textTheme.labelLarge),
+                          const SizedBox(height: 6),
+                          Text('$pomodoro 🍅 · $focusMin 分钟',
+                              key: const Key('today_focus_stat'),
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 2),
+                          const Text('番茄数 · 分钟',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey)),
+                        ],
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                        key: const Key('daily_entry'),
+                        icon: const Icon(Icons.summarize_outlined, size: 16),
+                        label: const Text('收工小结'),
+                        onPressed: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) => const DailySummaryScreen()))),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
