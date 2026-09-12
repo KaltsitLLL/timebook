@@ -192,14 +192,19 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:sqlite3/open.dart';
 
-/// Windows 下 dart/flutter test 需要 sqlite3.dll（放于仓库根的 tools/ 下）。
-/// 在 File('tools/sqlite3.dll').absolute.path 解析前，确保 cwd 为工程根目录。
+/// Windows 下 dart/flutter test 需要 sqlite3.dll（存放于仓库根 tools/ 下，
+/// 相对 cwd 可能多级，逐个尝试）。
 void initTestSqlite() {
   if (Platform.isWindows) {
-    final f = File('tools/sqlite3.dll');
-    if (f.existsSync() && !Platform.environment.containsKey('CI')) {
-      open.overrideFor(OperatingSystem.windows,
-          () => DynamicLibrary.open(f.absolute.path));
+    const candidates = ['tools/sqlite3.dll', '../tools/sqlite3.dll',
+        '../../tools/sqlite3.dll', '../../../tools/sqlite3.dll'];
+    for (final rel in candidates) {
+      final f = File(rel);
+      if (f.existsSync()) {
+        open.overrideFor(OperatingSystem.windows,
+            () => DynamicLibrary.open(f.absolute.path));
+        break;
+      }
     }
   }
 }
