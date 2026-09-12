@@ -3,9 +3,9 @@ import '../domain/ai_bookkeeping_service.dart';
 import '../domain/ai_models.dart';
 
 class ConfirmScreen extends StatefulWidget {
-  const ConfirmScreen({super.key, required this.draft, required this.service});
+  const ConfirmScreen({super.key, required this.draft, this.service});
   final AiDraft draft;
-  final AiBookkeepingService service;
+  final AiBookkeepingService? service;
   @override
   State<ConfirmScreen> createState() => _ConfirmScreenState();
 }
@@ -32,6 +32,8 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   Future<void> _save() async {
     final n = double.tryParse(_amount.text)?.round() ?? 0;
     if (n <= 0) return;
+    final svc = widget.service;
+    if (svc == null) return;
     final draft = AiDraft(
       direction: widget.draft.direction,
       amountCents: (double.parse(_amount.text) * 100).round(),
@@ -40,7 +42,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
       category: widget.draft.category,
       bookAt: widget.draft.bookAt,
     );
-    await widget.service.confirm(draft);
+    await svc.confirm(draft);
     if (!mounted) return;
     final nav = Navigator.of(context);
     if (nav.canPop()) nav.pop(true);

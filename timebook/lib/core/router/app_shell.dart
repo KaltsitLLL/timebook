@@ -20,7 +20,7 @@ class _AppShellState extends State<AppShell> {
       const HomeScreen(),
       const FocusScreen(),
       const StatsScreen(),
-      const PlaceholderScreen(title: '设置'),
+      const SettingsScreen(),
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: pages),
