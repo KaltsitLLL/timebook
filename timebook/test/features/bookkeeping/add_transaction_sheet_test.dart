@@ -217,4 +217,22 @@ void main() {
     expect(rows, hasLength(1));
     expect(rows.single.categoryId, foodId);
   });
+
+  testWidgets('收入胶囊选中时背景为青绿 #4CB3C4', (tester) async {
+    final (c, _) = await setup();
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: Scaffold(body: AddTransactionSheet()))));
+    await tester.pumpAndSettle();
+
+    final incPill = find.byKey(const Key('dir_inc'));
+    await tester.tap(incPill);
+    await tester.pumpAndSettle();
+
+    final container = tester.widget<Container>(find.descendant(
+        of: find.byKey(const Key('dir_inc')),
+        matching: find.byType(Container)));
+    final decor = container.decoration! as BoxDecoration;
+    expect(decor.color, const Color(0xFF4CB3C4));
+  });
 }

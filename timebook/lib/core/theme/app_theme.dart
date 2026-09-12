@@ -35,7 +35,6 @@ ThemeData buildTheme() {
     outline: kOutline,
     outlineVariant: kOutlineVariant,
     error: kError,
-    background: kBg,
   );
   return ThemeData(
     colorScheme: scheme,

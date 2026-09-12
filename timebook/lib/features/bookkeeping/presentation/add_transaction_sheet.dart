@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/db/app_database.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/util/formats.dart';
 import '../../ai/presentation/open_ai_dialog.dart';
 import 'bookkeeping_providers.dart';
@@ -91,6 +92,33 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
   Future<void> _openAiDialog() => openAiDialog(context, ref);
 
+  /// 记一笔顶部方向胶囊：选中=primary/tertiary 底·白字；未选中=surface 底·outlineVariant 边框。
+  Widget _directionPill(String key, String label, String value,
+      {required bool selected, required Color selectedColor}) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      key: Key(key),
+      borderRadius: BorderRadius.circular(999),
+      onTap: () => setState(() => _direction = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? selectedColor : scheme.surface,
+          borderRadius: BorderRadius.circular(999),
+          border: selected
+              ? null
+              : Border.all(color: scheme.outlineVariant, width: 1),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : scheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+
   /// 分类宫格单元格：selected 高亮（边框=分类色 + 浅色底，圆角 12）。
   Widget _builtCategoryCell(Category c, int index) {
     final color = _catPalette[index % _catPalette.length];
@@ -153,13 +181,25 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       child: ListView(padding: const EdgeInsets.all(20), children: [
         Text('记一笔', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
-        SegmentedButton<String>(
-          segments: const [
-            ButtonSegment(value: 'expense', label: Text('支出')),
-            ButtonSegment(value: 'income', label: Text('收入')),
+        Row(
+          children: [
+            _directionPill(
+              'dir_exp',
+              '支出',
+              'expense',
+              selected: _direction == 'expense',
+              selectedColor: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            // 收入青绿胶囊：theme.tertiary 即原型 incomeColor #4CB3C4
+            _directionPill(
+              'dir_inc',
+              '收入',
+              'income',
+              selected: _direction == 'income',
+              selectedColor: incomeColor,
+            ),
           ],
-          selected: {_direction},
-          onSelectionChanged: (s) => setState(() => _direction = s.first),
         ),
         const SizedBox(height: 12),
         Align(
@@ -172,33 +212,39 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           ),
         ),
         const SizedBox(height: 16),
-        TextField(
-          key: const Key('amount_field'),
-          controller: _amount,
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
-          onChanged: (_) => setState(() {}),
-          style: const TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.w700,
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            hintText: '0.00',
-            hintStyle: TextStyle(
-              fontSize: 32,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurfaceVariant
-                  .withValues(alpha: .6),
+        // 金额区（对齐原型：¥ 22/700 + 40/700 tabular 输入，baseline 对齐 gap 6，占位 40px 灰显）
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            const Text('¥',
+                style: TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF1B2634))),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                key: const Key('amount_field'),
+                controller: _amount,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(() {}),
+                style: const TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1B2634),
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: '0.00',
+                  hintStyle: TextStyle(
+                    fontSize: 40,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             ),
-            prefixText: '¥ ',
-            prefixStyle: TextStyle(
-              fontSize: 18,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
+          ],
         ),
         if (raw.isNotEmpty && arithCents != null && arithCents > 0)
           Align(
